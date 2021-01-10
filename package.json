@@ -10,8 +10,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Shane van Coller",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
-    "@openzeppelin/contracts-ethereum-package": "^3.0.0"
+    "@openzeppelin/contracts-ethereum-package": "^3.0.0",
+    "@openzeppelin/truffle-upgrades": "^1.3.1"
   }
 }
