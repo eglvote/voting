@@ -32,13 +32,13 @@ module.exports = async function(done) {
     console.log("Expected 800, Actual:", (await eagle.voterRewardSums(4)).toString());
     console.log("Expected 0, Actual:", (await eagle.voterRewardSums(8)).toString());
 
-    console.log("Expected 1000, Actual:", (await eagle.votesUp(0)).toString());
-    console.log("Expected 1000, Actual:", (await eagle.votesUp(2)).toString());
-    console.log("Expected 800, Actual:", (await eagle.votesUp(4)).toString());
+    console.log("Expected 1000, Actual:", (await eagle.directionVoteCount(0, 0)).toString());
+    console.log("Expected 1000, Actual:", (await eagle.directionVoteCount(0, 2)).toString());
+    console.log("Expected 800, Actual:", (await eagle.directionVoteCount(0, 4)).toString());
 
-    console.log("Expected 150, Actual:", (await eagle.votesDown(0)).toString());
-    console.log("Expected 150, Actual:", (await eagle.votesDown(1)).toString());
-    console.log("Expected 0, Actual:", (await eagle.votesDown(2)).toString());
+    console.log("Expected 150, Actual:", (await eagle.directionVoteCount(2, 0)).toString());
+    console.log("Expected 150, Actual:", (await eagle.directionVoteCount(2, 1)).toString());
+    console.log("Expected 0, Actual:", (await eagle.directionVoteCount(2, 2)).toString());
 
     // eagle.tallyVotes();
     // eagle.revote(0, web3.utils.toWei("100"), 8, {from: accounts[5]}); // Should feil
