@@ -59,10 +59,10 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
         uint date
     );
     event ReVote(address caller, DesiredChange desiredChange, uint date);
-    event DebugWithdraw(address caller, uint epochVoterReward);
     event Withdraw(
         address caller,
-        uint amountWithdrawn,
+        uint tokensLocked,
+        uint rewardTokens,
         DesiredChange desiredChange,
         uint epochVotesUp,
         uint epochVotesSame,
@@ -97,6 +97,12 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
         uint _daoAmount,
         address _upgradeAddress
     ) public {
+        require(
+            token.allowance(msg.sender, address(this)) >= _eglAmount,
+            "EGL: EGL contract has insufficient token allowance"
+        );
+        token.transferFrom(msg.sender, address(this), _eglAmount);
+
         _internalVote(_desiredChange, _eglAmount, _lockupDuration, _daoRecipient, _daoAmount, _upgradeAddress, 0);
     }
 
@@ -157,12 +163,6 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
             block.timestamp < currentEpochStartDate.add(SECONDS_IN_WEEK).sub(SECONDS_IN_DAY),
             "EGL: Votes not allowed within 24 hours of the end of the voting period"
         );
-        require(
-            token.allowance(msg.sender, address(this)) >= _eglAmount,
-            "EGL: EGL contract has insufficient allowance"
-        );
-
-        token.transferFrom(msg.sender, address(this), _eglAmount);
 
         if (block.timestamp > currentEpochStartDate.add(SECONDS_IN_WEEK)) {
             tallyVotes();
@@ -197,29 +197,24 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
 
     function _internalWithdraw() private returns (uint) {
         Voter storage voter = voters[msg.sender];
-        uint voterEpoch = voter.voteEpoch;
-        uint eglAmount = voter.tokensLocked;
-        uint lockupDuration = voter.lockupDuration;
+        uint16 voterEpoch = voter.voteEpoch;
+        uint originalEglAmount = voter.tokensLocked;
+        uint8 lockupDuration = voter.lockupDuration;
         DesiredChange desiredChange = voter.desiredChange;
-
         delete voters[msg.sender];
 
-        // TODO: Make sure this calculation for `affectedEpochs` is correct
-        // TODO: Fix types since this will fail if currentEpoch > voterEpoch + lockupDuration (overflow)
-        uint affectedEpochs = voterEpoch.add(lockupDuration).sub(currentEpoch);
-        uint voteWeight = eglAmount.mul(lockupDuration);
-
-        _removeVote(desiredChange, affectedEpochs,  eglAmount, voteWeight, voterEpoch);
-
-        uint loopBound = voterEpoch.add(lockupDuration).min(currentEpoch).min(WEEKS_IN_YEAR);
-        for (uint i = voterEpoch; i < loopBound; i++) {
-            uint epochVoterReward = (voteWeight.div(voterRewardSums[i])).mul(REWARD_MULTIPLIER).mul(WEEKS_IN_YEAR.sub(i));
-            emit DebugWithdraw(msg.sender, epochVoterReward);
-            eglAmount += epochVoterReward;
+        uint voteWeight = originalEglAmount.mul(lockupDuration);
+        uint voterReward = 0;
+        for (uint16 i = voterEpoch; i < voterEpoch.add(lockupDuration).min(currentEpoch).min(WEEKS_IN_YEAR); i++) {
+            voterReward += (voteWeight.mul(REWARD_MULTIPLIER).mul(WEEKS_IN_YEAR.sub(i))).div(voterRewardSums[i]);
         }
+
+        _removeVote(desiredChange, lockupDuration, originalEglAmount, voteWeight, voterEpoch);
+
         emit Withdraw(
             msg.sender,
-            eglAmount,
+            originalEglAmount,
+            voterReward,
             desiredChange,
             directionVoteCount[DesiredChange.UP][currentEpoch],
             directionVoteCount[DesiredChange.SAME][currentEpoch],
@@ -228,32 +223,35 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
             votesTotal[currentEpoch],
             now
         );
-        return eglAmount;
+        return originalEglAmount.add(voterReward);
     }
 
     function _removeVote(
-        DesiredChange _desiredChangeDirection,
-        uint _affectedEpochs,
-        uint _eglAmount,
+        DesiredChange _desiredChange,
+        uint8 _lockupDuration,
+        uint _originalEglAmount,
         uint _voteWeight,
         uint _voterEpoch
     ) private {
-        for (uint8 i = 0; i < _affectedEpochs; i++) {
-            directionVoteCount[_desiredChangeDirection][i] -= _voteWeight;
-            if (_voterEpoch + i < WEEKS_IN_YEAR) {
-                voterRewardSums[_voterEpoch + i] -= _voteWeight;
+        uint voterInterval = _voterEpoch.add(_lockupDuration);
+        uint affectedEpochs = currentEpoch < voterInterval ? voterInterval.sub(currentEpoch) : 0;
+        // TODO: Use SafeMath instead of -= and += to avoid potential overflows
+        for (uint8 i = 0; i < affectedEpochs; i++) {
+            directionVoteCount[_desiredChange][i] -= _voteWeight;
+            if (_voterEpoch.add(i) <= WEEKS_IN_YEAR) {
+                voterRewardSums[_voterEpoch.add(i)] -= _voteWeight;
             }
-            votesTotal[i] -= _eglAmount;
+            votesTotal[i] -= _originalEglAmount;
         }
     }
 
     function _addVote(DesiredChange _desiredChangeDirection, uint8 _lockupDuration, uint _eglAmount) private {
         uint voteWeight = _eglAmount.mul(_lockupDuration);
-
+        // TODO: Use SafeMath instead of -= and += to avoid potential overflows
         for (uint8 i = 0; i < _lockupDuration; i++) {
             directionVoteCount[_desiredChangeDirection][i] += voteWeight;
-            if (currentEpoch + i <= WEEKS_IN_YEAR)
-                voterRewardSums[currentEpoch + i] += voteWeight;
+            if (currentEpoch.add(i) <= WEEKS_IN_YEAR)
+                voterRewardSums[currentEpoch.add(i)] += voteWeight;
             votesTotal[i] += _eglAmount;
         }
     }
