@@ -1,7 +1,7 @@
 ## Setup
 1. `npm install`
-1. `truffle compile` to compile contracts
-1. `truffle migrate` to deploy contracts to default network defined in truffle-config.js
+1. `truffle compile [--all]` to compile contracts
+1. `truffle migrate [--reset]` to deploy contracts to default network defined in truffle-config.js
 1. `truffle migrate --network <NAME>>` to deploy to specific network in truffle-config.js
 1. `truffle console --network <NAME>` to access console and interact with contracts
 
@@ -55,3 +55,7 @@ eagle.tallyVotes();
 eagle.vote(2, web3.utils.toWei("100"), 2, "0x0000000000000000000000000000000000000000", 0, "0x0000000000000000000000000000000000000000", {from: accounts[3]});
 eagle.reVote(0, web3.utils.toWei("100"), 2, "0x0000000000000000000000000000000000000000", 0, "0x0000000000000000000000000000000000000000", {from: accounts[1]});
 ```
+
+## Uniswap Addresses
+FactoryV2 - `0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f`
+RouterV2 - `0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D`
