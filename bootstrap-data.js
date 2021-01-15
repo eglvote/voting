@@ -29,6 +29,7 @@ module.exports = async function(done) {
     eagle.vote(0, web3.utils.toWei("10"), 2, "0x0000000000000000000000000000000000000000", 0, "0x0000000000000000000000000000000000000000", {from: accounts[1]});
     eagle.vote(0, web3.utils.toWei("10"), 3, "0x0000000000000000000000000000000000000000", 0, "0x0000000000000000000000000000000000000000", {from: accounts[2]});
     eagle.vote(2, web3.utils.toWei("20"), 2, "0x0000000000000000000000000000000000000000", 0, "0x0000000000000000000000000000000000000000", {from: accounts[3]});
+    eagle.vote(1, web3.utils.toWei("20"), 3, "0x0000000000000000000000000000000000000000", 0, "0x0000000000000000000000000000000000000000", {from: accounts[4]});
 
     console.log("Total rewards expected 90, Actual:", web3.utils.fromWei((await eagle.voterRewardSums(0)).toString()));
     console.log("Total rewards expected 90, Actual:", web3.utils.fromWei((await eagle.voterRewardSums(1)).toString()));

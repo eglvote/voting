@@ -4,4 +4,5 @@ node_modules
 
 .openzeppelin
 .openzeppelin/.session
+package-lock.json
 yarn.lock
