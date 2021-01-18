@@ -17,9 +17,11 @@ module.exports = async function (deployer, network, accounts) {
 
     let firstEpochStartDate = Math.round(new Date().getTime() / 1000);
     // let votePauseSeconds = 21600; // 6 hours
-    let votePauseSeconds = 60;
     // let epochLengthSeconds = 604800; // 1 week
+    let votePauseSeconds = 60;
     let epochLengthSeconds = 300;
+    let seedAccounts = [accounts[1], accounts[2], accounts[3]];
+    let creatorRewardAccount = accounts[9];
     const eglContract = await deployProxy(
         EglContract,
         [
@@ -29,7 +31,8 @@ module.exports = async function (deployer, network, accounts) {
             firstEpochStartDate,
             votePauseSeconds,
             epochLengthSeconds,
-            accounts[1]
+            seedAccounts,
+            creatorRewardAccount
         ],
         {deployer, unsafeAllowCustomTypes: true}
     );
@@ -37,9 +40,6 @@ module.exports = async function (deployer, network, accounts) {
 
     // Transfer all tokens to EGL contract
     eglToken.transfer(eglContract.address, TOTAL_SUPPLY);
-
-    // Claim initial tokens
-    eglContract.claimCreatorRewards({from: accounts[1]});
 
     // TODO: Remove ownership of deployer address
     // TODO: Grant `DEFAULT_ADMIN_ROLE` and `PAUSER_ROLE` to the Egl Contract
