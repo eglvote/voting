@@ -19,11 +19,12 @@ export const vote = async (
     return
   }
 
+  if (weeksLocked < 1 && weeksLocked > 0) weeksLocked = 0
   const response = await contract.methods
     .vote(
       desiredChange, // desired change enum
       web3.utils.toWei(String(eglAmount)),
-      weeksLocked,
+      String(weeksLocked),
       daoRecipient,
       daoAmount,
       upgradeAddress
@@ -56,6 +57,7 @@ export const revote = async (
     return
   }
 
+  if (weeksLocked < 1 && weeksLocked > 0) weeksLocked = 0
   const response = await contract.methods
     .reVote(
       desiredChange,

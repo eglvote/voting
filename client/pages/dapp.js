@@ -15,6 +15,7 @@ import Row from '../components/atoms/Row'
 import Line from '../components/atoms/Line'
 import styled from 'styled-components'
 import connectToWeb3 from '../lib/connectToWeb3'
+import web3 from 'web3'
 
 const Body = styled.div`
   margin-top: 2em;
@@ -101,7 +102,6 @@ class Dapp extends React.Component {
 
   render() {
     const {
-      balance = 'N/A',
       ethBalance = 'N/A',
       eglBalance = 'N/A',
       voterData = 'N/A',
@@ -123,6 +123,11 @@ class Dapp extends React.Component {
             <a>Home</a>
           </Link>
         </div>
+        <div>
+          <Link href="/status">
+            <a>Status</a>
+          </Link>
+        </div>
         <Line />
         <div>
           <h3>Contract</h3>
@@ -130,29 +135,30 @@ class Dapp extends React.Component {
           <Row style={{ 'margin-top': '1em' }}>
             Address: {this.props.token._address}
           </Row>
-          <Row>
+          {/* <Row>
             Total EGLs Locked:{' '}
-            {voterData && web3.fromWei(voterData.tokensLocked)}
-          </Row>
+            {voterData && web3.utils.fromWei(voterData.tokensLocked)}
+          </Row> */}
           <Row>Epoch: {votesTallied && votesTallied.currentEpoch}</Row>
           <Row>
-            Up Votes: {votesTallied && web3.fromWei(votesTallied.totalVotesUp)}
+            Up Votes:{' '}
+            {votesTallied && web3.utils.fromWei(votesTallied.totalVotesUp)}
           </Row>
           <Row>
             Same Votes:{' '}
-            {votesTallied && web3.fromWei(votesTallied.totalVotesSame)}
+            {votesTallied && web3.utils.fromWei(votesTallied.totalVotesSame)}
           </Row>
           <Row>
             Down Votes:{' '}
-            {votesTallied && web3.fromWei(votesTallied.totalVotesDown)}
+            {votesTallied && web3.utils.fromWei(votesTallied.totalVotesDown)}
           </Row>
         </div>
         <Line />
         <div>
           <h3>Wallet</h3>
-          <button onClick={this.getContractData}>Get Contract Data</button>
           <button onClick={this.getEthBalance}>Get ether balance</button>
           <button onClick={this.getEglBalance}>Get EGL balance</button>
+          <button onClick={this.getContractData}>Get Locked EGL</button>
           <button onClick={this.allowance}>increaseAllowance 1 mil</button>
           <button
             onClick={() => approve(this.props.token, this.state.walletAddress)}
@@ -178,7 +184,8 @@ class Dapp extends React.Component {
           <Row>Ether Balance: {ethBalance}</Row>
           <Row>EGL Balance: {eglBalance}</Row>
           <Row>
-            EGLs Locked: {voterData && web3.fromWei(voterData.tokensLocked)}
+            EGLs Locked:{' '}
+            {voterData && web3.utils.fromWei(voterData.tokensLocked)}
           </Row>
         </div>
         <Line />

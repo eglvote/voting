@@ -3,7 +3,6 @@ import getWeb3 from './getWeb3'
 import getContract from './getContract'
 import contractDefinition from '../src/contracts/EglContract.json'
 import tokenDefinition from '../src/contracts/EglToken.json'
-import bootstrap from '../../bootstrap-data'
 
 export default class Web3Container extends React.Component {
   state = { web3: null, accounts: null, contract: null, token: null }

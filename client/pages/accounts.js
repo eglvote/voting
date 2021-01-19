@@ -16,6 +16,11 @@ const Accounts = ({ accounts }) => (
         <a>Home</a>
       </Link>
     </div>
+    <div>
+      <Link href="/status">
+        <a>Status</a>
+      </Link>
+    </div>
   </div>
 )
 
