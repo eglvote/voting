@@ -1,5 +1,6 @@
 node_modules
 .next
+out
 yarn.lock
 src/contracts
 yarn.lock

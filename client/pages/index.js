@@ -15,5 +15,10 @@ export default () => (
         <a>My Accounts</a>
       </Link>
     </div>
+    <div>
+      <Link href="/status">
+        <a>EGL Status</a>
+      </Link>
+    </div>
   </div>
 )

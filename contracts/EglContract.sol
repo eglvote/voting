@@ -76,21 +76,32 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
     /************** EVENTS **************/
     event Vote(
         address caller,
+        uint16 currentEpoch,
         DesiredChange desiredChange,
-        uint epochVotesUp,
-        uint epochVotesSame,
-        uint epochVotesDown,
-        uint epochVoterRewardSum,
-        uint epochTotalVotes,
+        uint eglAmount,
+        uint8 lockupDuration,
+        uint releaseDate,
         address daoRecipient,
         uint daoAmount,
         address upgradeAddress,
         uint date
     );
+    event NewVoteTotals(
+        address caller,
+        uint16 currentEpoch,
+        uint epochVotesUp,
+        uint epochVotesSame,
+        uint epochVotesDown,
+        uint epochVoterRewardSum,
+        uint epochTotalVotes,
+        uint date
+    );
     event ReVote(address caller, DesiredChange desiredChange, uint eglAmount, uint date);
     event Withdraw(
         address caller,
+        uint16 currentEpoch,
         uint tokensLocked,
+        uint releaseDate,
         uint rewardTokens,
         DesiredChange desiredChange,
         uint epochVotesUp,
@@ -103,7 +114,6 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
     event VotesTallied(
         address caller,
         uint16 currentEpoch,
-        uint nextEpoch,
         int desiredEgl,
         uint totalVotesUp,
         uint totalVotesSame,
@@ -141,22 +151,8 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
         int initialEgl,
         uint date
     );
-
-    event DebugReleaseDate(uint blockTimeStamp, uint8 lockupDuration, uint32 epochLength, uint currentReleaseTime);
-
-    /************** MODIFIERS **************/
-    modifier validateTokenBalances(uint _eglAmount) {
-        require(
-            _eglAmount > 1 ether ||
-            _eglAmount <= token.balanceOf(msg.sender),
-            "EGL: Address has an insufficient EGL balance"
-        );
-        require(
-            token.allowance(msg.sender, address(this)) >= _eglAmount,
-            "EGL: EGL contract has insufficient token allowance"
-        );
-        _;
-    }
+    event SeedAccountsFunded(address seedAddress, uint initialSeedAmount, uint seedAmountPerAccount, uint date);
+    event VoterRewardDebug(address voter, uint voterReward, uint voteWeight, uint rewardMultiplier, uint weeksDiv, uint epochVoterRewardSum);
 
     /**
      * @dev Initialized contract variables
@@ -216,8 +212,13 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
         address _daoRecipient,
         uint _daoAmount,
         address _upgradeAddress
-    ) public validateTokenBalances(_eglAmount) {
+    ) public {
         require(_eglAmount >= 1 ether, "EGL: Amount of EGL's used to vote must be more than 1");
+        require(_eglAmount <= token.balanceOf(msg.sender), "EGL: Address has an insufficient EGL balance");
+        require(
+            token.allowance(msg.sender, address(this)) >= _eglAmount,
+            "EGL: EGL contract has insufficient token allowance"
+        );
         token.transferFrom(msg.sender, address(this), _eglAmount);
         _internalVote(
             msg.sender,
@@ -241,12 +242,20 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
         address _daoRecipient,
         uint _daoAmount,
         address _upgradeAddress
-    ) public validateTokenBalances(_eglAmount) {
+    ) public {
         require(
             voters[msg.sender].tokensLocked > 0,
             "EGL: Address has not yet voted"
         );
-        token.transferFrom(msg.sender, address(this), _eglAmount);
+        if (_eglAmount > 0) {
+            require(_eglAmount >= 1 ether, "EGL: Amount of EGL's used to vote must be more than 1");
+            require(_eglAmount <= token.balanceOf(msg.sender), "EGL: Address has an insufficient EGL balance");
+            require(
+                token.allowance(msg.sender, address(this)) >= _eglAmount,
+                "EGL: EGL contract has insufficient token allowance"
+            );
+            token.transferFrom(msg.sender, address(this), _eglAmount);
+        }
         uint originalReleaseDate = voters[msg.sender].releaseDate;
         _eglAmount = _eglAmount.add(_internalWithdraw());
         _internalVote(
@@ -301,11 +310,13 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
             epochGasLimitSum = epochGasLimitSum.add(int(block.gaslimit));
             epochVoteCount = epochVoteCount.add(1);
             baselineEgl = epochGasLimitSum.div(epochVoteCount);
-            desiredEgl = baselineEgl;
+
             if (epochTotalUp > epochTotalDown && epochTotalUp > epochTotalSame)
                 desiredEgl = baselineEgl.add(GAS_LIMIT_CHANGE);
             else if (epochTotalDown > epochTotalUp && epochTotalDown > epochTotalSame)
                 desiredEgl = baselineEgl.sub(GAS_LIMIT_CHANGE);
+            else
+                desiredEgl = baselineEgl;
 
             emit VoteThresholdMet(
                 msg.sender,
@@ -350,6 +361,7 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
         if (currentEpoch >= CREATOR_REWARD_FIRST_EPOCH && remainingCreatorReward > 0) {
             uint creatorRewardForEpoch = weeklyCreatorRewardAmount.min(remainingCreatorReward);
             remainingCreatorReward = remainingCreatorReward.sub(creatorRewardForEpoch);
+            tokensInCirculation = tokensInCirculation.add(creatorRewardForEpoch);
             token.transfer(creatorRewardsAddress, creatorRewardForEpoch);
             emit CreatorRewardsClaimed(
                 msg.sender,
@@ -367,7 +379,6 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
         emit VotesTallied(
             msg.sender,
             currentEpoch - 1,
-            currentEpoch,
             desiredEgl,
             epochTotalUp,
             epochTotalSame,
@@ -453,15 +464,24 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
 
         emit Vote(
             _voter,
+            currentEpoch,
             DesiredChange(_desiredChange),
+            _eglAmount,
+            _lockupDuration,
+            updatedReleaseDate,
+            _daoRecipient,
+            _daoAmount,
+            _upgradeAddress,
+            now
+        );
+        emit NewVoteTotals(
+            _voter,
+            currentEpoch,
             directionVoteCount[DesiredChange.UP][currentEpoch],
             directionVoteCount[DesiredChange.SAME][currentEpoch],
             directionVoteCount[DesiredChange.DOWN][currentEpoch],
             voterRewardSums[currentEpoch],
             votesTotal[currentEpoch],
-            _daoRecipient,
-            _daoAmount,
-            _upgradeAddress,
             now
         );
     }
@@ -474,6 +494,7 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
         uint16 voterEpoch = voter.voteEpoch;
         uint originalEglAmount = voter.tokensLocked;
         uint8 lockupDuration = voter.lockupDuration;
+        uint releaseDate = voter.releaseDate;
         DesiredChange desiredChange = voter.desiredChange;
         delete voters[msg.sender];
 
@@ -481,7 +502,8 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
         uint voterReward = 0;
         uint rewardEpochs = voterEpoch.add(lockupDuration).min(currentEpoch).min(WEEKS_IN_YEAR);
         for (uint16 i = voterEpoch; i < rewardEpochs; i++) {
-            voterReward = voterReward.add((voteWeight.mul(VOTER_REWARD_MULTIPLIER).mul(WEEKS_IN_YEAR.sub(i))).div(voterRewardSums[i]));
+            voterReward = voterReward.add((voteWeight.div(VOTER_REWARD_MULTIPLIER).mul(WEEKS_IN_YEAR.sub(i))).div(voterRewardSums[i]));
+            emit VoterRewardDebug(msg.sender, voterReward, voteWeight, VOTER_REWARD_MULTIPLIER, WEEKS_IN_YEAR.sub(i), voterRewardSums[i]);
         }
 
         _removeVote(desiredChange, lockupDuration, originalEglAmount, voteWeight, voterEpoch);
@@ -489,7 +511,9 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
 
         emit Withdraw(
             msg.sender,
+            currentEpoch,
             originalEglAmount,
+            releaseDate,
             voterReward,
             desiredChange,
             directionVoteCount[DesiredChange.UP][currentEpoch],
@@ -542,12 +566,13 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
      * @dev Seed initial accounts with tokens
      */
     function _seedInitialAccounts(address[] memory _seedAccounts) private {
-        uint individualSeedAmount = INITIAL_SEED_AMOUNT.div(_seedAccounts.length);
+        uint seedAmountPerAccount = INITIAL_SEED_AMOUNT.div(_seedAccounts.length);
         for (uint8 i = 0; i < _seedAccounts.length; i++) {
+            emit SeedAccountsFunded(_seedAccounts[i], INITIAL_SEED_AMOUNT, seedAmountPerAccount, now);
             _internalVote(
                 _seedAccounts[i],
                 uint8(DesiredChange.SAME),
-                individualSeedAmount,
+                seedAmountPerAccount,
                 8,
                 address(0), 0, address(0),
                 currentEpochStartDate.add(SECONDS_IN_YEAR)

@@ -121,14 +121,20 @@ module.exports = async function (done) {
   );
   // console.log("Votes down expected 150, Actual:", web3.utils.fromWei((await eagle.directionVoteCount(2, 1)).toString()));
 
-  // let eagle = await EglContract.deployed();
-  // eagle.tallyVotes();
-  // eagle.reVote(0, web3.utils.toWei("100"), 8, "0x0000000000000000000000000000000000000000", 0, "0x0000000000000000000000000000000000000000", {from: accounts[5]}); // Should fail
-  // eagle.reVote(0, web3.utils.toWei("5"), 2, "0x0000000000000000000000000000000000000000", 0, "0x0000000000000000000000000000000000000000", {from: accounts[2]});
-  // (await eagle.voters(accounts[2]))[2].toString()
+    // let eagle = await EglContract.deployed();
+    // let token = await EglToken.deployed();
+    // eagle.tallyVotes();
+    // eagle.reVote(0, web3.utils.toWei("100"), 8, "0x0000000000000000000000000000000000000000", 0, "0x0000000000000000000000000000000000000000", {from: accounts[5]}); // Should fail
+    // eagle.reVote(0, web3.utils.toWei("5"), 2, "0x0000000000000000000000000000000000000000", 0, "0x0000000000000000000000000000000000000000", {from: accounts[2]});
+    // eagle.reVote(0, 0, 2, "0x0000000000000000000000000000000000000000", 0, "0x0000000000000000000000000000000000000000", {from: accounts[2]});
+    // eagle.vote(0, web3.utils.toWei("10000"), 2, "0x0000000000000000000000000000000000000000", 0, "0x0000000000000000000000000000000000000000", {from: accounts[4]});
+    // eagle.withdraw({from: accounts[4]});
+    // eagle.reVote(0, 0, 8, "0x0000000000000000000000000000000000000000", 0, "0x0000000000000000000000000000000000000000", {from: accounts[2]});
+    // (await eagle.voters(accounts[2]))[2].toString()
 
-  // let eagle = await EglContract.deployed();
-  // console.log((await eagle.desiredEgl()).toString());
+    // token.increaseAllowance(eagle.address, web3.utils.toWei("10000000"), {from: accounts[4]})
+    // let eagle = await EglContract.deployed();
+    // console.log((await eagle.desiredEgl()).toString());
 
   // call this to signal truffle that your script is done
   done();

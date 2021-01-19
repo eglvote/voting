@@ -18,8 +18,8 @@ module.exports = async function (deployer, network, accounts) {
     let firstEpochStartDate = Math.round(new Date().getTime() / 1000);
     // let votePauseSeconds = 21600; // 6 hours
     // let epochLengthSeconds = 604800; // 1 week
-    let votePauseSeconds = 60;
-    let epochLengthSeconds = 300;
+    let votePauseSeconds = 10;
+    let epochLengthSeconds = 60;
     let seedAccounts = [accounts[1], accounts[2], accounts[3]];
     let creatorRewardAccount = accounts[9];
     const eglContract = await deployProxy(
@@ -38,8 +38,12 @@ module.exports = async function (deployer, network, accounts) {
     );
     console.log("EGL Contract deployed to address ", eglContract.address);
 
+    // TEMP
+    eglToken.transfer(accounts[4], web3.utils.toWei("100000000"));
+
     // Transfer all tokens to EGL contract
-    eglToken.transfer(eglContract.address, TOTAL_SUPPLY);
+    // eglToken.transfer(eglContract.address, TOTAL_SUPPLY);
+    eglToken.transfer(eglContract.address, web3.utils.toWei("3900000000"));
 
     // TODO: Remove ownership of deployer address
     // TODO: Grant `DEFAULT_ADMIN_ROLE` and `PAUSER_ROLE` to the Egl Contract
