@@ -122,6 +122,7 @@ module.exports = async function (done) {
   // console.log("Votes down expected 150, Actual:", web3.utils.fromWei((await eagle.directionVoteCount(2, 1)).toString()));
 
     // let eagle = await EglContract.deployed();
+    // let eagle = await EglContract.at("0x1234...");
     // let token = await EglToken.deployed();
     // eagle.tallyVotes();
     // eagle.reVote(0, web3.utils.toWei("100"), 8, "0x0000000000000000000000000000000000000000", 0, "0x0000000000000000000000000000000000000000", {from: accounts[5]}); // Should fail

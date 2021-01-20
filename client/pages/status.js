@@ -65,7 +65,7 @@ class EglContractStatus extends React.Component {
     const currentVotesDown = await eglContract.methods.directionVoteCount(2, 0).call()
     const currentVotesTotal = await eglContract.methods.votesTotal(0).call()
 
-    const timeToNextEpoch = (currentEpochStartDate.unix() + 60) - moment().unix()
+    const timeToNextEpoch = (currentEpochStartDate.unix() + 3600) - moment().unix()
 
     const voterRewardsSums = []
     for (let i = 0; i <= currentEpoch; i++){

@@ -7,8 +7,8 @@ module.exports = async function (deployer, network, accounts) {
     const eglToken = await deployProxy(
         EglToken,
         [
-            "EthereumGasLimit",
-            "EGL",
+            "TestToken",
+            "TTK",
             TOTAL_SUPPLY
         ],
         {deployer, unsafeAllowCustomTypes: true}
@@ -43,11 +43,8 @@ module.exports = async function (deployer, network, accounts) {
 
     // FOR TESTING ONLY
     // await eglContract.giveTokens("0xb079b14b218013C81Fe17Cb0D4B665E448722dc5"); // Uri
-    // await eglContract.giveTokens("0xC8dbcEFD80aA21f0Edb1B4F2cF16F26022620382"); // Alex
+    // await eglContract.giveTokens("0xC8dbcEFD80aA21f0Edb1B4F2cF16F26022620382"); // Aleks
     // await eglContract.giveTokens("0xB04Ad04A2ac41dBbe8be06EE8938318575bb5E4b"); // Eleni
-
-    // await eglContract.giveTokens(accounts[5]);
-    // console.log("Account should have 50 mil tokens: ", web3.utils.fromWei(await eglToken.balanceOf(accounts[5])));
 
     // TODO: Remove ownership of deployer address
     // TODO: Grant `DEFAULT_ADMIN_ROLE` and `PAUSER_ROLE` to the Egl Contract
