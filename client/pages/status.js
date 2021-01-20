@@ -81,7 +81,7 @@ class EglContractStatus extends React.Component {
     const eventSeedAccountsFunded = await this.getAllEventsForType("SeedAccountsFunded")
     const eventVoteThresholdMet = await this.getAllEventsForType("VoteThresholdMet")
     const eventVoteThresholdFailed = await this.getAllEventsForType("VoteThresholdFailed")
-    const eventVoterRewardDebug = await this.getAllEventsForType("VoterRewardDebug")
+    const eventVoterRewardCalculated = await this.getAllEventsForType("VoterRewardCalculated")
 
     const upcomingVotes = []
     for (let i = 1; i < 8; i++) {
@@ -116,7 +116,7 @@ class EglContractStatus extends React.Component {
       eventVoteThresholdMet: eventVoteThresholdMet,
       eventVoteThresholdFailed: eventVoteThresholdFailed,
       eventNewVoteTotals: eventNewVoteTotals,
-      eventVoterRewardDebug: eventVoterRewardDebug,
+      eventVoterRewardCalculated: eventVoterRewardCalculated,
     })
   }
 
@@ -152,7 +152,7 @@ class EglContractStatus extends React.Component {
       eventVoteThresholdMet =  [],
       eventVoteThresholdFailed = [],
       eventNewVoteTotals = [],
-      eventVoterRewardDebug = [],
+      eventVoterRewardCalculated = [],
 
     } = this.state
 
@@ -213,35 +213,35 @@ class EglContractStatus extends React.Component {
         </div>
         <br />
 
-        <hr />
-        <div>
-          <h3>Seed Accounts:</h3>
-          <table style={tableWidth1000}>
-            <thead style={thead}>
-              <tr>
-                <td>Date</td>
-                <td>Time</td>
-                <td>Seed Account</td>
-                <td>Total Seed Amount</td>
-                <td>Seed Amount per Account</td>
-              </tr>
-            </thead>
-            <tbody style={contractAttributeValue}>
-              {eventSeedAccountsFunded.map((event) => {
-                return (
-                  <tr>
-                    <td>{moment.unix(event.returnValues.date).local().toDate().toLocaleDateString()}</td>
-                    <td>{moment.unix(event.returnValues.date).local().toDate().toLocaleTimeString()}</td>
-                    <td>{event.returnValues.seedAddress}</td>
-                    <td>{this.formatBigNumberAttribute(event.returnValues.initialSeedAmount)}</td>
-                    <td>{this.formatBigNumberAttribute(event.returnValues.seedAmountPerAccount)}</td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-        <br />
+        {/*<hr />*/}
+        {/*<div>*/}
+        {/*  <h3>Seed Accounts:</h3>*/}
+        {/*  <table style={tableWidth1000}>*/}
+        {/*    <thead style={thead}>*/}
+        {/*      <tr>*/}
+        {/*        <td>Date</td>*/}
+        {/*        <td>Time</td>*/}
+        {/*        <td>Seed Account</td>*/}
+        {/*        <td>Total Seed Amount</td>*/}
+        {/*        <td>Seed Amount per Account</td>*/}
+        {/*      </tr>*/}
+        {/*    </thead>*/}
+        {/*    <tbody style={contractAttributeValue}>*/}
+        {/*      {eventSeedAccountsFunded.map((event) => {*/}
+        {/*        return (*/}
+        {/*          <tr>*/}
+        {/*            <td>{moment.unix(event.returnValues.date).local().toDate().toLocaleDateString()}</td>*/}
+        {/*            <td>{moment.unix(event.returnValues.date).local().toDate().toLocaleTimeString()}</td>*/}
+        {/*            <td>{event.returnValues.seedAddress}</td>*/}
+        {/*            <td>{this.formatBigNumberAttribute(event.returnValues.initialSeedAmount)}</td>*/}
+        {/*            <td>{this.formatBigNumberAttribute(event.returnValues.seedAmountPerAccount)}</td>*/}
+        {/*          </tr>*/}
+        {/*        )*/}
+        {/*      })}*/}
+        {/*    </tbody>*/}
+        {/*  </table>*/}
+        {/*</div>*/}
+        {/*<br />*/}
 
         <hr />
         <br />
@@ -256,7 +256,7 @@ class EglContractStatus extends React.Component {
                 <td>Votes Up</td>
                 <td>Votes Same</td>
                 <td>Votes Down</td>
-                <td>Votes Total</td>
+                <td>Total Locked Tokens</td>
               </tr>
             </thead>
             <tbody style={contractAttributeValue}>
@@ -284,7 +284,7 @@ class EglContractStatus extends React.Component {
                 <td>Votes Up</td>
                 <td>Votes Same</td>
                 <td>Votes Down</td>
-                <td>Votes Total</td>
+                <td>Total Locked Tokens</td>
               </tr>
             </thead>
             <tbody style={contractAttributeValue}>
@@ -306,12 +306,12 @@ class EglContractStatus extends React.Component {
 
         <br />
         <div>
-          <b>Voter Reward Sums: </b>
+          <b>Vote Totals Per Epoch: </b>
           <table style={tableWidth50}>
             <thead style={thead}>
               <tr>
                 <td>Epoch</td>
-                <td>Reward Sum</td>
+                <td>Votes Total</td>
               </tr>
             </thead>
             <tbody style={contractAttributeValue}>
@@ -381,8 +381,8 @@ class EglContractStatus extends React.Component {
               <td>Votes Up</td>
               <td>Votes Same</td>
               <td>Votes Down</td>
-              <td>Votes Reward Sum</td>
-              <td>Total Votes (EGL's)</td>
+              <td>Votes Total</td>
+              <td>Total Locked Tokens</td>
             </tr>
             </thead>
             <tbody style={contractAttributeValue}>
@@ -441,27 +441,34 @@ class EglContractStatus extends React.Component {
         <br />
         <div>
           <b>VoterReward Calculation:</b>
+          <div>Voter Rewards = (Vote Weight / Epoch Total Votes) * Reward Multiplier * Reward Weeks</div>
           <table style={tableWidth1000}>
             <thead style={thead}>
             <tr>
+              <td>Date</td>
+              <td>Time</td>
               <td>Voter</td>
-              <td>Voter Reward</td>
+              <td>Cumulative Reward</td>
+              <td>Reward per Epoch</td>
               <td>Vote Weight</td>
+              <td>Epoch Total Votes</td>
               <td>Reward Multiplier</td>
-              <td>WeeksDiv</td>
-              <td>Epoch Voter Rewards Sum</td>
+              <td>Reward Weeks</td>
             </tr>
             </thead>
             <tbody style={contractAttributeValue}>
-              {eventVoterRewardDebug.map((event) => {
+              {eventVoterRewardCalculated.map((event) => {
                   return (
                     <tr>
+                      <td>{moment.unix(event.returnValues.date).local().toDate().toLocaleDateString()}</td>
+                      <td>{moment.unix(event.returnValues.date).local().toDate().toLocaleTimeString()}</td>
                       <td>{event.returnValues.voter}</td>
                       <td>{this.formatBigNumberAttribute(event.returnValues.voterReward)}</td>
+                      <td>{this.formatBigNumberAttribute(event.returnValues.epochVoterReward)}</td>
                       <td>{this.formatBigNumberAttribute(event.returnValues.voteWeight)}</td>
+                      <td>{this.formatBigNumberAttribute(event.returnValues.epochVoterRewardSum)}</td>
                       <td>{this.formatBigNumberAttribute(event.returnValues.rewardMultiplier)}</td>
                       <td>{event.returnValues.weeksDiv}</td>
-                      <td>{this.formatBigNumberAttribute(event.returnValues.epochVoterRewardSum)}</td>
                     </tr>
                   )
               })}

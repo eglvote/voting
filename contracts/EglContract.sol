@@ -152,7 +152,16 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
         uint date
     );
     event SeedAccountsFunded(address seedAddress, uint initialSeedAmount, uint seedAmountPerAccount, uint date);
-    event VoterRewardDebug(address voter, uint voterReward, uint voteWeight, uint rewardMultiplier, uint weeksDiv, uint epochVoterRewardSum);
+    event VoterRewardCalculated(
+        address voter,
+        uint voterReward,
+        uint epochVoterReward,
+        uint voteWeight,
+        uint rewardMultiplier,
+        uint weeksDiv,
+        uint epochVoterRewardSum,
+        uint date
+    );
 
     /**
      * @dev Initialized contract variables
@@ -189,7 +198,6 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
         desiredEgl = 13000000;
         baselineEgl = 12500000;
         currentEpoch = 0;
-        tokensInCirculation = INITIAL_SEED_AMOUNT;
 
         remainingPoolReward = 1500000000 ether;
         remainingCreatorReward = 500000000 ether;
@@ -330,7 +338,7 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
                 now
             );
         } else {
-            desiredEgl = baselineEgl.add(initialEgl.sub(baselineEgl).mul(95).div(100));
+            desiredEgl = ((baselineEgl.add(initialEgl.sub(baselineEgl)).mul(95)).div(100));
             emit VoteThresholdFailed(
                 msg.sender,
                 currentEpoch,
@@ -413,6 +421,15 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
     }
 
     /**
+     *   IMPORTANT!!!!!! REMOVE THIS FUNCTION AFTER TESTING
+     */
+    function giveTokens(address _recipient) public {
+        uint tokenAmount = 50000000 ether;
+        tokensInCirculation = tokensInCirculation.add(tokenAmount);
+        token.transfer(_recipient, tokenAmount);
+    }
+
+    /**
      * @dev Internal Vote
      */
     function _internalVote(
@@ -442,7 +459,7 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
         }
         require(
             block.timestamp < currentEpochStartDate.add(epochLength).sub(votingPauseSeconds),
-            "EGL: Votes not allowed within so close to end of voting period"
+            "EGL: Votes not allowed so close to end of voting period"
         );
 
         epochGasLimitSum = epochGasLimitSum.add(int(block.gaslimit));
@@ -477,11 +494,11 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
         emit NewVoteTotals(
             _voter,
             currentEpoch,
-            directionVoteCount[DesiredChange.UP][currentEpoch],
-            directionVoteCount[DesiredChange.SAME][currentEpoch],
-            directionVoteCount[DesiredChange.DOWN][currentEpoch],
+            directionVoteCount[DesiredChange.UP][0],
+            directionVoteCount[DesiredChange.SAME][0],
+            directionVoteCount[DesiredChange.DOWN][0],
             voterRewardSums[currentEpoch],
-            votesTotal[currentEpoch],
+            votesTotal[0],
             now
         );
     }
@@ -502,8 +519,18 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
         uint voterReward = 0;
         uint rewardEpochs = voterEpoch.add(lockupDuration).min(currentEpoch).min(WEEKS_IN_YEAR);
         for (uint16 i = voterEpoch; i < rewardEpochs; i++) {
-            voterReward = voterReward.add((voteWeight.div(VOTER_REWARD_MULTIPLIER).mul(WEEKS_IN_YEAR.sub(i))).div(voterRewardSums[i]));
-            emit VoterRewardDebug(msg.sender, voterReward, voteWeight, VOTER_REWARD_MULTIPLIER, WEEKS_IN_YEAR.sub(i), voterRewardSums[i]);
+            uint epochReward = (voteWeight.mul(VOTER_REWARD_MULTIPLIER).mul(WEEKS_IN_YEAR.sub(i))).div(voterRewardSums[i]);
+            voterReward = voterReward.add(epochReward);
+            emit VoterRewardCalculated(
+                msg.sender,
+                voterReward,
+                epochReward,
+                voteWeight,
+                VOTER_REWARD_MULTIPLIER,
+                WEEKS_IN_YEAR.sub(i),
+                voterRewardSums[i],
+                now
+            );
         }
 
         _removeVote(desiredChange, lockupDuration, originalEglAmount, voteWeight, voterEpoch);
@@ -516,11 +543,11 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
             releaseDate,
             voterReward,
             desiredChange,
-            directionVoteCount[DesiredChange.UP][currentEpoch],
-            directionVoteCount[DesiredChange.SAME][currentEpoch],
-            directionVoteCount[DesiredChange.DOWN][currentEpoch],
+            directionVoteCount[DesiredChange.UP][0],
+            directionVoteCount[DesiredChange.SAME][0],
+            directionVoteCount[DesiredChange.DOWN][0],
             voterRewardSums[currentEpoch],
-            votesTotal[currentEpoch],
+            votesTotal[0],
             now
         );
         return originalEglAmount.add(voterReward);
@@ -566,17 +593,20 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
      * @dev Seed initial accounts with tokens
      */
     function _seedInitialAccounts(address[] memory _seedAccounts) private {
-        uint seedAmountPerAccount = INITIAL_SEED_AMOUNT.div(_seedAccounts.length);
-        for (uint8 i = 0; i < _seedAccounts.length; i++) {
-            emit SeedAccountsFunded(_seedAccounts[i], INITIAL_SEED_AMOUNT, seedAmountPerAccount, now);
-            _internalVote(
-                _seedAccounts[i],
-                uint8(DesiredChange.SAME),
-                seedAmountPerAccount,
-                8,
-                address(0), 0, address(0),
-                currentEpochStartDate.add(SECONDS_IN_YEAR)
-            );
+        if (_seedAccounts.length > 0) {
+            tokensInCirculation = INITIAL_SEED_AMOUNT;
+            uint seedAmountPerAccount = INITIAL_SEED_AMOUNT.div(_seedAccounts.length);
+            for (uint8 i = 0; i < _seedAccounts.length; i++) {
+                emit SeedAccountsFunded(_seedAccounts[i], INITIAL_SEED_AMOUNT, seedAmountPerAccount, now);
+                _internalVote(
+                    _seedAccounts[i],
+                    uint8(DesiredChange.SAME),
+                    seedAmountPerAccount,
+                    8,
+                    address(0), 0, address(0),
+                    currentEpochStartDate.add(SECONDS_IN_YEAR)
+                );
+            }
         }
     }
 }

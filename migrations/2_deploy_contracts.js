@@ -18,9 +18,9 @@ module.exports = async function (deployer, network, accounts) {
     let firstEpochStartDate = Math.round(new Date().getTime() / 1000);
     // let votePauseSeconds = 21600; // 6 hours
     // let epochLengthSeconds = 604800; // 1 week
-    let votePauseSeconds = 10;
-    let epochLengthSeconds = 60;
-    let seedAccounts = [accounts[1], accounts[2], accounts[3]];
+    let votePauseSeconds = 300;
+    let epochLengthSeconds = 3600;
+    let seedAccounts = [];
     let creatorRewardAccount = accounts[9];
     const eglContract = await deployProxy(
         EglContract,
@@ -38,12 +38,16 @@ module.exports = async function (deployer, network, accounts) {
     );
     console.log("EGL Contract deployed to address ", eglContract.address);
 
-    // TEMP
-    eglToken.transfer(accounts[4], web3.utils.toWei("100000000"));
-
     // Transfer all tokens to EGL contract
-    // eglToken.transfer(eglContract.address, TOTAL_SUPPLY);
-    eglToken.transfer(eglContract.address, web3.utils.toWei("3900000000"));
+    await eglToken.transfer(eglContract.address, TOTAL_SUPPLY);
+
+    // FOR TESTING ONLY
+    // await eglContract.giveTokens("0xb079b14b218013C81Fe17Cb0D4B665E448722dc5"); // Uri
+    // await eglContract.giveTokens("0xC8dbcEFD80aA21f0Edb1B4F2cF16F26022620382"); // Alex
+    // await eglContract.giveTokens("0xB04Ad04A2ac41dBbe8be06EE8938318575bb5E4b"); // Eleni
+
+    // await eglContract.giveTokens(accounts[5]);
+    // console.log("Account should have 50 mil tokens: ", web3.utils.fromWei(await eglToken.balanceOf(accounts[5])));
 
     // TODO: Remove ownership of deployer address
     // TODO: Grant `DEFAULT_ADMIN_ROLE` and `PAUSER_ROLE` to the Egl Contract

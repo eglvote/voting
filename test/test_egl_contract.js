@@ -34,8 +34,8 @@ contract("EglTests", accounts => {
         VOTE_THRESHOLD_FAILED: "VoteThresholdFailed"
     };
 
-    const EPOCH_LENGTH_S = 5;
-    const VOTE_PAUSE_S = 1;
+    const EPOCH_LENGTH_S = 3;
+    const VOTE_PAUSE_S = 0;
     const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
     const SEED_ACCOUNTS = [_seed1, _seed2];
     const CREATOR_REWARDS_ACCOUNT = _creator;
@@ -97,22 +97,36 @@ contract("EglTests", accounts => {
         );
         eglContractStartDate = (await eglContractInstance.currentEpochStartDate()).toString();
 
-        eglTokenInstance.transfer(_voter1, web3.utils.toWei("1000"), {from: _deployer})
-        eglTokenInstance.transfer(_voter2, web3.utils.toWei("1000"), {from: _deployer})
-        eglTokenInstance.transfer(_voter3, web3.utils.toWei("1000"), {from: _deployer})
-        eglTokenInstance.transfer(_voter4NoAllowance, web3.utils.toWei("1000"), {from: _deployer})
-
-        let remainingTokens = web3.utils.fromWei(TOTAL_SUPPLY) -  4000;
-        eglTokenInstance.transfer(eglContractInstance.address, web3.utils.toWei(remainingTokens.toString()), {from: _deployer});
-
-        eglTokenInstance.increaseAllowance(eglContractInstance.address, web3.utils.toWei("1000"), {from: _voter1})
-        eglTokenInstance.increaseAllowance(eglContractInstance.address, web3.utils.toWei("1000"), {from: _voter2})
-        eglTokenInstance.increaseAllowance(eglContractInstance.address, web3.utils.toWei("1000"), {from: _voter3})
+        // eglTokenInstance.transfer(_voter1, web3.utils.toWei("1000"), {from: _deployer})
+        // eglTokenInstance.transfer(_voter2, web3.utils.toWei("1000"), {from: _deployer})
+        // eglTokenInstance.transfer(_voter3, web3.utils.toWei("1000"), {from: _deployer})
+        // eglTokenInstance.transfer(_voter4NoAllowance, web3.utils.toWei("1000"), {from: _deployer})
+        //
+        // let remainingTokens = web3.utils.fromWei(TOTAL_SUPPLY) -  4000;
+        eglTokenInstance.transfer(eglContractInstance.address, TOTAL_SUPPLY, {from: _deployer});
+        eglContractInstance.getTokens({ from: _voter1 })
+        eglTokenInstance.increaseAllowance(eglContractInstance.address, web3.utils.toWei("50000000"), {from: _voter1})
+        //
+        // eglTokenInstance.increaseAllowance(eglContractInstance.address, web3.utils.toWei("1000"), {from: _voter1})
+        // eglTokenInstance.increaseAllowance(eglContractInstance.address, web3.utils.toWei("1000"), {from: _voter2})
+        // eglTokenInstance.increaseAllowance(eglContractInstance.address, web3.utils.toWei("1000"), {from: _voter3})
     });
 
-    describe.skip('Debug', function () {
+    describe('Debug', function () {
         it("", async () => {
-            console.log(web3.utils.fromWei((await eglTokenInstance.balanceOf(eglContractInstance.address)).toString()));
+            console.log("Egl Contract address: ", web3.utils.fromWei((await eglTokenInstance.balanceOf(eglContractInstance.address)).toString()));
+            for (let i = 0; i < 9; i++){
+                await sleep(4);
+                console.log("Epoch Ended, tallying votes: ", i);
+                await eglContractInstance.tallyVotes();
+            }
+
+            await sleep(1);
+            console.log("Current Epoch: ", (await eglContractInstance.currentEpoch()).toString());
+            let [txReceipt] = await castSimpleVotes(
+                [VoteDirection.DOWN, "10", 2, _voter1]
+            );
+
         });
     });
 
@@ -756,7 +770,7 @@ contract("EglTests", accounts => {
         });
     });
 
-    describe('Withdraw', function () {
+    describe.skip('Withdraw', function () {
         it("account can withdraw tokens after lockup period has expired", async () => {
             let initialContractEglBalance = (await eglTokenInstance.balanceOf(eglContractInstance.address)).toString();
             let initialVoterBalance = (await eglTokenInstance.balanceOf(_voter1)).toString();
