@@ -18,8 +18,8 @@ module.exports = async function (deployer, network, accounts) {
     let firstEpochStartDate = Math.round(new Date().getTime() / 1000);
     // let votePauseSeconds = 21600; // 6 hours
     // let epochLengthSeconds = 604800; // 1 week
-    let votePauseSeconds = 300;
-    let epochLengthSeconds = 3600;
+    let votePauseSeconds = 60;
+    let epochLengthSeconds = 300;
     let seedAccounts = [];
     let creatorRewardAccount = accounts[9];
     const eglContract = await deployProxy(
@@ -43,8 +43,17 @@ module.exports = async function (deployer, network, accounts) {
 
     // FOR TESTING ONLY
     // await eglContract.giveTokens("0xb079b14b218013C81Fe17Cb0D4B665E448722dc5"); // Uri
+    // console.log("Token balance for Uri:", (await eglToken.balanceOf("0xb079b14b218013C81Fe17Cb0D4B665E448722dc5")).toString())
+
     // await eglContract.giveTokens("0xC8dbcEFD80aA21f0Edb1B4F2cF16F26022620382"); // Aleks
-    // await eglContract.giveTokens("0xB04Ad04A2ac41dBbe8be06EE8938318575bb5E4b"); // Eleni
+    // console.log("Token balance for Aleks:", (await eglToken.balanceOf("0xC8dbcEFD80aA21f0Edb1B4F2cF16F26022620382")).toString())
+
+    await eglContract.giveTokens("0xB04Ad04A2ac41dBbe8be06EE8938318575bb5E4b"); // Eleni
+    console.log("Token balance for Eleni:", (await eglToken.balanceOf("0xB04Ad04A2ac41dBbe8be06EE8938318575bb5E4b")).toString())
+
+    // await eglContract.giveTokens("0x2C596F42d15848b6dD997B255B9c033Ce7240644"); // Eyal
+    // console.log("Token balance for Eleni:", (await eglToken.balanceOf("0x2C596F42d15848b6dD997B255B9c033Ce7240644")).toString())
+
 
     // TODO: Remove ownership of deployer address
     // TODO: Grant `DEFAULT_ADMIN_ROLE` and `PAUSER_ROLE` to the Egl Contract

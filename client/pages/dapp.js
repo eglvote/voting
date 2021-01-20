@@ -159,18 +159,18 @@ class Dapp extends React.Component {
           <button onClick={this.getEthBalance}>Get ether balance</button>
           <button onClick={this.getEglBalance}>Get EGL balance</button>
           <button onClick={this.getContractData}>Get Locked EGL</button>
-          <button onClick={this.allowance}>increaseAllowance 1 mil</button>
+          <button onClick={this.allowance}>increaseAllowance 50 mil</button>
           <button
             onClick={() => approve(this.props.token, this.state.walletAddress)}
           >
             approve 1 mil
           </button>
 
-          <button
-            onClick={() => mint(this.props.token, this.state.walletAddress)}
-          >
-            mint 1 mil
-          </button>
+          {/*<button*/}
+          {/*  onClick={() => mint(this.props.token, this.state.walletAddress)}*/}
+          {/*>*/}
+          {/*  mint 1 mil*/}
+          {/*</button>*/}
           <button
             onClick={() =>
               withdraw(this.props.contract, this.state.walletAddress)

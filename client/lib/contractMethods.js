@@ -119,7 +119,7 @@ export const increaseAllowance = async (contract, token, walletAddress) => {
   }
 
   const response = await token.methods
-    .increaseAllowance(contract._address, web3.utils.toWei('1000000'))
+    .increaseAllowance(contract._address, web3.utils.toWei('50000000'))
     .send({ from: walletAddress })
 
   return response
