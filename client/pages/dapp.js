@@ -175,7 +175,7 @@ class Dapp extends React.Component {
           <button onClick={this.getEglBalance}>Get EGL balance</button>
           <button onClick={this.getContractData}>Get Locked EGL</button>
           <button onClick={this.getAllowance}>Get Allowance</button>
-          <button onClick={this.allowance}>increaseAllowance 1 mil</button>
+          <button onClick={this.allowance}>increaseAllowance 50 mil</button>
           {IS_DEV && (
             <button
               onClick={() =>
