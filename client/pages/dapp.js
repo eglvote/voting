@@ -38,7 +38,6 @@ class Dapp extends React.Component {
   }
 
   componentDidMount() {
-    const { web3, accounts, contract, token } = this.props
     window.ethereum.on('accountsChanged', (accounts) => {
       this.setState({ walletAddress: accounts[0] })
     })
@@ -230,7 +229,11 @@ class Dapp extends React.Component {
                 <td>
                   <b>EGLs Locked: </b>
                   {voterData && (
-                    <span>{web3.utils.fromWei(voterData.tokensLocked)}</span>
+                    <span>
+                      {parseFloat(
+                        web3.utils.fromWei(voterData.tokensLocked)
+                      ).toLocaleString('en-US', { maximumFractionDigits: 3 })}
+                    </span>
                   )}
                 </td>
               </tr>
