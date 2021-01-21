@@ -1,4 +1,5 @@
 import web3 from 'web3'
+import BN from 'bn.js'
 
 const daoRecipient = '0x0000000000000000000000000000000000000000'
 const daoAmount = 0
@@ -19,7 +20,7 @@ export const vote = async (
     return
   }
 
-  if (weeksLocked < 1 && weeksLocked > 0) weeksLocked = 0
+  // if (weeksLocked < 1 && weeksLocked > 0) weeksLocked = 0
   const response = await contract.methods
     .vote(
       desiredChange, // desired change enum
