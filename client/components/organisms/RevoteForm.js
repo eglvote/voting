@@ -4,6 +4,7 @@ import { Formik, Field, Form, isEmptyArray } from 'formik'
 import Column from '../atoms/Column'
 import Row from '../atoms/Row'
 import { revote } from '../../lib/contractMethods'
+import SectionHeader from '../atoms/SectionHeader'
 
 const FormRow = styled(Row)`
   margin: 1em;
@@ -14,7 +15,7 @@ const FormField = styled(Field)`
 `
 export default ({ contract, token, walletAddress }) => (
   <div>
-    <h3>Revote</h3>
+    <SectionHeader>Revote</SectionHeader>
     <Formik
       initialValues={{
         amount: '0',

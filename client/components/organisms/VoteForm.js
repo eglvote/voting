@@ -4,7 +4,7 @@ import { Formik, Field, Form, isEmptyArray } from 'formik'
 import Column from '../atoms/Column'
 import Row from '../atoms/Row'
 import { vote } from '../../lib/contractMethods'
-
+import SectionHeader from '../atoms/SectionHeader'
 const FormRow = styled(Row)`
   margin: 1em;
   width: 9em;
@@ -12,15 +12,9 @@ const FormRow = styled(Row)`
 const FormField = styled(Field)`
   width: 8em;
 `
-const FormColumn = styled(Column)`
-  border: 1px solid black;
-`
-const FormSelect = styled.select`
-  width: 8.6em;
-`
 export default ({ contract, token, walletAddress }) => (
   <div>
-    <h3>Vote</h3>
+    <SectionHeader>Vote</SectionHeader>
     <Formik
       initialValues={{
         amount: '0',
@@ -29,7 +23,7 @@ export default ({ contract, token, walletAddress }) => (
       }}
       onSubmit={async (values) => {
         if ((contract, token, walletAddress)) {
-          vote(
+          const response = await vote(
             contract,
             token,
             walletAddress,
@@ -37,6 +31,7 @@ export default ({ contract, token, walletAddress }) => (
             values.desiredChange,
             values.weeksLocked
           )
+          console.log('vote response', response)
         } else {
           alert('Connect to Metamask!')
         }

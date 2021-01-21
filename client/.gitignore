@@ -5,4 +5,8 @@ yarn.lock
 src/contracts
 yarn.lock
 .DS_Store
+<<<<<<< HEAD
 out
+=======
+out
+>>>>>>> efebe4a464c7704ad10c3a9af47b51c328fb714f

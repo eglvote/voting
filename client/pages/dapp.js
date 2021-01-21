@@ -8,46 +8,39 @@ import {
   getVoters,
   tallyVotes,
   increaseAllowance,
+  allowance,
   withdraw,
   approve,
 } from '../lib/contractMethods'
 import Row from '../components/atoms/Row'
-import Line from '../components/atoms/Line'
 import styled from 'styled-components'
 import connectToWeb3 from '../lib/connectToWeb3'
 import web3 from 'web3'
+import SectionHeader from '../components/atoms/SectionHeader'
+
+const ALERT_MESSAGE = 'Please connect to Metamask'
+const IS_DEV = false
 
 const Body = styled.div`
   margin-top: 2em;
   margin-left: 2em;
 `
+
 class Dapp extends React.Component {
   state = {
     ethBalance: null,
     eglBalance: null,
     voterData: null,
     votesTallied: null,
+    allowance: null,
     walletAddress: this.props.accounts ? this.props.accounts[0] : null,
   }
 
   componentDidMount() {
+    const { web3, accounts, contract, token } = this.props
     window.ethereum.on('accountsChanged', (accounts) => {
       this.setState({ walletAddress: accounts[0] })
     })
-  }
-
-  storeValue = async () => {
-    const { accounts, contract } = this.props
-    await contract.methods.set(5).send({ from: this.state.walletAddress })
-    alert('Stored 5 into account')
-  }
-
-  getValue = async () => {
-    const { contract } = this.props
-    const response = await contract.methods
-      .get()
-      .call({ from: this.state.walletAddress })
-    this.setState({ balance: response })
   }
 
   getEthBalance = async () => {
@@ -56,7 +49,7 @@ class Dapp extends React.Component {
       const balanceInWei = await web3.eth.getBalance(this.state.walletAddress)
       this.setState({ ethBalance: web3.utils.fromWei(balanceInWei) })
     } else {
-      alert('Connect to Metamask!')
+      alert(ALERT_MESSAGE)
     }
   }
 
@@ -68,31 +61,59 @@ class Dapp extends React.Component {
         .call()
       this.setState({ eglBalance: web3.utils.fromWei(response) })
     } else {
-      alert('Connect to Metamask!')
+      alert(ALERT_MESSAGE)
     }
   }
 
   getContractData = async () => {
     const { contract } = this.props
-    const response = await getVoters(contract, this.state.walletAddress)
 
-    this.setState({ voterData: response })
+    if (this.state.walletAddress) {
+      const response = await getVoters(contract, this.state.walletAddress)
+      this.setState({ voterData: response })
+    } else {
+      alert(ALERT_MESSAGE)
+    }
   }
 
   allowance = () => {
     const { contract, token } = this.props
-
-    increaseAllowance(contract, token, this.state.walletAddress)
+    if (this.state.walletAddress) {
+      increaseAllowance(contract, token, this.state.walletAddress)
+    } else {
+      alert(ALERT_MESSAGE)
+    }
   }
 
   tally = async () => {
     const { contract } = this.props
 
     if (this.state.walletAddress) {
-      const response = await tallyVotes(contract, this.state.walletAddress)
-      this.setState({ votesTallied: response.events.VotesTallied.returnValues })
+      const transactionReceipt = await tallyVotes(
+        contract,
+        this.state.walletAddress
+      )
+      console.log('ggga', transactionReceipt)
+      this.setState({
+        votesTallied: transactionReceipt.events.VotesTallied.returnValues,
+      })
     } else {
-      alert('Connect to Metamask!')
+      alert(ALERT_MESSAGE)
+    }
+  }
+
+  getAllowance = async () => {
+    const { contract, token } = this.props
+
+    if (this.state.walletAddress) {
+      const response = await allowance(
+        contract,
+        token,
+        this.state.walletAddress
+      )
+      this.setState({ allowance: response })
+    } else {
+      alert(ALERT_MESSAGE)
     }
   }
 
@@ -102,9 +123,9 @@ class Dapp extends React.Component {
 
   render() {
     const {
-      ethBalance = 'N/A',
-      eglBalance = 'N/A',
-      voterData = 'N/A',
+      ethBalance = null,
+      eglBalance = null,
+      voterData = null,
       votesTallied = null,
     } = this.state
 
@@ -128,17 +149,12 @@ class Dapp extends React.Component {
             <a>Status</a>
           </Link>
         </div>
-        <Line />
         <div>
-          <h3>Contract</h3>
+          <SectionHeader>Contract</SectionHeader>
           <button onClick={this.tally}>Tally Votes</button>
           <Row style={{ 'margin-top': '1em' }}>
             Address: {this.props.token._address}
           </Row>
-          {/* <Row>
-            Total EGLs Locked:{' '}
-            {voterData && web3.utils.fromWei(voterData.tokensLocked)}
-          </Row> */}
           <Row>Epoch: {votesTallied && votesTallied.currentEpoch}</Row>
           <Row>
             Up Votes:{' '}
@@ -153,24 +169,30 @@ class Dapp extends React.Component {
             {votesTallied && web3.utils.fromWei(votesTallied.totalVotesDown)}
           </Row>
         </div>
-        <Line />
         <div>
-          <h3>Wallet</h3>
+          <SectionHeader>Wallet</SectionHeader>
           <button onClick={this.getEthBalance}>Get ether balance</button>
           <button onClick={this.getEglBalance}>Get EGL balance</button>
           <button onClick={this.getContractData}>Get Locked EGL</button>
-          <button onClick={this.allowance}>increaseAllowance 50 mil</button>
-          <button
-            onClick={() => approve(this.props.token, this.state.walletAddress)}
-          >
-            approve 1 mil
-          </button>
+          <button onClick={this.getAllowance}>Get Allowance</button>
+          <button onClick={this.allowance}>increaseAllowance 1 mil</button>
+          {IS_DEV && (
+            <button
+              onClick={() =>
+                approve(this.props.token, this.state.walletAddress)
+              }
+            >
+              approve 1 mil
+            </button>
+          )}
 
-          {/*<button*/}
-          {/*  onClick={() => mint(this.props.token, this.state.walletAddress)}*/}
-          {/*>*/}
-          {/*  mint 1 mil*/}
-          {/*</button>*/}
+          {IS_DEV && (
+            <button
+              onClick={() => mint(this.props.token, this.state.walletAddress)}
+            >
+              mint 1 mil
+            </button>
+          )}
           <button
             onClick={() =>
               withdraw(this.props.contract, this.state.walletAddress)
@@ -178,23 +200,58 @@ class Dapp extends React.Component {
           >
             withdraw
           </button>
-          <Row style={{ 'margin-top': '1em' }}>
-            Address: {this.state.walletAddress}
-          </Row>
-          <Row>Ether Balance: {ethBalance}</Row>
-          <Row>EGL Balance: {eglBalance}</Row>
-          <Row>
-            EGLs Locked:{' '}
-            {voterData && web3.utils.fromWei(voterData.tokensLocked)}
-          </Row>
+          <div>
+            <table style={{ 'margin-top': '1em' }}>
+              <tr>
+                <td>
+                  <b>Address: </b>
+                  <span>{this.state.walletAddress}</span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <b>Ether Balance: </b>
+                  <span>{ethBalance}</span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <b>EGL Balance: </b>
+                  <span>
+                    {eglBalance &&
+                      parseFloat(eglBalance).toLocaleString('en-US', {
+                        maximumFractionDigits: 3,
+                      })}
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <b>EGLs Locked: </b>
+                  <span>
+                    {voterData && web3.utils.fromWei(voterData.tokensLocked)}
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <b>Allowance: </b>
+                  <span>
+                    {this.state.allowance &&
+                      parseFloat(
+                        web3.utils.fromWei(String(this.state.allowance))
+                      ).toLocaleString('en-US', { maximumFractionDigits: 3 })}
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </div>
         </div>
-        <Line />
         <VoteForm
           contract={this.props.contract}
           token={this.props.token}
           walletAddress={this.state.walletAddress}
         />
-        <Line />
         <RevoteForm
           contract={this.props.contract}
           token={this.props.token}

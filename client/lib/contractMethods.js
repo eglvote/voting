@@ -15,7 +15,7 @@ export const vote = async (
   if (
     (!contract, !token, !walletAddress, !amount, !desiredChange, !weeksLocked)
   ) {
-    alert('Connect to Metamask!')
+    alert('Vote called with invalid parameters')
     return
   }
 
@@ -31,7 +31,7 @@ export const vote = async (
     )
     .send({ from: walletAddress })
     .then((result, e) => {
-      console.log(result, e)
+      console.log('vote', result, e)
       if (!e) {
         console.log('Waiting for tx to be mined...', result)
       } else {
@@ -53,7 +53,7 @@ export const revote = async (
   if (
     (!contract, !token, !walletAddress, !amount, !desiredChange, !weeksLocked)
   ) {
-    alert('Connect to Metamask!')
+    alert('revote called with invalid parameters')
     return
   }
 
@@ -83,7 +83,7 @@ export const revote = async (
 
 export const getVoters = async (contract, walletAddress) => {
   if ((!contract, !walletAddress)) {
-    alert('Connect to Metamask!')
+    alert('getVoters called with invalid parameters')
     return
   }
 
@@ -101,7 +101,7 @@ export const getVoters = async (contract, walletAddress) => {
 
 export const mint = async (contract, walletAddress) => {
   if ((!contract, !walletAddress)) {
-    alert('Connect to Metamask!')
+    alert('mint called with invalid parameters')
     return
   }
 
@@ -114,7 +114,7 @@ export const mint = async (contract, walletAddress) => {
 
 export const increaseAllowance = async (contract, token, walletAddress) => {
   if ((!contract, !walletAddress)) {
-    alert('Connect to Metamask!')
+    alert('increaseAllowance called with invalid parameters')
     return
   }
 
@@ -127,7 +127,7 @@ export const increaseAllowance = async (contract, token, walletAddress) => {
 
 export const tallyVotes = async (contract, walletAddress) => {
   if ((!contract, !walletAddress)) {
-    alert('Connect to Metamask!')
+    alert('tallyVotes called with invalid parameters')
     return
   }
 
@@ -144,7 +144,7 @@ export const tallyVotes = async (contract, walletAddress) => {
 
 export const withdraw = async (contract, walletAddress) => {
   if ((!contract, !walletAddress)) {
-    alert('Connect to Metamask!')
+    alert('withdraw called with invalid parameters')
     return
   }
 
@@ -160,7 +160,7 @@ export const withdraw = async (contract, walletAddress) => {
 
 export const approve = async (token, walletAddress) => {
   if ((!token, !walletAddress)) {
-    alert('Connect to Metamask!')
+    alert('approve called with invalid parameters')
     return
   }
 
@@ -173,13 +173,26 @@ export const approve = async (token, walletAddress) => {
 
 export const initialize = async (contract, walletAddress) => {
   if ((!contract, !walletAddress)) {
-    alert('Connect to Metamask!')
+    alert('initialize called with invalid parameters')
     return
   }
 
   const response = await contract.methods
     .initialize(contract._address, web3.utils.toWei('1000000'))
     .send({ from: walletAddress })
+
+  return response
+}
+
+export const allowance = async (contract, token, walletAddress) => {
+  if ((!contract, !token, !walletAddress)) {
+    alert('allowance called with invalid parameters')
+    return
+  }
+
+  const response = await token.methods
+    .allowance(walletAddress, contract._address)
+    .call()
 
   return response
 }
