@@ -14,13 +14,18 @@ export const vote = async (
   weeksLocked
 ) => {
   if (
-    (!contract, !token, !walletAddress, !amount, !desiredChange, !weeksLocked)
+    !contract ||
+    !token ||
+    !walletAddress ||
+    !amount ||
+    !desiredChange ||
+    !weeksLocked ||
+    weeksLocked < 1
   ) {
     alert('Vote called with invalid parameters')
     return
   }
 
-  // if (weeksLocked < 1 && weeksLocked > 0) weeksLocked = 0
   const response = await contract.methods
     .vote(
       desiredChange, // desired change enum
@@ -52,13 +57,18 @@ export const revote = async (
   weeksLocked
 ) => {
   if (
-    (!contract, !token, !walletAddress, !amount, !desiredChange, !weeksLocked)
+    !contract ||
+    !token ||
+    !walletAddress ||
+    !amount ||
+    !desiredChange ||
+    !weeksLocked ||
+    weeksLocked < 1
   ) {
     alert('revote called with invalid parameters')
     return
   }
 
-  if (weeksLocked < 1 && weeksLocked > 0) weeksLocked = 0
   const response = await contract.methods
     .reVote(
       desiredChange,
@@ -83,7 +93,7 @@ export const revote = async (
 }
 
 export const getVoters = async (contract, walletAddress) => {
-  if ((!contract, !walletAddress)) {
+  if (!contract || !walletAddress) {
     alert('getVoters called with invalid parameters')
     return
   }
@@ -101,7 +111,7 @@ export const getVoters = async (contract, walletAddress) => {
 }
 
 export const mint = async (contract, walletAddress) => {
-  if ((!contract, !walletAddress)) {
+  if (!contract || !walletAddress) {
     alert('mint called with invalid parameters')
     return
   }
@@ -114,7 +124,7 @@ export const mint = async (contract, walletAddress) => {
 }
 
 export const increaseAllowance = async (contract, token, walletAddress) => {
-  if ((!contract, !walletAddress)) {
+  if (!contract || !walletAddress) {
     alert('increaseAllowance called with invalid parameters')
     return
   }
@@ -127,7 +137,7 @@ export const increaseAllowance = async (contract, token, walletAddress) => {
 }
 
 export const tallyVotes = async (contract, walletAddress) => {
-  if ((!contract, !walletAddress)) {
+  if (!contract || !walletAddress) {
     alert('tallyVotes called with invalid parameters')
     return
   }
@@ -144,7 +154,7 @@ export const tallyVotes = async (contract, walletAddress) => {
 }
 
 export const withdraw = async (contract, walletAddress) => {
-  if ((!contract, !walletAddress)) {
+  if (!contract || !walletAddress) {
     alert('withdraw called with invalid parameters')
     return
   }
@@ -160,7 +170,7 @@ export const withdraw = async (contract, walletAddress) => {
 }
 
 export const approve = async (token, walletAddress) => {
-  if ((!token, !walletAddress)) {
+  if (!token || !walletAddress) {
     alert('approve called with invalid parameters')
     return
   }
@@ -173,7 +183,7 @@ export const approve = async (token, walletAddress) => {
 }
 
 export const initialize = async (contract, walletAddress) => {
-  if ((!contract, !walletAddress)) {
+  if (!contract || !walletAddress) {
     alert('initialize called with invalid parameters')
     return
   }
@@ -186,7 +196,7 @@ export const initialize = async (contract, walletAddress) => {
 }
 
 export const allowance = async (contract, token, walletAddress) => {
-  if ((!contract, !token, !walletAddress)) {
+  if (!contract || !token || !walletAddress) {
     alert('allowance called with invalid parameters')
     return
   }

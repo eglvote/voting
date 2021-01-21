@@ -155,7 +155,9 @@ class Dapp extends React.Component {
           <Row style={{ 'margin-top': '1em' }}>
             Address: {this.props.token._address}
           </Row>
-          <Row>Epoch: {votesTallied && votesTallied.currentEpoch}</Row>
+          <Row>
+            Epoch: {votesTallied && Number(votesTallied.currentEpoch) + 1}
+          </Row>
           <Row>
             Up Votes:{' '}
             {votesTallied && web3.utils.fromWei(votesTallied.totalVotesUp)}
@@ -242,9 +244,11 @@ class Dapp extends React.Component {
                   <b>Release Date: </b>
                   {voterData && (
                     <span>
-                      {m
-                        .unix(voterData.releaseDate)
-                        .format('dddd, MMMM Do, YYYY h:mm:ss A')}
+                      {voterData.releaseDate !== '0'
+                        ? m
+                            .unix(voterData.releaseDate)
+                            .format('dddd, MMMM Do, YYYY h:mm:ss A')
+                        : 'N/A'}
                     </span>
                   )}
                 </td>
