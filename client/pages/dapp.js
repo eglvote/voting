@@ -17,16 +17,14 @@ import styled from 'styled-components'
 import connectToWeb3 from '../lib/connectToWeb3'
 import web3 from 'web3'
 import SectionHeader from '../components/atoms/SectionHeader'
-<<<<<<< HEAD
 import m from 'moment'
 
 const ALERT_MESSAGE = 'Please connect to Metamask'
 const IS_DEV = true
-=======
+import m from 'moment'
 
 const ALERT_MESSAGE = 'Please connect to Metamask'
-const IS_DEV = false
->>>>>>> abc0192032f4b425e3aa80f2f58b976b931f0e82
+const IS_DEV = true
 
 const Body = styled.div`
   margin-top: 2em;
