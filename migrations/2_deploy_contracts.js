@@ -48,8 +48,11 @@ module.exports = async function (deployer, network, accounts) {
     // await eglContract.giveTokens("0xC8dbcEFD80aA21f0Edb1B4F2cF16F26022620382"); // Aleks
     // console.log("Token balance for Aleks:", (await eglToken.balanceOf("0xC8dbcEFD80aA21f0Edb1B4F2cF16F26022620382")).toString())
 
-    await eglContract.giveTokens("0xB04Ad04A2ac41dBbe8be06EE8938318575bb5E4b"); // Eleni
-    console.log("Token balance for Eleni:", (await eglToken.balanceOf("0xB04Ad04A2ac41dBbe8be06EE8938318575bb5E4b")).toString())
+    // await eglContract.giveTokens("0xB04Ad04A2ac41dBbe8be06EE8938318575bb5E4b"); // Eleni
+    // console.log("Token balance for Eleni:", (await eglToken.balanceOf("0xB04Ad04A2ac41dBbe8be06EE8938318575bb5E4b")).toString())
+
+    await eglContract.giveTokens(accounts[1]); // Ganache
+    console.log("Token balance for account 1:", (await eglToken.balanceOf(accounts[1])).toString())
 
     // await eglContract.giveTokens("0x2C596F42d15848b6dD997B255B9c033Ce7240644"); // Eyal
     // console.log("Token balance for Eleni:", (await eglToken.balanceOf("0x2C596F42d15848b6dD997B255B9c033Ce7240644")).toString())

@@ -38,7 +38,12 @@ class EglContractStatus extends React.Component {
 
   formatBigNumberAttribute = (attribute) => {
     const { web3 } = this.props
-    return parseFloat(web3.utils.fromWei(attribute)).toFixed(3)
+    return (
+      parseFloat(web3.utils.fromWei(attribute)).toLocaleString(
+      "en-US",
+      { minimumFractionDigits: 3, maximumFractionDigits: 3 }
+      )
+    )
   }
 
   getAllEventsForType = async (eventName) => {
@@ -65,7 +70,14 @@ class EglContractStatus extends React.Component {
     const currentVotesDown = await eglContract.methods.directionVoteCount(2, 0).call()
     const currentVotesTotal = await eglContract.methods.votesTotal(0).call()
 
-    const timeToNextEpoch = (currentEpochStartDate.unix() + 300) - moment().unix()
+    const epochEndDate = moment.unix((parseInt(await eglContract.methods.currentEpochStartDate().call()) + 300));
+    const countdown = moment.duration(epochEndDate - moment());
+
+    const timeToNextEpoch =
+      countdown.days() + " days " +
+      countdown.hours()  + " hours " +
+      countdown.minutes() + " minutes " +
+      countdown.seconds() + " seconds"
 
     const voterRewardsSums = []
     for (let i = 0; i <= currentEpoch; i++){
@@ -204,7 +216,7 @@ class EglContractStatus extends React.Component {
             </tr>
             <tr>
               <td>
-                <b>Time to Next Epoch :</b> <span style={contractAttributeValue}>{timeToNextEpoch} seconds</span>
+                <b>Time to Next Epoch :</b> <span style={contractAttributeValue}>{timeToNextEpoch}</span>
               </td>
               <td></td>
             </tr>
@@ -448,6 +460,7 @@ class EglContractStatus extends React.Component {
               <td>Date</td>
               <td>Time</td>
               <td>Voter</td>
+              <td>Current Epoch</td>
               <td>Cumulative Reward</td>
               <td>Reward per Epoch</td>
               <td>Vote Weight</td>
@@ -463,6 +476,7 @@ class EglContractStatus extends React.Component {
                       <td>{moment.unix(event.returnValues.date).local().toDate().toLocaleDateString()}</td>
                       <td>{moment.unix(event.returnValues.date).local().toDate().toLocaleTimeString()}</td>
                       <td>{event.returnValues.voter}</td>
+                      <td>{event.returnValues.currentEpoch}</td>
                       <td>{this.formatBigNumberAttribute(event.returnValues.voterReward)}</td>
                       <td>{this.formatBigNumberAttribute(event.returnValues.epochVoterReward)}</td>
                       <td>{this.formatBigNumberAttribute(event.returnValues.voteWeight)}</td>

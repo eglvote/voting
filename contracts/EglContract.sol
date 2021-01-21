@@ -22,7 +22,7 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
     int constant GAS_LIMIT_CHANGE = 1000000;
     uint8 constant WEEKS_IN_YEAR = 52;
     uint8 constant CREATOR_REWARD_FIRST_EPOCH = 9;
-    uint constant SECONDS_IN_YEAR = 31536000;
+    uint constant SEED_LOCKUP_PERIOD = 31536000;
     uint constant DECIMAL_PRECISION = 10**18;
     uint constant DAO_RECIPIENT_MIN_AMOUNT = 1 ether;
     uint constant DAO_RECIPIENT_MAX_AMOUNT = 5000000 ether;
@@ -154,6 +154,7 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
     event SeedAccountsFunded(address seedAddress, uint initialSeedAmount, uint seedAmountPerAccount, uint date);
     event VoterRewardCalculated(
         address voter,
+        uint16 currentEpoch,
         uint voterReward,
         uint epochVoterReward,
         uint voteWeight,
@@ -458,6 +459,10 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
             tallyVotes();
         }
         require(
+            block.timestamp < currentEpochStartDate.add(epochLength),
+            "EGL: Too far away from current period, call tally votes to catch up"
+        );
+        require(
             block.timestamp < currentEpochStartDate.add(epochLength).sub(votingPauseSeconds),
             "EGL: Votes not allowed so close to end of voting period"
         );
@@ -523,6 +528,7 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
             voterReward = voterReward.add(epochReward);
             emit VoterRewardCalculated(
                 msg.sender,
+                currentEpoch,
                 voterReward,
                 epochReward,
                 voteWeight,
@@ -604,7 +610,7 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
                     seedAmountPerAccount,
                     8,
                     address(0), 0, address(0),
-                    currentEpochStartDate.add(SECONDS_IN_YEAR)
+                    currentEpochStartDate.add(SEED_LOCKUP_PERIOD)
                 );
             }
         }
