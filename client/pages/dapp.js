@@ -21,10 +21,6 @@ import m from 'moment'
 
 const ALERT_MESSAGE = 'Please connect to Metamask'
 const IS_DEV = true
-import m from 'moment'
-
-const ALERT_MESSAGE = 'Please connect to Metamask'
-const IS_DEV = true
 
 const Body = styled.div`
   margin-top: 2em;

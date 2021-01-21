@@ -42,7 +42,7 @@ export default ({ contract, token, walletAddress }) => (
           <label htmlFor="amount">Amount</label>
         </FormRow>
         <FormRow>
-          <FormField id="amount" name="amount" placeholder="0" />
+          <FormField type="number" id="amount" name="amount" placeholder="0" />
         </FormRow>
         <Column role="group">
           <label>Desired Change</label>
@@ -64,7 +64,12 @@ export default ({ contract, token, walletAddress }) => (
           <label htmlFor="weeksLocked">Weeks Locked</label>
         </FormRow>
         <FormRow>
-          <FormField id="weeksLocked" name="weeksLocked" placeholder="0" />
+          <FormField
+            type="number"
+            id="weeksLocked"
+            name="weeksLocked"
+            placeholder="0"
+          />
         </FormRow>
         <button type="submit">Submit</button>
       </Form>
