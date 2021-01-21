@@ -17,9 +17,16 @@ import styled from 'styled-components'
 import connectToWeb3 from '../lib/connectToWeb3'
 import web3 from 'web3'
 import SectionHeader from '../components/atoms/SectionHeader'
+<<<<<<< HEAD
+import m from 'moment'
+
+const ALERT_MESSAGE = 'Please connect to Metamask'
+const IS_DEV = true
+=======
 
 const ALERT_MESSAGE = 'Please connect to Metamask'
 const IS_DEV = false
+>>>>>>> abc0192032f4b425e3aa80f2f58b976b931f0e82
 
 const Body = styled.div`
   margin-top: 2em;
@@ -228,9 +235,21 @@ class Dapp extends React.Component {
               <tr>
                 <td>
                   <b>EGLs Locked: </b>
-                  <span>
-                    {voterData && web3.utils.fromWei(voterData.tokensLocked)}
-                  </span>
+                  {voterData && (
+                    <span>{web3.utils.fromWei(voterData.tokensLocked)}</span>
+                  )}
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <b>Release Date: </b>
+                  {voterData && (
+                    <span>
+                      {m
+                        .unix(voterData.releaseDate)
+                        .format('dddd, MMMM Do, YYYY h:mm:ss A')}
+                    </span>
+                  )}
                 </td>
               </tr>
               <tr>
