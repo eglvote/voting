@@ -30,14 +30,9 @@ class EglContractStatus extends React.Component {
     voterData: null,
   }
 
-  desiredChangeMap = {
-    0: 'Up',
-    1: 'Same',
-    2: 'Down',
-  }
-
   formatBigNumberAttribute = (attribute) => {
     const { web3 } = this.props
+    if (attribute === null || attribute === undefined) return attribute;
     return parseFloat(web3.utils.fromWei(attribute)).toLocaleString('en-US', {
       minimumFractionDigits: 3,
       maximumFractionDigits: 3,
@@ -72,16 +67,9 @@ class EglContractStatus extends React.Component {
     const currentEpochStartDate = moment.unix(
       await eglContract.methods.currentEpochStartDate().call()
     )
+    const desiredEgl = await eglContract.methods.desiredEgl().call()
 
-    const currentVotesUp = await eglContract.methods
-      .directionVoteCount(0, 0)
-      .call()
-    const currentVotesSame = await eglContract.methods
-      .directionVoteCount(1, 0)
-      .call()
-    const currentVotesDown = await eglContract.methods
-      .directionVoteCount(2, 0)
-      .call()
+    const currentVoteWeightSum = await eglContract.methods.voteWeightsSum(0).call()
     const currentVotesTotal = await eglContract.methods.votesTotal(0).call()
 
     const epochEndDate = moment.unix(
@@ -128,9 +116,7 @@ class EglContractStatus extends React.Component {
     for (let i = 1; i < 8; i++) {
       upcomingVotes.push({
         index: i,
-        votesUp: await eglContract.methods.directionVoteCount(0, i).call(),
-        votesSame: await eglContract.methods.directionVoteCount(1, i).call(),
-        votesDown: await eglContract.methods.directionVoteCount(2, i).call(),
+        voteWeightSums: await eglContract.methods.voteWeightsSum(i).call(),
         votesTotal: await eglContract.methods.votesTotal(i).call(),
       })
     }
@@ -143,10 +129,9 @@ class EglContractStatus extends React.Component {
       timeToNextEpoch: timeToNextEpoch,
       tokensInCirculation: tokensInCirculation,
       remainingPoolReward: remainingPoolReward,
-      currentVotesUp: currentVotesUp,
-      currentVotesSame: currentVotesSame,
-      currentVotesDown: currentVotesDown,
+      currentVoteWeightSum: currentVoteWeightSum,
       currentVotesTotal: currentVotesTotal,
+      desiredEgl: desiredEgl,
       upcomingVotes: upcomingVotes,
       voterRewardsSums: voterRewardsSums,
       eventSeedAccountsFunded: eventSeedAccountsFunded,
@@ -163,7 +148,6 @@ class EglContractStatus extends React.Component {
 
   componentDidMount() {
     this.interval = setInterval(() => this.refreshContractData(), 1000)
-    // this.refreshContractData()
   }
 
   componentWillUnmount() {
@@ -177,11 +161,10 @@ class EglContractStatus extends React.Component {
       currentEpoch = '-',
       currentEpochStartDate = moment(),
       timeToNextEpoch = '-',
+      desiredEgl = '-',
       tokensInCirculation = '-',
       remainingPoolReward = '-',
-      currentVotesUp = '-',
-      currentVotesSame = '-',
-      currentVotesDown = '-',
+      currentVoteWeightSum = '-',
       currentVotesTotal = '-',
       upcomingVotes = [],
       voterRewardsSums = [],
@@ -192,7 +175,6 @@ class EglContractStatus extends React.Component {
       eventWithdraw = [],
       eventVoteThresholdMet = [],
       eventVoteThresholdFailed = [],
-      eventNewVoteTotals = [],
       eventVoterRewardCalculated = [],
     } = this.state
 
@@ -229,7 +211,7 @@ class EglContractStatus extends React.Component {
             <tbody>
               <tr>
                 <td>
-                  <b>Current Epoch :</b>{' '}
+                  <b>Current Epoch: </b>
                   <span style={contractAttributeValue}>{currentEpoch}</span>
                 </td>
                 <td>
@@ -241,7 +223,7 @@ class EglContractStatus extends React.Component {
               </tr>
               <tr>
                 <td>
-                  <b>Epoch Start Date :</b>{' '}
+                  <b>Epoch Start Date: </b>
                   <span style={contractAttributeValue}>
                     {currentEpochStartDate.local().toDate().toString()}
                   </span>
@@ -255,10 +237,13 @@ class EglContractStatus extends React.Component {
               </tr>
               <tr>
                 <td>
-                  <b>Time to Next Epoch :</b>{' '}
+                  <b>Time to Next Epoch: </b>
                   <span style={contractAttributeValue}>{timeToNextEpoch}</span>
                 </td>
-                <td></td>
+                <td>
+                  <b>Current EGL: </b>
+                  <span style={contractAttributeValue}>{desiredEgl}</span>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -305,18 +290,14 @@ class EglContractStatus extends React.Component {
             <thead style={thead}>
               <tr>
                 <td>Epoch</td>
-                <td>Votes Up</td>
-                <td>Votes Same</td>
-                <td>Votes Down</td>
+                <td>Total Vote Weight</td>
                 <td>Total Locked Tokens</td>
               </tr>
             </thead>
             <tbody style={contractAttributeValue}>
               <tr>
                 <td>{currentEpoch}</td>
-                <td>{this.formatBigNumberAttribute(currentVotesUp)}</td>
-                <td>{this.formatBigNumberAttribute(currentVotesSame)}</td>
-                <td>{this.formatBigNumberAttribute(currentVotesDown)}</td>
+                <td>{this.formatBigNumberAttribute(currentVoteWeightSum)}</td>
                 <td>{this.formatBigNumberAttribute(currentVotesTotal)}</td>
               </tr>
             </tbody>
@@ -333,9 +314,7 @@ class EglContractStatus extends React.Component {
             <thead style={thead}>
               <tr>
                 <td>Epoch</td>
-                <td>Votes Up</td>
-                <td>Votes Same</td>
-                <td>Votes Down</td>
+                <td>Total Vote Weight</td>
                 <td>Total Locked Tokens</td>
               </tr>
             </thead>
@@ -345,13 +324,7 @@ class EglContractStatus extends React.Component {
                   <tr>
                     <td>{currentEpoch + upcomingVote.index}</td>
                     <td>
-                      {this.formatBigNumberAttribute(upcomingVote.votesUp)}
-                    </td>
-                    <td>
-                      {this.formatBigNumberAttribute(upcomingVote.votesSame)}
-                    </td>
-                    <td>
-                      {this.formatBigNumberAttribute(upcomingVote.votesDown)}
+                      {this.formatBigNumberAttribute(upcomingVote.voteWeightSums)}
                     </td>
                     <td>
                       {this.formatBigNumberAttribute(upcomingVote.votesTotal)}
@@ -399,10 +372,14 @@ class EglContractStatus extends React.Component {
                 <td>Time</td>
                 <td>Voter</td>
                 <td>Current Epoch</td>
-                <td>Vote Direction</td>
+                <td>Gas Target</td>
                 <td>EGL Amount</td>
                 <td>Lockup Duration</td>
                 <td>Vote Weight</td>
+                <td>Release Date</td>
+                <td>Total Votes</td>
+                <td>Total Votes (for reward)</td>
+                <td>Total Locked Tokens</td>
               </tr>
             </thead>
             <tbody style={contractAttributeValue}>
@@ -426,7 +403,7 @@ class EglContractStatus extends React.Component {
                     <td>{event.returnValues.caller}</td>
                     <td>{event.returnValues.currentEpoch}</td>
                     <td>
-                      {this.desiredChangeMap[event.returnValues.desiredChange]}
+                      {event.returnValues.gasTarget}
                     </td>
                     <td>
                       {this.formatBigNumberAttribute(
@@ -441,6 +418,22 @@ class EglContractStatus extends React.Component {
                           .toString()
                       )}
                     </td>
+                    <td>
+                      {
+                        moment.unix(event.returnValues.releaseDate).local().toDate().toLocaleDateString() +
+                        " " +
+                        moment.unix(event.returnValues.releaseDate).local().toDate().toLocaleTimeString()
+                      }
+                    </td>
+                    <td>
+                      {this.formatBigNumberAttribute(event.returnValues.epochVoteWeightSum)}
+                    </td>
+                    <td>
+                      {this.formatBigNumberAttribute(event.returnValues.epochVoterRewardSum)}
+                    </td>
+                    <td>
+                      {this.formatBigNumberAttribute(event.returnValues.epochTotalVotes)}
+                    </td>
                   </tr>
                 )
               })}
@@ -449,73 +442,6 @@ class EglContractStatus extends React.Component {
         </div>
 
         <br />
-        <div>
-          <b>Vote Totals After Vote:</b>
-          <table style={tableWidth1000}>
-            <thead style={thead}>
-              <tr>
-                <td>Date</td>
-                <td>Time</td>
-                <td>Caller</td>
-                <td>Current Epoch </td>
-                <td>Votes Up</td>
-                <td>Votes Same</td>
-                <td>Votes Down</td>
-                <td>Votes Total</td>
-                <td>Total Locked Tokens</td>
-              </tr>
-            </thead>
-            <tbody style={contractAttributeValue}>
-              {eventNewVoteTotals.map((event) => {
-                return (
-                  <tr>
-                    <td>
-                      {moment
-                        .unix(event.returnValues.date)
-                        .local()
-                        .toDate()
-                        .toLocaleDateString()}
-                    </td>
-                    <td>
-                      {moment
-                        .unix(event.returnValues.date)
-                        .local()
-                        .toDate()
-                        .toLocaleTimeString()}
-                    </td>
-                    <td>{event.returnValues.caller}</td>
-                    <td>{event.returnValues.currentEpoch}</td>
-                    <td>
-                      {this.formatBigNumberAttribute(
-                        event.returnValues.epochVotesUp
-                      )}
-                    </td>
-                    <td>
-                      {this.formatBigNumberAttribute(
-                        event.returnValues.epochVotesSame
-                      )}
-                    </td>
-                    <td>
-                      {this.formatBigNumberAttribute(
-                        event.returnValues.epochVotesDown
-                      )}
-                    </td>
-                    <td>
-                      {this.formatBigNumberAttribute(
-                        event.returnValues.epochVoterRewardSum
-                      )}
-                    </td>
-                    <td>
-                      {this.formatBigNumberAttribute(
-                        event.returnValues.epochTotalVotes
-                      )}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
 
         <br />
         <div>
@@ -553,7 +479,7 @@ class EglContractStatus extends React.Component {
                     <td>{event.returnValues.caller}</td>
                     <td>{event.returnValues.currentEpoch}</td>
                     <td>
-                      {this.desiredChangeMap[event.returnValues.desiredChange]}
+                      {event.returnValues.gasTarget}
                     </td>
                     <td>
                       {this.formatBigNumberAttribute(
@@ -646,43 +572,6 @@ class EglContractStatus extends React.Component {
             </tbody>
           </table>
         </div>
-
-        {/*<br />*/}
-        {/*<div>*/}
-        {/*  <b>Vote Totals After Withdraw:</b>*/}
-        {/*  <table style={tableWidth1000}>*/}
-        {/*    <thead style={thead}>*/}
-        {/*    <tr>*/}
-        {/*      <td>Date</td>*/}
-        {/*      <td>Time</td>*/}
-        {/*      <td>Caller</td>*/}
-        {/*      <td>Current Epoch </td>*/}
-        {/*      <td>Votes Up</td>*/}
-        {/*      <td>Votes Same</td>*/}
-        {/*      <td>Votes Down</td>*/}
-        {/*      <td>Votes Reward Sum</td>*/}
-        {/*      <td>Total Votes (EGL's)</td>*/}
-        {/*    </tr>*/}
-        {/*    </thead>*/}
-        {/*    <tbody style={contractAttributeValue}>*/}
-        {/*      {eventWithdraw.map((event) => {*/}
-        {/*          return (*/}
-        {/*            <tr>*/}
-        {/*              <td>{moment.unix(event.returnValues.date).local().toDate().toLocaleDateString()}</td>*/}
-        {/*              <td>{moment.unix(event.returnValues.date).local().toDate().toLocaleTimeString()}</td>*/}
-        {/*              <td>{event.returnValues.caller}</td>*/}
-        {/*              <td>{event.returnValues.currentEpoch}</td>*/}
-        {/*              <td>{this.formatBigNumberAttribute(event.returnValues.epochVotesUp)}</td>*/}
-        {/*              <td>{this.formatBigNumberAttribute(event.returnValues.epochVotesSame)}</td>*/}
-        {/*              <td>{this.formatBigNumberAttribute(event.returnValues.epochVotesDown)}</td>*/}
-        {/*              <td>{this.formatBigNumberAttribute(event.returnValues.epochVoterRewardSum)}</td>*/}
-        {/*              <td>{this.formatBigNumberAttribute(event.returnValues.epochTotalVotes)}</td>*/}
-        {/*            </tr>*/}
-        {/*          )*/}
-        {/*      })}*/}
-        {/*    </tbody>*/}
-        {/*  </table>*/}
-        {/*</div>*/}
         <br />
 
         <hr />
@@ -698,9 +587,7 @@ class EglContractStatus extends React.Component {
                 <td>Current Epoch</td>
                 <td>Desired EGL</td>
                 <td>Vote Percentage</td>
-                <td>Total Up</td>
-                <td>Total Same</td>
-                <td>Total Down</td>
+                <td>Average Gas Target</td>
               </tr>
             </thead>
             <tbody style={contractAttributeValue}>
@@ -731,19 +618,7 @@ class EglContractStatus extends React.Component {
                       %
                     </td>
                     <td>
-                      {this.formatBigNumberAttribute(
-                        event.returnValues.totalVotesUp
-                      )}
-                    </td>
-                    <td>
-                      {this.formatBigNumberAttribute(
-                        event.returnValues.totalVotesSame
-                      )}
-                    </td>
-                    <td>
-                      {this.formatBigNumberAttribute(
-                        event.returnValues.totalVotesDown
-                      )}
+                      {event.returnValues.averageGasTarget}
                     </td>
                   </tr>
                 )

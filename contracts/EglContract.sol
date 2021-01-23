@@ -1,10 +1,10 @@
 pragma solidity ^0.6.0;
 
 import './EglToken.sol';
+import "./libraries/Math.sol";
 
 import "@openzeppelin/contracts-ethereum-package/contracts/Initializable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/math/Math.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SignedSafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
@@ -22,6 +22,7 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
     int constant GAS_LIMIT_CHANGE = 1000000;
     uint8 constant WEEKS_IN_YEAR = 52;
     uint8 constant CREATOR_REWARD_FIRST_EPOCH = 9;
+    uint constant GAS_TARGET_TOLERANCE = 4000000;
     uint constant SEED_LOCKUP_PERIOD = 31536000;
     uint constant DECIMAL_PRECISION = 10**18;
     uint constant DAO_RECIPIENT_MIN_AMOUNT = 1 ether;
@@ -41,20 +42,20 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
     uint public tokensInCirculation;
     uint public remainingPoolReward;
     uint public remainingCreatorReward;
-    uint[520] public voterRewardSums;
-    uint[8] public votesTotal;
 
-    enum DesiredChange {UP, SAME, DOWN}
+    uint[52] public voterRewardSums;
+    uint[8] public votesTotal;
+    uint[8] public voteWeightsSum;
+    uint[8] public gasTargetSum;
 
     mapping(address => Voter) public voters;
-    mapping(DesiredChange => uint[8]) public directionVoteCount;
 
     struct Voter {
         uint8 lockupDuration;
         uint16 voteEpoch;
         uint releaseDate;
         uint tokensLocked;
-        DesiredChange desiredChange;
+        uint gasTarget;
         address daoRecipient;
         uint daoAmount;
         address upgradeAddress;
@@ -77,47 +78,42 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
     event Vote(
         address caller,
         uint16 currentEpoch,
-        DesiredChange desiredChange,
+        uint gasTarget,
         uint eglAmount,
         uint8 lockupDuration,
         uint releaseDate,
         address daoRecipient,
         uint daoAmount,
         address upgradeAddress,
-        uint date
-    );
-    event NewVoteTotals(
-        address caller,
-        uint16 currentEpoch,
-        uint epochVotesUp,
-        uint epochVotesSame,
-        uint epochVotesDown,
+        uint epochVoteWeightSum,
+        uint epochGasTargetSum,
         uint epochVoterRewardSum,
         uint epochTotalVotes,
         uint date
     );
-    event ReVote(address caller, DesiredChange desiredChange, uint eglAmount, uint date);
+    event NewVoteTotals(
+        address caller,
+        uint date
+    );
+    event ReVote(address caller, uint gasTarget, uint eglAmount, uint date);
     event Withdraw(
         address caller,
         uint16 currentEpoch,
         uint tokensLocked,
         uint releaseDate,
         uint rewardTokens,
-        DesiredChange desiredChange,
-        uint epochVotesUp,
-        uint epochVotesSame,
-        uint epochVotesDown,
+        uint gasTarget,
         uint epochVoterRewardSum,
         uint epochTotalVotes,
+        uint epochVoteWeightSum,
+        uint epochGasTargetSum,
         uint date
     );
     event VotesTallied(
         address caller,
         uint16 currentEpoch,
         int desiredEgl,
-        uint totalVotesUp,
-        uint totalVotesSame,
-        uint totalVotesDown,
+        int averageGasTarget,
         uint votingThreshold,
         uint actualVotePercentage,
         uint date
@@ -215,7 +211,7 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
      * @dev Vote
      */
     function vote(
-        uint8 _desiredChange,
+        uint _gasTarget,
         uint _eglAmount,
         uint8 _lockupDuration,
         address _daoRecipient,
@@ -231,7 +227,7 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
         token.transferFrom(msg.sender, address(this), _eglAmount);
         _internalVote(
             msg.sender,
-            _desiredChange,
+            _gasTarget,
             _eglAmount,
             _lockupDuration,
             _daoRecipient,
@@ -245,7 +241,7 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
      * @dev Re-Vote
      */
     function reVote(
-        uint8 _desiredChange,
+        uint _gasTarget,
         uint _eglAmount,
         uint8 _lockupDuration,
         address _daoRecipient,
@@ -269,7 +265,7 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
         _eglAmount = _eglAmount.add(_internalWithdraw());
         _internalVote(
             msg.sender,
-            _desiredChange,
+            _gasTarget,
             _eglAmount,
             _lockupDuration,
             _daoRecipient,
@@ -277,7 +273,7 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
             _upgradeAddress,
             originalReleaseDate
         );
-        emit ReVote(msg.sender, DesiredChange(_desiredChange), _eglAmount, now);
+        emit ReVote(msg.sender, _gasTarget, _eglAmount, now);
     }
 
     /**
@@ -304,28 +300,26 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
             "EGL: Current voting period has not yet ended"
         );
 
-        uint epochTotalUp = directionVoteCount[DesiredChange.UP][0];
-        uint epochTotalDown = directionVoteCount[DesiredChange.DOWN][0];
-        uint epochTotalSame = directionVoteCount[DesiredChange.SAME][0];
-
         uint votingThreshold = 10 * DECIMAL_PRECISION;
 	    if (currentEpoch >= WEEKS_IN_YEAR) {
             uint actualThreshold = currentEpoch.mul(DECIMAL_PRECISION).mul(10).div(WEEKS_IN_YEAR);
-            votingThreshold = actualThreshold.min(50 * DECIMAL_PRECISION);
+            votingThreshold = actualThreshold.umin(50 * DECIMAL_PRECISION);
         }
 
-        uint votePercentage = votesTotal[0].mul(DECIMAL_PRECISION).div(tokensInCirculation).mul(100);
+        int averageGasTarget = voteWeightsSum[0] > 0
+            ? int(gasTargetSum[0].div(voteWeightsSum[0]))
+            : 0;
+        uint votePercentage = tokensInCirculation > 0
+            ? votesTotal[0].mul(DECIMAL_PRECISION).div(tokensInCirculation).mul(100)
+            : 0;
         if (votePercentage >= votingThreshold) {
             epochGasLimitSum = epochGasLimitSum.add(int(block.gaslimit));
             epochVoteCount = epochVoteCount.add(1);
             baselineEgl = epochGasLimitSum.div(epochVoteCount);
 
-            if (epochTotalUp > epochTotalDown && epochTotalUp > epochTotalSame)
-                desiredEgl = baselineEgl.add(GAS_LIMIT_CHANGE);
-            else if (epochTotalDown > epochTotalUp && epochTotalDown > epochTotalSame)
-                desiredEgl = baselineEgl.sub(GAS_LIMIT_CHANGE);
-            else
-                desiredEgl = baselineEgl;
+            desiredEgl = baselineEgl > averageGasTarget
+                ? desiredEgl.sub(baselineEgl.sub(averageGasTarget).min(GAS_LIMIT_CHANGE))
+                : desiredEgl.add(averageGasTarget.sub(baselineEgl).min(GAS_LIMIT_CHANGE));
 
             emit VoteThresholdMet(
                 msg.sender,
@@ -354,33 +348,18 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
 
         // move values 1 slot earlier and put a '0' at the last slot
         for (uint8 i = 0; i < 7; i++) {
-            for (uint8 j = 0; j < 3; j++) {
-                directionVoteCount[DesiredChange(j)][i] = directionVoteCount[DesiredChange(j)][i + 1];
-            }
+            voteWeightsSum[i] = voteWeightsSum[i + 1];
+            gasTargetSum[i] = gasTargetSum[i + 1];
             votesTotal[i] = votesTotal[i + 1];
         }
-        for (uint8 j = 0; j < 3; j++) {
-            directionVoteCount[DesiredChange(j)][7] = 0;
-        }
+        voteWeightsSum[7] = 0;
+        gasTargetSum[7] = 0;
+        votesTotal[7] = 0;
 
         epochGasLimitSum = 0;
         epochVoteCount = 0;
-        votesTotal[7] = 0;
 
-        if (currentEpoch >= CREATOR_REWARD_FIRST_EPOCH && remainingCreatorReward > 0) {
-            uint creatorRewardForEpoch = weeklyCreatorRewardAmount.min(remainingCreatorReward);
-            remainingCreatorReward = remainingCreatorReward.sub(creatorRewardForEpoch);
-            tokensInCirculation = tokensInCirculation.add(creatorRewardForEpoch);
-            token.transfer(creatorRewardsAddress, creatorRewardForEpoch);
-            emit CreatorRewardsClaimed(
-                msg.sender,
-                creatorRewardsAddress,
-                creatorRewardForEpoch,
-                remainingCreatorReward,
-                currentEpoch,
-                now
-            );
-        }
+        _assessCreatorReward();
 
         currentEpoch += 1;
         currentEpochStartDate = currentEpochStartDate.add(epochLength);
@@ -389,9 +368,7 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
             msg.sender,
             currentEpoch - 1,
             desiredEgl,
-            epochTotalUp,
-            epochTotalSame,
-            epochTotalDown,
+            averageGasTarget,
             votingThreshold,
             votePercentage,
             now
@@ -435,7 +412,7 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
      */
     function _internalVote(
         address _voter,
-        uint8 _desiredChange,
+        uint _gasTarget,
         uint _eglAmount,
         uint8 _lockupDuration,
         address _daoRecipient,
@@ -445,11 +422,12 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
     ) private {
         require(voters[_voter].tokensLocked == 0, "EGL: Address has already voted");
         require(
-            _desiredChange == uint8(DesiredChange.UP) ||
-            _desiredChange == uint8(DesiredChange.SAME) ||
-            _desiredChange == uint8(DesiredChange.DOWN),
-            "EGL: Invalid vote direction"
+            _gasTarget > block.gaslimit
+            ? _gasTarget.sub(block.gaslimit) < GAS_TARGET_TOLERANCE
+            : block.gaslimit.sub(_gasTarget) < GAS_TARGET_TOLERANCE,
+            "EGL: GasTarget must be within 4M gas of current gas limit"
         );
+
         require(
             _lockupDuration >= 1 &&
             _lockupDuration <= 8,
@@ -470,40 +448,38 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
         epochGasLimitSum = epochGasLimitSum.add(int(block.gaslimit));
         epochVoteCount = epochVoteCount.add(1);
 
-        uint updatedReleaseDate = block.timestamp.add(_lockupDuration.mul(epochLength)).max(_releaseTime);
+        uint updatedReleaseDate = block.timestamp.add(_lockupDuration.mul(epochLength)).umax(_releaseTime);
 
         Voter storage voter = voters[_voter];
         voter.voteEpoch = currentEpoch;
         voter.lockupDuration = _lockupDuration;
         voter.releaseDate = updatedReleaseDate;
         voter.tokensLocked = _eglAmount;
-        voter.desiredChange = DesiredChange(_desiredChange);
+        voter.gasTarget = _gasTarget;
         voter.daoRecipient = _daoRecipient;
         voter.daoAmount = _daoAmount;
         voter.upgradeAddress = _upgradeAddress;
 
-        _addVote(DesiredChange(_desiredChange), _lockupDuration, _eglAmount);
+        _addVote(_gasTarget, _lockupDuration, _eglAmount);
 
         emit Vote(
             _voter,
             currentEpoch,
-            DesiredChange(_desiredChange),
+            _gasTarget,
             _eglAmount,
             _lockupDuration,
             updatedReleaseDate,
             _daoRecipient,
             _daoAmount,
             _upgradeAddress,
+            voteWeightsSum[0],
+            gasTargetSum[0],
+            currentEpoch < WEEKS_IN_YEAR ? voterRewardSums[currentEpoch]: 0,
+            votesTotal[0],
             now
         );
         emit NewVoteTotals(
             _voter,
-            currentEpoch,
-            directionVoteCount[DesiredChange.UP][0],
-            directionVoteCount[DesiredChange.SAME][0],
-            directionVoteCount[DesiredChange.DOWN][0],
-            voterRewardSums[currentEpoch],
-            votesTotal[0],
             now
         );
     }
@@ -517,12 +493,12 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
         uint originalEglAmount = voter.tokensLocked;
         uint8 lockupDuration = voter.lockupDuration;
         uint releaseDate = voter.releaseDate;
-        DesiredChange desiredChange = voter.desiredChange;
+        uint gasTarget = voter.gasTarget;
         delete voters[msg.sender];
 
         uint voteWeight = originalEglAmount.mul(lockupDuration);
         uint voterReward = 0;
-        uint rewardEpochs = voterEpoch.add(lockupDuration).min(currentEpoch).min(WEEKS_IN_YEAR);
+        uint rewardEpochs = voterEpoch.add(lockupDuration).umin(currentEpoch).umin(WEEKS_IN_YEAR);
         for (uint16 i = voterEpoch; i < rewardEpochs; i++) {
             uint epochReward = (voteWeight.mul(VOTER_REWARD_MULTIPLIER).mul(WEEKS_IN_YEAR.sub(i))).div(voterRewardSums[i]);
             voterReward = voterReward.add(epochReward);
@@ -539,7 +515,7 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
             );
         }
 
-        _removeVote(desiredChange, lockupDuration, originalEglAmount, voteWeight, voterEpoch);
+        _removeVote(gasTarget, lockupDuration, originalEglAmount, voteWeight, voterEpoch);
         tokensInCirculation = tokensInCirculation.add(voterReward);
 
         emit Withdraw(
@@ -548,12 +524,11 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
             originalEglAmount,
             releaseDate,
             voterReward,
-            desiredChange,
-            directionVoteCount[DesiredChange.UP][0],
-            directionVoteCount[DesiredChange.SAME][0],
-            directionVoteCount[DesiredChange.DOWN][0],
-            voterRewardSums[currentEpoch],
+            gasTarget,
+            currentEpoch < WEEKS_IN_YEAR ? voterRewardSums[currentEpoch]: 0,
             votesTotal[0],
+            voteWeightsSum[0],
+            gasTargetSum[0],
             now
         );
         return originalEglAmount.add(voterReward);
@@ -563,7 +538,7 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
      * @dev Internal remove vote
      */
     function _removeVote(
-        DesiredChange _desiredChange,
+        uint _gasTarget,
         uint8 _lockupDuration,
         uint _originalEglAmount,
         uint _voteWeight,
@@ -573,7 +548,8 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
         uint affectedEpochs = currentEpoch < voterInterval ? voterInterval.sub(currentEpoch) : 0;
         // TODO: Use SafeMath instead of -= and += to avoid potential overflows
         for (uint8 i = 0; i < affectedEpochs; i++) {
-            directionVoteCount[_desiredChange][i] -= _voteWeight;
+            voteWeightsSum[i] -= _voteWeight;
+            gasTargetSum[i] -= _voteWeight.mul(_gasTarget);
             if (_voterEpoch.add(i) < WEEKS_IN_YEAR) {
                 voterRewardSums[_voterEpoch.add(i)] -= _voteWeight;
             }
@@ -584,11 +560,13 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
     /**
      * @dev Internal add vote
      */
-    function _addVote(DesiredChange _desiredChangeDirection, uint8 _lockupDuration, uint _eglAmount) private {
+    function _addVote(uint _gasTarget, uint8 _lockupDuration, uint _eglAmount) private {
         uint voteWeight = _eglAmount.mul(_lockupDuration);
+        uint weightedGasTarget = _gasTarget.mul(voteWeight);
         // TODO: Use SafeMath instead of -= and += to avoid potential overflows
         for (uint8 i = 0; i < _lockupDuration; i++) {
-            directionVoteCount[_desiredChangeDirection][i] += voteWeight;
+            voteWeightsSum[i] += voteWeight;
+            gasTargetSum[i] += weightedGasTarget;
             if (currentEpoch.add(i) < WEEKS_IN_YEAR)
                 voterRewardSums[currentEpoch.add(i)] += voteWeight;
             votesTotal[i] += _eglAmount;
@@ -606,13 +584,30 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
                 emit SeedAccountsFunded(_seedAccounts[i], INITIAL_SEED_AMOUNT, seedAmountPerAccount, now);
                 _internalVote(
                     _seedAccounts[i],
-                    uint8(DesiredChange.SAME),
+                    block.gaslimit,
                     seedAmountPerAccount,
                     8,
                     address(0), 0, address(0),
                     currentEpochStartDate.add(SEED_LOCKUP_PERIOD)
                 );
             }
+        }
+    }
+
+    function _assessCreatorReward() private {
+        if (currentEpoch >= CREATOR_REWARD_FIRST_EPOCH && remainingCreatorReward > 0) {
+            uint creatorRewardForEpoch = weeklyCreatorRewardAmount.umin(remainingCreatorReward);
+            remainingCreatorReward = remainingCreatorReward.sub(creatorRewardForEpoch);
+            tokensInCirculation = tokensInCirculation.add(creatorRewardForEpoch);
+            token.transfer(creatorRewardsAddress, creatorRewardForEpoch);
+            emit CreatorRewardsClaimed(
+                msg.sender,
+                creatorRewardsAddress,
+                creatorRewardForEpoch,
+                remainingCreatorReward,
+                currentEpoch,
+                now
+            );
         }
     }
 }
