@@ -1,5 +1,4 @@
 import web3 from 'web3'
-import BN from 'bn.js'
 
 const daoRecipient = '0x0000000000000000000000000000000000000000'
 const daoAmount = 0

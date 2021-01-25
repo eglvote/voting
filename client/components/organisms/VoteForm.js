@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import styled from 'styled-components'
 import { Formik, Field, Form } from 'formik'
 import Row from '../atoms/Row'
-import { vote } from '../../lib/contractMethods'
+import { vote, revote } from '../../lib/contractMethods'
 import SectionHeader from '../atoms/SectionHeader'
 const FormRow = styled(Row)`
   margin: 1em;
