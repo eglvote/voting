@@ -7,7 +7,7 @@ export default () => (
     <p>Note that Web3 is not loaded for this page.</p>
     <div>
       <Link href="/dapp">
-        <a>My Dapp</a>
+        <a>Dapp</a>
       </Link>
     </div>
     <div>

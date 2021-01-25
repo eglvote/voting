@@ -1,7 +1,7 @@
 require("dotenv").config();
 
 const path = require("path");
-const HDWalletProvider = require('@truffle/hdwallet-provider');
+const HDWalletProvider = require("@truffle/hdwallet-provider");
 
 module.exports = {
   // See <http://truffleframework.com/docs/advanced/configuration>
@@ -17,16 +17,22 @@ module.exports = {
       network_id: 5777,
     },
     ropsten: {
-      provider: function() {
-        return new HDWalletProvider(process.env.ROPSTEN_MNEMONIC, process.env.ROPSTEN_NODE_URL)
+      provider: function () {
+        return new HDWalletProvider(
+          process.env.ROPSTEN_MNEMONIC,
+          process.env.ROPSTEN_NODE_URL
+        );
       },
-      network_id: '3',
+      network_id: "3",
     },
     mainnet: {
-      provider: function() {
-        return new HDWalletProvider(process.env.MAINNET_MNEMONIC, process.env.MAINNET_NODE_URL)
+      provider: function () {
+        return new HDWalletProvider(
+          process.env.MAINNET_MNEMONIC,
+          process.env.MAINNET_NODE_URL
+        );
       },
-      network_id: '1',
+      network_id: "1",
     },
   },
   compilers: {
