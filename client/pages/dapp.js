@@ -2,7 +2,6 @@ import React, { componentDidMount, componentWillUnmount } from 'react'
 import Link from 'next/link'
 import Web3Container from '../lib/Web3Container'
 import VoteForm from '../components/organisms/VoteForm'
-import RevoteForm from '../components/organisms/RevoteForm'
 import {
   mint,
   getVoters,
@@ -21,7 +20,7 @@ import m from 'moment'
 import { fromWei } from '../lib/helpers'
 
 const ALERT_MESSAGE = 'Please connect to Metamask'
-const IS_DEV = false
+const IS_DEV = true
 
 const Body = styled.div`
   margin-top: 2em;
@@ -38,17 +37,19 @@ class Dapp extends React.Component {
     walletAddress: this.props.accounts ? this.props.accounts[0] : null,
     currentEpoch: null,
     timeToNextEpoch: null,
+    baselineEgl: null,
+    desiredEgl: null,
   }
 
   componentDidMount() {
-    const { web3, web3Reader, accounts, contract, token } = this.props
+    // const { web3, web3Reader, accounts, contract, token } = this.props
 
     window.ethereum.on('accountsChanged', (accounts) => {
       this.setState({ walletAddress: accounts[0] })
     })
 
     this.interval = setInterval(() => {
-      this.ticker()
+      this.state.walletAddress && this.ticker()
     }, 1000)
 
     // web3Reader.eth
@@ -129,6 +130,9 @@ class Dapp extends React.Component {
 
     const ethBalance = await web3.eth.getBalance(this.state.walletAddress)
 
+    const baselineEgl = await contract.methods.baselineEgl().call()
+    const desiredEgl = await contract.methods.desiredEgl().call()
+
     this.setState({
       currentEpoch,
       timeToNextEpoch,
@@ -136,6 +140,8 @@ class Dapp extends React.Component {
       eglBalance: fromWei(eglBalance),
       voterData,
       ethBalance: fromWei(ethBalance),
+      baselineEgl,
+      desiredEgl,
     })
   }
 
@@ -156,6 +162,7 @@ class Dapp extends React.Component {
         contract,
         this.state.walletAddress
       )
+      console.log(transactionReceipt)
       this.setState({
         votesTallied: transactionReceipt.events.VotesTallied.returnValues,
       })
@@ -202,19 +209,8 @@ class Dapp extends React.Component {
             Address: {this.props.token._address}
           </Row>
           <Row>{`Current Epoch: ${this.state.currentEpoch}`}</Row>
-          <Row>{`Time to Next Epoch:  ${this.state.timeToNextEpoch}`}</Row>
-          <Row>
-            Up Votes:{' '}
-            {votesTallied && web3.utils.fromWei(votesTallied.totalVotesUp)}
-          </Row>
-          <Row>
-            Same Votes:{' '}
-            {votesTallied && web3.utils.fromWei(votesTallied.totalVotesSame)}
-          </Row>
-          <Row>
-            Down Votes:{' '}
-            {votesTallied && web3.utils.fromWei(votesTallied.totalVotesDown)}
-          </Row>
+          <Row>{`Baseline EGL:  ${this.state.baselineEgl}`}</Row>
+          <Row>{`Desired EGL:  ${this.state.desiredEgl}`}</Row>
         </div>
         <div>
           <SectionHeader>Wallet</SectionHeader>
@@ -274,7 +270,7 @@ class Dapp extends React.Component {
                     {voterData && (
                       <span>
                         {parseFloat(
-                          web3.utils.fromWei(voterData.tokensLocked)
+                          fromWei(voterData.tokensLocked)
                         ).toLocaleString('en-US', { maximumFractionDigits: 3 })}
                       </span>
                     )}

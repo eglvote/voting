@@ -4,6 +4,7 @@ import { Formik, Field, Form } from 'formik'
 import Row from '../atoms/Row'
 import { vote, revote } from '../../lib/contractMethods'
 import SectionHeader from '../atoms/SectionHeader'
+
 const FormRow = styled(Row)`
   margin: 1em;
   width: 9em;
@@ -42,7 +43,10 @@ export default ({ contract, token, walletAddress, hasNotVoted }) => {
                   values.desiredChange,
                   values.weeksLocked
                 )
-            setTsxLink(`etherscan.io/tx/${transactionReceipt.transactionHash}`)
+            transactionReceipt &&
+              setTsxLink(
+                `etherscan.io/tx/${transactionReceipt.transactionHash}`
+              )
           } else {
             alert('Connect to Metamask!')
           }
