@@ -43,6 +43,7 @@ export const vote = async (
       } else {
         console.log('Unable to send trans action', e)
       }
+      return result
     })
 
   return response
@@ -101,7 +102,7 @@ export const getVoters = async (contract, walletAddress) => {
   const response = await contract.methods
     .voters(walletAddress)
     .call((e, tx) => {
-      console.log('etx', e, tx)
+      // console.log('txReceipt', tx)
     })
     .then((result) => {
       return result

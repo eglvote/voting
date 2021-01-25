@@ -2,15 +2,19 @@ import Web3 from 'web3'
 
 const resolveWeb3 = (resolve) => {
   let { web3 } = window
+
+  const webSocketProvider = 'ws://127.0.0.1:7545'
   const alreadyInjected = typeof web3 !== 'undefined' // i.e. Mist/Metamask
-  const localProvider = `http://127.0.0.1:8545`
 
   if (alreadyInjected) {
     console.log(`Injected web3 detected.`)
-    web3 = new Web3(web3.currentProvider)
+    web3 = new Web3(webSocketProvider)
   } else {
     console.log(`No web3 instance injected, using Local web3.`)
-    const provider = new Web3.providers.HttpProvider(localProvider)
+    const webSocketProvider = new Web3.providers.WebsocketProvider(
+      webSocketProvider
+    )
+
     web3 = new Web3(provider)
   }
 
