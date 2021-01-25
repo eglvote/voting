@@ -333,7 +333,7 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
                 now
             );
         } else {
-            desiredEgl = ((baselineEgl.add(initialEgl.sub(baselineEgl)).mul(95)).div(100));
+            desiredEgl = baselineEgl.add((initialEgl.sub(baselineEgl).mul(95)).div(100));
             emit VoteThresholdFailed(
                 msg.sender,
                 currentEpoch,
