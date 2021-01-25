@@ -18,9 +18,10 @@ import web3 from 'web3'
 import SectionHeader from '../components/atoms/SectionHeader'
 import m from 'moment'
 import { fromWei } from '../lib/helpers'
+import BN from 'bn.js'
 
 const ALERT_MESSAGE = 'Please connect to Metamask'
-const IS_DEV = true
+const IS_DEV = false
 
 const Body = styled.div`
   margin-top: 2em;
@@ -39,6 +40,7 @@ class Dapp extends React.Component {
     timeToNextEpoch: null,
     baselineEgl: null,
     desiredEgl: null,
+    averageVote: null,
   }
 
   componentDidMount() {
@@ -133,6 +135,10 @@ class Dapp extends React.Component {
     const baselineEgl = await contract.methods.baselineEgl().call()
     const desiredEgl = await contract.methods.desiredEgl().call()
 
+    const gasTargetSum = await contract.methods.gasTargetSum(0).call()
+    const voteWeightsSum = await contract.methods.voteWeightsSum(0).call()
+    const averageVote = new BN(gasTargetSum).div(new BN(voteWeightsSum))
+
     this.setState({
       currentEpoch,
       timeToNextEpoch,
@@ -142,6 +148,7 @@ class Dapp extends React.Component {
       ethBalance: fromWei(ethBalance),
       baselineEgl,
       desiredEgl,
+      averageVote,
     })
   }
 
@@ -208,9 +215,11 @@ class Dapp extends React.Component {
           <Row style={{ marginTop: '1em' }}>
             Address: {this.props.token._address}
           </Row>
+          <Row>{`Time to Next Epoch: ${this.state.timeToNextEpoch}`}</Row>
           <Row>{`Current Epoch: ${this.state.currentEpoch}`}</Row>
           <Row>{`Baseline EGL:  ${this.state.baselineEgl}`}</Row>
           <Row>{`Desired EGL:  ${this.state.desiredEgl}`}</Row>
+          <Row>{`Average Vote :  ${this.state.averageVote}`}</Row>
         </div>
         <div>
           <SectionHeader>Wallet</SectionHeader>
