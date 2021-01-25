@@ -137,7 +137,14 @@ class Dapp extends React.Component {
 
     const gasTargetSum = await contract.methods.gasTargetSum(0).call()
     const voteWeightsSum = await contract.methods.voteWeightsSum(0).call()
-    const averageVote = new BN(gasTargetSum).div(new BN(voteWeightsSum))
+
+    let averageVote
+
+    if (voteWeightsSum !== '0' && gasTargetSum !== '0') {
+      averageVote = new BN(gasTargetSum).div(new BN(voteWeightsSum))
+    } else {
+      averageVote = 0
+    }
 
     this.setState({
       currentEpoch,
@@ -217,9 +224,9 @@ class Dapp extends React.Component {
           </Row>
           <Row>{`Time to Next Epoch: ${this.state.timeToNextEpoch}`}</Row>
           <Row>{`Current Epoch: ${this.state.currentEpoch}`}</Row>
-          <Row>{`Baseline EGL:  ${this.state.baselineEgl}`}</Row>
-          <Row>{`Desired EGL:  ${this.state.desiredEgl}`}</Row>
-          <Row>{`Average Vote :  ${this.state.averageVote}`}</Row>
+          <Row>{`Actual Gas Limit:  ${this.state.baselineEgl}`}</Row>
+          <Row>{`Desired Gas Limit:  ${this.state.desiredEgl}`}</Row>
+          <Row>{`Average Vote:  ${this.state.averageVote}`}</Row>
         </div>
         <div>
           <SectionHeader>Wallet</SectionHeader>
