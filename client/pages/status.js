@@ -512,12 +512,12 @@ class EglContractStatus extends React.Component {
                 <td>Time</td>
                 <td>Voter</td>
                 <td>Current Epoch</td>
+                <td>Reward Epoch</td>
                 <td>Cumulative Reward</td>
                 <td>Reward per Epoch</td>
                 <td>Vote Weight</td>
                 <td>Epoch Total Votes</td>
                 <td>Reward Multiplier</td>
-                <td>Reward Weeks</td>
               </tr>
             </thead>
             <tbody style={contractAttributeValue}>
@@ -540,6 +540,7 @@ class EglContractStatus extends React.Component {
                     </td>
                     <td>{event.returnValues.voter}</td>
                     <td>{event.returnValues.currentEpoch}</td>
+                    <td>{52 - event.returnValues.weeksDiv}</td>
                     <td>
                       {this.formatBigNumberAttribute(
                         event.returnValues.voterReward
@@ -565,7 +566,6 @@ class EglContractStatus extends React.Component {
                         event.returnValues.rewardMultiplier
                       )}
                     </td>
-                    <td>{event.returnValues.weeksDiv}</td>
                   </tr>
                 )
               })}
