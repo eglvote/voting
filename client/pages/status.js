@@ -30,25 +30,17 @@ class EglContractStatus extends React.Component {
         voterData: null,
     }
 
-    desiredChangeMap = {
-        0: 'Up',
-        1: 'Same',
-        2: 'Down',
-    }
-
     formatBigNumberAttribute = (attribute) => {
-        const { web3 } = this.props
-        return parseFloat(web3.utils.fromWei(attribute)).toLocaleString(
-            'en-US',
-            {
-                minimumFractionDigits: 3,
-                maximumFractionDigits: 3,
-            }
-        )
+        const {web3} = this.props
+        if (attribute === null || attribute === undefined) return attribute;
+        return parseFloat(web3.utils.fromWei(attribute)).toLocaleString('en-US', {
+            minimumFractionDigits: 3,
+            maximumFractionDigits: 3,
+        })
     }
 
     getAllEventsForType = async (eventName) => {
-        const { eglContract } = this.props
+        const {eglContract} = this.props
         return await eglContract.getPastEvents(eventName, {
             fromBlock: 0,
             toBlock: 'latest',
@@ -56,7 +48,7 @@ class EglContractStatus extends React.Component {
     }
 
     refreshContractData = async () => {
-        const { eglContract, web3, tokenContract } = this.props
+        const {eglContract, web3, tokenContract} = this.props
 
         const eglContractTokenBalance = await tokenContract.methods
             .balanceOf(eglContract._address)
@@ -75,21 +67,13 @@ class EglContractStatus extends React.Component {
         const currentEpochStartDate = moment.unix(
             await eglContract.methods.currentEpochStartDate().call()
         )
+        const desiredEgl = await eglContract.methods.desiredEgl().call()
 
-        const currentVotesUp = await eglContract.methods
-            .directionVoteCount(0, 0)
-            .call()
-        const currentVotesSame = await eglContract.methods
-            .directionVoteCount(1, 0)
-            .call()
-        const currentVotesDown = await eglContract.methods
-            .directionVoteCount(2, 0)
-            .call()
+        const currentVoteWeightSum = await eglContract.methods.voteWeightsSum(0).call()
         const currentVotesTotal = await eglContract.methods.votesTotal(0).call()
 
         const epochEndDate = moment.unix(
-            parseInt(await eglContract.methods.currentEpochStartDate().call()) +
-                300
+            parseInt(await eglContract.methods.currentEpochStartDate().call()) + 300
         )
         const countdown = moment.duration(epochEndDate - moment())
 
@@ -105,9 +89,7 @@ class EglContractStatus extends React.Component {
 
         const voterRewardsSums = []
         for (let i = 0; i <= currentEpoch; i++) {
-            voterRewardsSums.push(
-                await eglContract.methods.voterRewardSums(i).call()
-            )
+            voterRewardsSums.push(await eglContract.methods.voterRewardSums(i).call())
         }
 
         const eventVotesTallied = await this.getAllEventsForType('VotesTallied')
@@ -115,9 +97,7 @@ class EglContractStatus extends React.Component {
             'CreatorRewardsClaimed'
         )
         const eventVote = await this.getAllEventsForType('Vote')
-        const eventNewVoteTotals = await this.getAllEventsForType(
-            'NewVoteTotals'
-        )
+        const eventNewVoteTotals = await this.getAllEventsForType('NewVoteTotals')
         const eventWithdraw = await this.getAllEventsForType('Withdraw')
         const eventSeedAccountsFunded = await this.getAllEventsForType(
             'SeedAccountsFunded'
@@ -136,15 +116,7 @@ class EglContractStatus extends React.Component {
         for (let i = 1; i < 8; i++) {
             upcomingVotes.push({
                 index: i,
-                votesUp: await eglContract.methods
-                    .directionVoteCount(0, i)
-                    .call(),
-                votesSame: await eglContract.methods
-                    .directionVoteCount(1, i)
-                    .call(),
-                votesDown: await eglContract.methods
-                    .directionVoteCount(2, i)
-                    .call(),
+                voteWeightSums: await eglContract.methods.voteWeightsSum(i).call(),
                 votesTotal: await eglContract.methods.votesTotal(i).call(),
             })
         }
@@ -157,10 +129,9 @@ class EglContractStatus extends React.Component {
             timeToNextEpoch: timeToNextEpoch,
             tokensInCirculation: tokensInCirculation,
             remainingPoolReward: remainingPoolReward,
-            currentVotesUp: currentVotesUp,
-            currentVotesSame: currentVotesSame,
-            currentVotesDown: currentVotesDown,
+            currentVoteWeightSum: currentVoteWeightSum,
             currentVotesTotal: currentVotesTotal,
+            desiredEgl: desiredEgl,
             upcomingVotes: upcomingVotes,
             voterRewardsSums: voterRewardsSums,
             eventSeedAccountsFunded: eventSeedAccountsFunded,
@@ -177,7 +148,6 @@ class EglContractStatus extends React.Component {
 
     componentDidMount() {
         this.interval = setInterval(() => this.refreshContractData(), 1000)
-        // this.refreshContractData()
     }
 
     componentWillUnmount() {
@@ -191,11 +161,10 @@ class EglContractStatus extends React.Component {
             currentEpoch = '-',
             currentEpochStartDate = moment(),
             timeToNextEpoch = '-',
+            desiredEgl = '-',
             tokensInCirculation = '-',
             remainingPoolReward = '-',
-            currentVotesUp = '-',
-            currentVotesSame = '-',
-            currentVotesDown = '-',
+            currentVoteWeightSum = '-',
             currentVotesTotal = '-',
             upcomingVotes = [],
             voterRewardsSums = [],
@@ -206,7 +175,6 @@ class EglContractStatus extends React.Component {
             eventWithdraw = [],
             eventVoteThresholdMet = [],
             eventVoteThresholdFailed = [],
-            eventNewVoteTotals = [],
             eventVoterRewardCalculated = [],
         } = this.state
 
@@ -228,69 +196,59 @@ class EglContractStatus extends React.Component {
                         <a>Home</a>
                     </Link>
                 </div>
-                <hr />
+                <hr/>
 
                 <div>
                     <div>
                         <b>Current Date: </b>
                         <span style={contractAttributeValue}>
-                            {currentTime.local().toDate().toLocaleDateString()}{' '}
+              {currentTime.local().toDate().toLocaleDateString()}{' '}
                             {currentTime.local().toDate().toLocaleTimeString()}
-                        </span>
+            </span>
                     </div>
-                    <br />
+                    <br/>
                     <table style={tableWidth1000}>
                         <tbody>
-                            <tr>
-                                <td>
-                                    <b>Current Epoch :</b>{' '}
-                                    <span style={contractAttributeValue}>
-                                        {currentEpoch}
-                                    </span>
-                                </td>
-                                <td>
-                                    <b>EGL Contract Token Balance: </b>
-                                    <span style={contractAttributeValue}>
-                                        {this.formatBigNumberAttribute(
-                                            eglContractTokenBalance
-                                        )}{' '}
-                                        EGL{' '}
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <b>Epoch Start Date :</b>{' '}
-                                    <span style={contractAttributeValue}>
-                                        {currentEpochStartDate
-                                            .local()
-                                            .toDate()
-                                            .toString()}
-                                    </span>
-                                </td>
-                                <td>
-                                    <b>Tokens in Circulation: </b>
-                                    <span style={contractAttributeValue}>
-                                        {this.formatBigNumberAttribute(
-                                            tokensInCirculation
-                                        )}{' '}
-                                        EGL
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <b>Time to Next Epoch :</b>{' '}
-                                    <span style={contractAttributeValue}>
-                                        {timeToNextEpoch}
-                                    </span>
-                                </td>
-                                <td></td>
-                            </tr>
+                        <tr>
+                            <td>
+                                <b>Current Epoch: </b>
+                                <span style={contractAttributeValue}>{currentEpoch}</span>
+                            </td>
+                            <td>
+                                <b>EGL Contract Token Balance: </b>
+                                <span style={contractAttributeValue}>
+                    {this.formatBigNumberAttribute(eglContractTokenBalance)} EGL{' '}
+                  </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <b>Epoch Start Date: </b>
+                                <span style={contractAttributeValue}>
+                    {currentEpochStartDate.local().toDate().toString()}
+                  </span>
+                            </td>
+                            <td>
+                                <b>Tokens in Circulation: </b>
+                                <span style={contractAttributeValue}>
+                    {this.formatBigNumberAttribute(tokensInCirculation)} EGL
+                  </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <b>Time to Next Epoch: </b>
+                                <span style={contractAttributeValue}>{timeToNextEpoch}</span>
+                            </td>
+                            <td>
+                                <b>Current EGL: </b>
+                                <span style={contractAttributeValue}>{desiredEgl}</span>
+                            </td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
-                <br />
+                <br/>
 
                 {/*<hr />*/}
                 {/*<div>*/}
@@ -322,721 +280,523 @@ class EglContractStatus extends React.Component {
                 {/*</div>*/}
                 {/*<br />*/}
 
-                <hr />
-                <br />
+                <hr/>
+                <br/>
                 <div>
                     <b>Current Epoch Votes:</b>
                 </div>
                 <div>
                     <table style={tableWidth1000}>
                         <thead style={thead}>
-                            <tr>
-                                <td>Epoch</td>
-                                <td>Votes Up</td>
-                                <td>Votes Same</td>
-                                <td>Votes Down</td>
-                                <td>Total Locked Tokens</td>
-                            </tr>
+                        <tr>
+                            <td>Epoch</td>
+                            <td>Total Vote Weight</td>
+                            <td>Total Locked Tokens</td>
+                        </tr>
                         </thead>
                         <tbody style={contractAttributeValue}>
-                            <tr>
-                                <td>{currentEpoch}</td>
-                                <td>
-                                    {this.formatBigNumberAttribute(
-                                        currentVotesUp
-                                    )}
-                                </td>
-                                <td>
-                                    {this.formatBigNumberAttribute(
-                                        currentVotesSame
-                                    )}
-                                </td>
-                                <td>
-                                    {this.formatBigNumberAttribute(
-                                        currentVotesDown
-                                    )}
-                                </td>
-                                <td>
-                                    {this.formatBigNumberAttribute(
-                                        currentVotesTotal
-                                    )}
-                                </td>
-                            </tr>
+                        <tr>
+                            <td>{currentEpoch}</td>
+                            <td>{this.formatBigNumberAttribute(currentVoteWeightSum)}</td>
+                            <td>{this.formatBigNumberAttribute(currentVotesTotal)}</td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
-                <br />
+                <br/>
 
-                <br />
+                <br/>
                 <div>
                     <b>Upcoming Votes:</b>
                 </div>
                 <div>
                     <table style={tableWidth1000}>
                         <thead style={thead}>
-                            <tr>
-                                <td>Epoch</td>
-                                <td>Votes Up</td>
-                                <td>Votes Same</td>
-                                <td>Votes Down</td>
-                                <td>Total Locked Tokens</td>
-                            </tr>
+                        <tr>
+                            <td>Epoch</td>
+                            <td>Total Vote Weight</td>
+                            <td>Total Locked Tokens</td>
+                        </tr>
                         </thead>
                         <tbody style={contractAttributeValue}>
-                            {upcomingVotes.map((upcomingVote) => {
-                                return (
-                                    <tr>
-                                        <td>
-                                            {currentEpoch + upcomingVote.index}
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                upcomingVote.votesUp
-                                            )}
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                upcomingVote.votesSame
-                                            )}
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                upcomingVote.votesDown
-                                            )}
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                upcomingVote.votesTotal
-                                            )}
-                                        </td>
-                                    </tr>
-                                )
-                            })}
+                        {upcomingVotes.map((upcomingVote) => {
+                            return (
+                                <tr>
+                                    <td>{currentEpoch + upcomingVote.index}</td>
+                                    <td>
+                                        {this.formatBigNumberAttribute(upcomingVote.voteWeightSums)}
+                                    </td>
+                                    <td>
+                                        {this.formatBigNumberAttribute(upcomingVote.votesTotal)}
+                                    </td>
+                                </tr>
+                            )
+                        })}
                         </tbody>
                     </table>
                 </div>
-                <br />
+                <br/>
 
-                <br />
+                <br/>
                 <div>
                     <b>Vote Totals Per Epoch: </b>
                     <table style={tableWidth50}>
                         <thead style={thead}>
-                            <tr>
-                                <td>Epoch</td>
-                                <td>Votes Total</td>
-                            </tr>
+                        <tr>
+                            <td>Epoch</td>
+                            <td>Votes Total</td>
+                        </tr>
                         </thead>
                         <tbody style={contractAttributeValue}>
-                            {voterRewardsSums.map((epochReward, idx) => {
-                                return (
-                                    <tr>
-                                        <td>{idx}</td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                epochReward
-                                            )}
-                                        </td>
-                                    </tr>
-                                )
-                            })}
+                        {voterRewardsSums.map((epochReward, idx) => {
+                            return (
+                                <tr>
+                                    <td>{idx}</td>
+                                    <td>{this.formatBigNumberAttribute(epochReward)}</td>
+                                </tr>
+                            )
+                        })}
                         </tbody>
                     </table>
                 </div>
-                <br />
+                <br/>
 
-                <hr />
+                <hr/>
                 <h2>Events</h2>
                 <div>
                     <b>Votes:</b>
                     <table style={tableWidth1000}>
                         <thead style={thead}>
-                            <tr>
-                                <td>Date</td>
-                                <td>Time</td>
-                                <td>Voter</td>
-                                <td>Current Epoch</td>
-                                <td>Vote Direction</td>
-                                <td>EGL Amount</td>
-                                <td>Lockup Duration</td>
-                                <td>Vote Weight</td>
-                            </tr>
+                        <tr>
+                            <td>Date</td>
+                            <td>Time</td>
+                            <td>Voter</td>
+                            <td>Current Epoch</td>
+                            <td>Gas Target</td>
+                            <td>EGL Amount</td>
+                            <td>Lockup Duration</td>
+                            <td>Vote Weight</td>
+                            <td>Release Date</td>
+                            <td>Total Votes</td>
+                            <td>Total Votes (for reward)</td>
+                            <td>Total Locked Tokens</td>
+                        </tr>
                         </thead>
                         <tbody style={contractAttributeValue}>
-                            {eventVote.map((event) => {
-                                return (
-                                    <tr>
-                                        <td>
-                                            {moment
-                                                .unix(event.returnValues.date)
-                                                .local()
-                                                .toDate()
-                                                .toLocaleDateString()}
-                                        </td>
-                                        <td>
-                                            {moment
-                                                .unix(event.returnValues.date)
-                                                .local()
-                                                .toDate()
-                                                .toLocaleTimeString()}
-                                        </td>
-                                        <td>{event.returnValues.caller}</td>
-                                        <td>
-                                            {event.returnValues.currentEpoch}
-                                        </td>
-                                        <td>
-                                            {
-                                                this.desiredChangeMap[
-                                                    event.returnValues
-                                                        .desiredChange
-                                                ]
-                                            }
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                event.returnValues.eglAmount
-                                            )}
-                                        </td>
-                                        <td>
-                                            {event.returnValues.lockupDuration}
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                new BN(
-                                                    event.returnValues.eglAmount
-                                                )
-                                                    .mul(
-                                                        new BN(
-                                                            event.returnValues.lockupDuration
-                                                        )
-                                                    )
-                                                    .toString()
-                                            )}
-                                        </td>
-                                    </tr>
-                                )
-                            })}
+                        {eventVote.map((event) => {
+                            return (
+                                <tr>
+                                    <td>
+                                        {moment
+                                            .unix(event.returnValues.date)
+                                            .local()
+                                            .toDate()
+                                            .toLocaleDateString()}
+                                    </td>
+                                    <td>
+                                        {moment
+                                            .unix(event.returnValues.date)
+                                            .local()
+                                            .toDate()
+                                            .toLocaleTimeString()}
+                                    </td>
+                                    <td>{event.returnValues.caller}</td>
+                                    <td>{event.returnValues.currentEpoch}</td>
+                                    <td>
+                                        {event.returnValues.gasTarget}
+                                    </td>
+                                    <td>
+                                        {this.formatBigNumberAttribute(
+                                            event.returnValues.eglAmount
+                                        )}
+                                    </td>
+                                    <td>{event.returnValues.lockupDuration}</td>
+                                    <td>
+                                        {this.formatBigNumberAttribute(
+                                            new BN(event.returnValues.eglAmount)
+                                                .mul(new BN(event.returnValues.lockupDuration))
+                                                .toString()
+                                        )}
+                                    </td>
+                                    <td>
+                                        {
+                                            moment.unix(event.returnValues.releaseDate).local().toDate().toLocaleDateString() +
+                                            " " +
+                                            moment.unix(event.returnValues.releaseDate).local().toDate().toLocaleTimeString()
+                                        }
+                                    </td>
+                                    <td>
+                                        {this.formatBigNumberAttribute(event.returnValues.epochVoteWeightSum)}
+                                    </td>
+                                    <td>
+                                        {this.formatBigNumberAttribute(event.returnValues.epochVoterRewardSum)}
+                                    </td>
+                                    <td>
+                                        {this.formatBigNumberAttribute(event.returnValues.epochTotalVotes)}
+                                    </td>
+                                </tr>
+                            )
+                        })}
                         </tbody>
                     </table>
                 </div>
 
-                <br />
-                <div>
-                    <b>Vote Totals After Vote:</b>
-                    <table style={tableWidth1000}>
-                        <thead style={thead}>
-                            <tr>
-                                <td>Date</td>
-                                <td>Time</td>
-                                <td>Caller</td>
-                                <td>Current Epoch </td>
-                                <td>Votes Up</td>
-                                <td>Votes Same</td>
-                                <td>Votes Down</td>
-                                <td>Votes Total</td>
-                                <td>Total Locked Tokens</td>
-                            </tr>
-                        </thead>
-                        <tbody style={contractAttributeValue}>
-                            {eventNewVoteTotals.map((event) => {
-                                return (
-                                    <tr>
-                                        <td>
-                                            {moment
-                                                .unix(event.returnValues.date)
-                                                .local()
-                                                .toDate()
-                                                .toLocaleDateString()}
-                                        </td>
-                                        <td>
-                                            {moment
-                                                .unix(event.returnValues.date)
-                                                .local()
-                                                .toDate()
-                                                .toLocaleTimeString()}
-                                        </td>
-                                        <td>{event.returnValues.caller}</td>
-                                        <td>
-                                            {event.returnValues.currentEpoch}
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                event.returnValues.epochVotesUp
-                                            )}
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                event.returnValues
-                                                    .epochVotesSame
-                                            )}
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                event.returnValues
-                                                    .epochVotesDown
-                                            )}
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                event.returnValues
-                                                    .epochVoterRewardSum
-                                            )}
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                event.returnValues
-                                                    .epochTotalVotes
-                                            )}
-                                        </td>
-                                    </tr>
-                                )
-                            })}
-                        </tbody>
-                    </table>
-                </div>
+                <br/>
 
-                <br />
+                <br/>
                 <div>
                     <b>Withdraw:</b>
                     <table style={tableWidth1000}>
                         <thead style={thead}>
-                            <tr>
-                                <td>Date</td>
-                                <td>Time</td>
-                                <td>Caller</td>
-                                <td>Current Epoch</td>
-                                <td>Original Vote</td>
-                                <td>Tokens Locked</td>
-                                <td>Reward Tokens</td>
-                            </tr>
+                        <tr>
+                            <td>Date</td>
+                            <td>Time</td>
+                            <td>Caller</td>
+                            <td>Current Epoch</td>
+                            <td>Original Vote</td>
+                            <td>Tokens Locked</td>
+                            <td>Reward Tokens</td>
+                        </tr>
                         </thead>
                         <tbody style={contractAttributeValue}>
-                            {eventWithdraw.map((event) => {
-                                return (
-                                    <tr>
-                                        <td>
-                                            {moment
-                                                .unix(event.returnValues.date)
-                                                .local()
-                                                .toDate()
-                                                .toLocaleDateString()}
-                                        </td>
-                                        <td>
-                                            {moment
-                                                .unix(event.returnValues.date)
-                                                .local()
-                                                .toDate()
-                                                .toLocaleTimeString()}
-                                        </td>
-                                        <td>{event.returnValues.caller}</td>
-                                        <td>
-                                            {event.returnValues.currentEpoch}
-                                        </td>
-                                        <td>
-                                            {
-                                                this.desiredChangeMap[
-                                                    event.returnValues
-                                                        .desiredChange
-                                                ]
-                                            }
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                event.returnValues.tokensLocked
-                                            )}
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                event.returnValues.rewardTokens
-                                            )}
-                                        </td>
-                                    </tr>
-                                )
-                            })}
+                        {eventWithdraw.map((event) => {
+                            return (
+                                <tr>
+                                    <td>
+                                        {moment
+                                            .unix(event.returnValues.date)
+                                            .local()
+                                            .toDate()
+                                            .toLocaleDateString()}
+                                    </td>
+                                    <td>
+                                        {moment
+                                            .unix(event.returnValues.date)
+                                            .local()
+                                            .toDate()
+                                            .toLocaleTimeString()}
+                                    </td>
+                                    <td>{event.returnValues.caller}</td>
+                                    <td>{event.returnValues.currentEpoch}</td>
+                                    <td>
+                                        {event.returnValues.gasTarget}
+                                    </td>
+                                    <td>
+                                        {this.formatBigNumberAttribute(
+                                            event.returnValues.tokensLocked
+                                        )}
+                                    </td>
+                                    <td>
+                                        {this.formatBigNumberAttribute(
+                                            event.returnValues.rewardTokens
+                                        )}
+                                    </td>
+                                </tr>
+                            )
+                        })}
                         </tbody>
                     </table>
                 </div>
 
-                <br />
+                <br/>
                 <div>
                     <b>VoterReward Calculation:</b>
                     <div>
-                        Voter Rewards = (Vote Weight / Epoch Total Votes) *
-                        Reward Multiplier * Reward Weeks
+                        Voter Rewards = (Vote Weight / Epoch Total Votes) * Reward
+                        Multiplier * Reward Weeks
                     </div>
                     <table style={tableWidth1000}>
                         <thead style={thead}>
-                            <tr>
-                                <td>Date</td>
-                                <td>Time</td>
-                                <td>Voter</td>
-                                <td>Current Epoch</td>
-                                <td>Cumulative Reward</td>
-                                <td>Reward per Epoch</td>
-                                <td>Vote Weight</td>
-                                <td>Epoch Total Votes</td>
-                                <td>Reward Multiplier</td>
-                                <td>Reward Weeks</td>
-                            </tr>
+                        <tr>
+                            <td>Date</td>
+                            <td>Time</td>
+                            <td>Voter</td>
+                            <td>Current Epoch</td>
+                            <td>Reward Epoch</td>
+                            <td>Cumulative Reward</td>
+                            <td>Reward per Epoch</td>
+                            <td>Vote Weight</td>
+                            <td>Epoch Total Votes</td>
+                            <td>Reward Multiplier</td>
+                        </tr>
                         </thead>
                         <tbody style={contractAttributeValue}>
-                            {eventVoterRewardCalculated.map((event) => {
-                                return (
-                                    <tr>
-                                        <td>
-                                            {moment
-                                                .unix(event.returnValues.date)
-                                                .local()
-                                                .toDate()
-                                                .toLocaleDateString()}
-                                        </td>
-                                        <td>
-                                            {moment
-                                                .unix(event.returnValues.date)
-                                                .local()
-                                                .toDate()
-                                                .toLocaleTimeString()}
-                                        </td>
-                                        <td>{event.returnValues.voter}</td>
-                                        <td>
-                                            {event.returnValues.currentEpoch}
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                event.returnValues.voterReward
-                                            )}
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                event.returnValues
-                                                    .epochVoterReward
-                                            )}
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                event.returnValues.voteWeight
-                                            )}
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                event.returnValues
-                                                    .epochVoterRewardSum
-                                            )}
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                event.returnValues
-                                                    .rewardMultiplier
-                                            )}
-                                        </td>
-                                        <td>{event.returnValues.weeksDiv}</td>
-                                    </tr>
-                                )
-                            })}
+                        {eventVoterRewardCalculated.map((event) => {
+                            return (
+                                <tr>
+                                    <td>
+                                        {moment
+                                            .unix(event.returnValues.date)
+                                            .local()
+                                            .toDate()
+                                            .toLocaleDateString()}
+                                    </td>
+                                    <td>
+                                        {moment
+                                            .unix(event.returnValues.date)
+                                            .local()
+                                            .toDate()
+                                            .toLocaleTimeString()}
+                                    </td>
+                                    <td>{event.returnValues.voter}</td>
+                                    <td>{event.returnValues.currentEpoch}</td>
+                                    <td>{52 - event.returnValues.weeksDiv}</td>
+                                    <td>
+                                        {this.formatBigNumberAttribute(
+                                            event.returnValues.voterReward
+                                        )}
+                                    </td>
+                                    <td>
+                                        {this.formatBigNumberAttribute(
+                                            event.returnValues.epochVoterReward
+                                        )}
+                                    </td>
+                                    <td>
+                                        {this.formatBigNumberAttribute(
+                                            event.returnValues.voteWeight
+                                        )}
+                                    </td>
+                                    <td>
+                                        {this.formatBigNumberAttribute(
+                                            event.returnValues.epochVoterRewardSum
+                                        )}
+                                    </td>
+                                    <td>
+                                        {this.formatBigNumberAttribute(
+                                            event.returnValues.rewardMultiplier
+                                        )}
+                                    </td>
+                                </tr>
+                            )
+                        })}
                         </tbody>
                     </table>
                 </div>
+                <br/>
 
-                {/*<br />*/}
-                {/*<div>*/}
-                {/*  <b>Vote Totals After Withdraw:</b>*/}
-                {/*  <table style={tableWidth1000}>*/}
-                {/*    <thead style={thead}>*/}
-                {/*    <tr>*/}
-                {/*      <td>Date</td>*/}
-                {/*      <td>Time</td>*/}
-                {/*      <td>Caller</td>*/}
-                {/*      <td>Current Epoch </td>*/}
-                {/*      <td>Votes Up</td>*/}
-                {/*      <td>Votes Same</td>*/}
-                {/*      <td>Votes Down</td>*/}
-                {/*      <td>Votes Reward Sum</td>*/}
-                {/*      <td>Total Votes (EGL's)</td>*/}
-                {/*    </tr>*/}
-                {/*    </thead>*/}
-                {/*    <tbody style={contractAttributeValue}>*/}
-                {/*      {eventWithdraw.map((event) => {*/}
-                {/*          return (*/}
-                {/*            <tr>*/}
-                {/*              <td>{moment.unix(event.returnValues.date).local().toDate().toLocaleDateString()}</td>*/}
-                {/*              <td>{moment.unix(event.returnValues.date).local().toDate().toLocaleTimeString()}</td>*/}
-                {/*              <td>{event.returnValues.caller}</td>*/}
-                {/*              <td>{event.returnValues.currentEpoch}</td>*/}
-                {/*              <td>{this.formatBigNumberAttribute(event.returnValues.epochVotesUp)}</td>*/}
-                {/*              <td>{this.formatBigNumberAttribute(event.returnValues.epochVotesSame)}</td>*/}
-                {/*              <td>{this.formatBigNumberAttribute(event.returnValues.epochVotesDown)}</td>*/}
-                {/*              <td>{this.formatBigNumberAttribute(event.returnValues.epochVoterRewardSum)}</td>*/}
-                {/*              <td>{this.formatBigNumberAttribute(event.returnValues.epochTotalVotes)}</td>*/}
-                {/*            </tr>*/}
-                {/*          )*/}
-                {/*      })}*/}
-                {/*    </tbody>*/}
-                {/*  </table>*/}
-                {/*</div>*/}
-                <br />
-
-                <hr />
-                <br />
+                <hr/>
+                <br/>
                 <div>
                     <b>Tally Votes:</b>
                     <table style={tableWidth1000}>
                         <thead style={thead}>
-                            <tr>
-                                <td>Date</td>
-                                <td>Time</td>
-                                <td>Caller</td>
-                                <td>Current Epoch</td>
-                                <td>Desired EGL</td>
-                                <td>Vote Percentage</td>
-                                <td>Total Up</td>
-                                <td>Total Same</td>
-                                <td>Total Down</td>
-                            </tr>
+                        <tr>
+                            <td>Date</td>
+                            <td>Time</td>
+                            <td>Caller</td>
+                            <td>Current Epoch</td>
+                            <td>Desired EGL</td>
+                            <td>Vote Percentage</td>
+                            <td>Average Gas Target</td>
+                        </tr>
                         </thead>
                         <tbody style={contractAttributeValue}>
-                            {eventVotesTallied.map((event) => {
-                                return (
-                                    <tr>
-                                        <td>
-                                            {moment
-                                                .unix(event.returnValues.date)
-                                                .local()
-                                                .toDate()
-                                                .toLocaleDateString()}
-                                        </td>
-                                        <td>
-                                            {moment
-                                                .unix(event.returnValues.date)
-                                                .local()
-                                                .toDate()
-                                                .toLocaleTimeString()}
-                                        </td>
-                                        <td>{event.returnValues.caller}</td>
-                                        <td>
-                                            {event.returnValues.currentEpoch}
-                                        </td>
-                                        <td>{event.returnValues.desiredEgl}</td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                event.returnValues
-                                                    .actualVotePercentage
-                                            )}
-                                            %
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                event.returnValues.totalVotesUp
-                                            )}
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                event.returnValues
-                                                    .totalVotesSame
-                                            )}
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                event.returnValues
-                                                    .totalVotesDown
-                                            )}
-                                        </td>
-                                    </tr>
-                                )
-                            })}
+                        {eventVotesTallied.map((event) => {
+                            return (
+                                <tr>
+                                    <td>
+                                        {moment
+                                            .unix(event.returnValues.date)
+                                            .local()
+                                            .toDate()
+                                            .toLocaleDateString()}
+                                    </td>
+                                    <td>
+                                        {moment
+                                            .unix(event.returnValues.date)
+                                            .local()
+                                            .toDate()
+                                            .toLocaleTimeString()}
+                                    </td>
+                                    <td>{event.returnValues.caller}</td>
+                                    <td>{event.returnValues.currentEpoch}</td>
+                                    <td>{event.returnValues.desiredEgl}</td>
+                                    <td>
+                                        {this.formatBigNumberAttribute(
+                                            event.returnValues.actualVotePercentage
+                                        )}
+                                        %
+                                    </td>
+                                    <td>
+                                        {event.returnValues.averageGasTarget}
+                                    </td>
+                                </tr>
+                            )
+                        })}
                         </tbody>
                     </table>
                 </div>
 
-                <br />
+                <br/>
                 <div>
                     <b>Vote Threshold Met:</b>
                     <table style={tableWidth1000}>
                         <thead style={thead}>
-                            <tr>
-                                <td>Date</td>
-                                <td>Time</td>
-                                <td>Caller</td>
-                                <td>Current Epoch</td>
-                                <td>New EGL</td>
-                                <td>Vote Threshold Percentage</td>
-                                <td>Actual Vote Percentage</td>
-                                <td>Gas Limit Sum</td>
-                                <td>Vote Count</td>
-                                <td>Baseline EGL</td>
-                            </tr>
+                        <tr>
+                            <td>Date</td>
+                            <td>Time</td>
+                            <td>Caller</td>
+                            <td>Current Epoch</td>
+                            <td>New EGL</td>
+                            <td>Vote Threshold Percentage</td>
+                            <td>Actual Vote Percentage</td>
+                            <td>Gas Limit Sum</td>
+                            <td>Vote Count</td>
+                            <td>Baseline EGL</td>
+                        </tr>
                         </thead>
                         <tbody style={contractAttributeValue}>
-                            {eventVoteThresholdMet.map((event) => {
-                                return (
-                                    <tr>
-                                        <td>
-                                            {moment
-                                                .unix(event.returnValues.date)
-                                                .local()
-                                                .toDate()
-                                                .toLocaleDateString()}
-                                        </td>
-                                        <td>
-                                            {moment
-                                                .unix(event.returnValues.date)
-                                                .local()
-                                                .toDate()
-                                                .toLocaleTimeString()}
-                                        </td>
-                                        <td>{event.returnValues.caller}</td>
-                                        <td>
-                                            {event.returnValues.currentEpoch}
-                                        </td>
-                                        <td>{event.returnValues.desiredEgl}</td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                event.returnValues.voteThreshold
-                                            )}
-                                            %
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                event.returnValues
-                                                    .actualVotePercentage
-                                            )}
-                                            %
-                                        </td>
-                                        <td>
-                                            {event.returnValues.gasLimitSum}
-                                        </td>
-                                        <td>{event.returnValues.voteCount}</td>
-                                        <td>
-                                            {event.returnValues.baselineEgl}
-                                        </td>
-                                    </tr>
-                                )
-                            })}
+                        {eventVoteThresholdMet.map((event) => {
+                            return (
+                                <tr>
+                                    <td>
+                                        {moment
+                                            .unix(event.returnValues.date)
+                                            .local()
+                                            .toDate()
+                                            .toLocaleDateString()}
+                                    </td>
+                                    <td>
+                                        {moment
+                                            .unix(event.returnValues.date)
+                                            .local()
+                                            .toDate()
+                                            .toLocaleTimeString()}
+                                    </td>
+                                    <td>{event.returnValues.caller}</td>
+                                    <td>{event.returnValues.currentEpoch}</td>
+                                    <td>{event.returnValues.desiredEgl}</td>
+                                    <td>
+                                        {this.formatBigNumberAttribute(
+                                            event.returnValues.voteThreshold
+                                        )}
+                                        %
+                                    </td>
+                                    <td>
+                                        {this.formatBigNumberAttribute(
+                                            event.returnValues.actualVotePercentage
+                                        )}
+                                        %
+                                    </td>
+                                    <td>{event.returnValues.gasLimitSum}</td>
+                                    <td>{event.returnValues.voteCount}</td>
+                                    <td>{event.returnValues.baselineEgl}</td>
+                                </tr>
+                            )
+                        })}
                         </tbody>
                     </table>
                 </div>
 
-                <br />
+                <br/>
                 <div>
                     <b>Vote Threshold Failed:</b>
                     <table style={tableWidth1000}>
                         <thead style={thead}>
-                            <tr>
-                                <td>Date</td>
-                                <td>Time</td>
-                                <td>Caller</td>
-                                <td>Current Epoch</td>
-                                <td>New EGL</td>
-                                <td>Initial EGL</td>
-                                <td>Baseline EGL</td>
-                                <td>Vote Threshold Percentage</td>
-                                <td>Actual Vote Percentage</td>
-                            </tr>
+                        <tr>
+                            <td>Date</td>
+                            <td>Time</td>
+                            <td>Caller</td>
+                            <td>Current Epoch</td>
+                            <td>New EGL</td>
+                            <td>Initial EGL</td>
+                            <td>Baseline EGL</td>
+                            <td>Vote Threshold Percentage</td>
+                            <td>Actual Vote Percentage</td>
+                        </tr>
                         </thead>
                         <tbody style={contractAttributeValue}>
-                            {eventVoteThresholdFailed.map((event) => {
-                                return (
-                                    <tr>
-                                        <td>
-                                            {moment
-                                                .unix(event.returnValues.date)
-                                                .local()
-                                                .toDate()
-                                                .toLocaleDateString()}
-                                        </td>
-                                        <td>
-                                            {moment
-                                                .unix(event.returnValues.date)
-                                                .local()
-                                                .toDate()
-                                                .toLocaleTimeString()}
-                                        </td>
-                                        <td>{event.returnValues.caller}</td>
-                                        <td>
-                                            {event.returnValues.currentEpoch}
-                                        </td>
-                                        <td>{event.returnValues.desiredEgl}</td>
-                                        <td>{event.returnValues.initialEgl}</td>
-                                        <td>
-                                            {event.returnValues.baselineEgl}
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                event.returnValues.voteThreshold
-                                            )}
-                                            %
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                event.returnValues
-                                                    .actualVotePercentage
-                                            )}
-                                            %
-                                        </td>
-                                    </tr>
-                                )
-                            })}
+                        {eventVoteThresholdFailed.map((event) => {
+                            return (
+                                <tr>
+                                    <td>
+                                        {moment
+                                            .unix(event.returnValues.date)
+                                            .local()
+                                            .toDate()
+                                            .toLocaleDateString()}
+                                    </td>
+                                    <td>
+                                        {moment
+                                            .unix(event.returnValues.date)
+                                            .local()
+                                            .toDate()
+                                            .toLocaleTimeString()}
+                                    </td>
+                                    <td>{event.returnValues.caller}</td>
+                                    <td>{event.returnValues.currentEpoch}</td>
+                                    <td>{event.returnValues.desiredEgl}</td>
+                                    <td>{event.returnValues.initialEgl}</td>
+                                    <td>{event.returnValues.baselineEgl}</td>
+                                    <td>
+                                        {this.formatBigNumberAttribute(
+                                            event.returnValues.voteThreshold
+                                        )}
+                                        %
+                                    </td>
+                                    <td>
+                                        {this.formatBigNumberAttribute(
+                                            event.returnValues.actualVotePercentage
+                                        )}
+                                        %
+                                    </td>
+                                </tr>
+                            )
+                        })}
                         </tbody>
                     </table>
                 </div>
-                <br />
+                <br/>
 
-                <hr />
+                <hr/>
                 <div>
                     <b>Creator Rewards Claimed:</b>
                     <table style={tableWidth1000}>
                         <thead style={thead}>
-                            <tr>
-                                <td>Date</td>
-                                <td>Time</td>
-                                <td>Caller</td>
-                                <td>Creator Address</td>
-                                <td>Current Epoch</td>
-                                <td>Reward Amount</td>
-                                <td>Remaining Reward Amount</td>
-                            </tr>
+                        <tr>
+                            <td>Date</td>
+                            <td>Time</td>
+                            <td>Caller</td>
+                            <td>Creator Address</td>
+                            <td>Current Epoch</td>
+                            <td>Reward Amount</td>
+                            <td>Remaining Reward Amount</td>
+                        </tr>
                         </thead>
                         <tbody style={contractAttributeValue}>
-                            {eventCreatorRewardsClaimed.map((event) => {
-                                return (
-                                    <tr>
-                                        <td>
-                                            {moment
-                                                .unix(event.returnValues.date)
-                                                .local()
-                                                .toDate()
-                                                .toLocaleDateString()}
-                                        </td>
-                                        <td>
-                                            {moment
-                                                .unix(event.returnValues.date)
-                                                .local()
-                                                .toDate()
-                                                .toLocaleTimeString()}
-                                        </td>
-                                        <td>{event.returnValues.caller}</td>
-                                        <td>
-                                            {
-                                                event.returnValues
-                                                    .creatorRewardAddress
-                                            }
-                                        </td>
-                                        <td>
-                                            {event.returnValues.currentEpoch}
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                event.returnValues.amountClaimed
-                                            )}
-                                        </td>
-                                        <td>
-                                            {this.formatBigNumberAttribute(
-                                                event.returnValues
-                                                    .remainingCreatorReward
-                                            )}
-                                        </td>
-                                    </tr>
-                                )
-                            })}
+                        {eventCreatorRewardsClaimed.map((event) => {
+                            return (
+                                <tr>
+                                    <td>
+                                        {moment
+                                            .unix(event.returnValues.date)
+                                            .local()
+                                            .toDate()
+                                            .toLocaleDateString()}
+                                    </td>
+                                    <td>
+                                        {moment
+                                            .unix(event.returnValues.date)
+                                            .local()
+                                            .toDate()
+                                            .toLocaleTimeString()}
+                                    </td>
+                                    <td>{event.returnValues.caller}</td>
+                                    <td>{event.returnValues.creatorRewardAddress}</td>
+                                    <td>{event.returnValues.currentEpoch}</td>
+                                    <td>
+                                        {this.formatBigNumberAttribute(
+                                            event.returnValues.amountClaimed
+                                        )}
+                                    </td>
+                                    <td>
+                                        {this.formatBigNumberAttribute(
+                                            event.returnValues.remainingCreatorReward
+                                        )}
+                                    </td>
+                                </tr>
+                            )
+                        })}
                         </tbody>
                     </table>
                 </div>
@@ -1048,7 +808,7 @@ class EglContractStatus extends React.Component {
 export default () => (
     <Web3Container
         renderLoading={() => <div>Loading EGL Contract Status Page...</div>}
-        render={({ web3, accounts, contract, token }) => (
+        render={({web3, accounts, contract, token}) => (
             <EglContractStatus
                 accounts={accounts}
                 eglContract={contract}
