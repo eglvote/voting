@@ -15,14 +15,14 @@ import "@uniswap/v2-periphery/contracts/interfaces/IWETH.sol";
 import "@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol";
 
 contract EglContract is Initializable, OwnableUpgradeable {
-    /************** LIBRARIES **************/
+    /********************************** LIBRARIES ***********************************/
     using Math for *;
     using SafeMathUpgradeable for uint;
     using SafeMathUpgradeable for uint8;
     using SafeMathUpgradeable for uint16;
     using SignedSafeMathUpgradeable for int;
 
-    /************** CONSTANTS **************/
+    /********************************** CONSTANTS ***********************************/
     int constant GAS_LIMIT_CHANGE = 1000000;
     uint8 constant WEEKS_IN_YEAR = 52;
     uint8 constant CREATOR_REWARD_FIRST_EPOCH = 9;
@@ -36,7 +36,7 @@ contract EglContract is Initializable, OwnableUpgradeable {
     uint constant ETH_EGL_LAUNCH_RATIO = 16000 ether;
     uint constant TOTAL_EGLS_FOR_MATCHING = 750000000 ether;
 
-    /************** PUBLIC STATE VARIABLES **************/
+    /**************************** PUBLIC STATE VARIABLES ****************************/
     int public desiredEgl;
     int public baselineEgl;
     int public initialEgl;
@@ -72,7 +72,7 @@ contract EglContract is Initializable, OwnableUpgradeable {
         uint[] lastEgl;
     }
 
-    /************** PRIVATE STATE VARIABLES **************/
+    /**************************** PRIVATE STATE VARIABLES ****************************/
     EglToken private eglToken;
     IUniswapV2Router02 private uniSwapRouter;
     IUniswapV2Factory private uniSwapFactory;
@@ -99,7 +99,7 @@ contract EglContract is Initializable, OwnableUpgradeable {
 
     bool private uniSwapLaunched;
 
-    /************** EVENTS **************/
+    /************************************ EVENTS ************************************/
     event Initialized(
         address deployer,
         address eglContract,
@@ -132,7 +132,12 @@ contract EglContract is Initializable, OwnableUpgradeable {
         uint epochTotalVotes,
         uint date
     );
-    event ReVote(address caller, uint gasTarget, uint eglAmount, uint date);
+    event ReVote(
+        address caller, 
+        uint gasTarget, 
+        uint eglAmount, 
+        uint date
+    );
     event Withdraw(
         address caller,
         uint16 currentEpoch,
@@ -192,7 +197,12 @@ contract EglContract is Initializable, OwnableUpgradeable {
         uint blockReward, 
         uint actualAmountTransferred
     );
-    event SeedAccountsFunded(address seedAddress, uint initialSeedAmount, uint seedAmountPerAccount, uint date);
+    event SeedAccountsFunded(
+        address seedAddress, 
+        uint initialSeedAmount, 
+        uint seedAmountPerAccount, 
+        uint date
+    );
     event VoterRewardCalculated(
         address voter,
         uint16 currentEpoch,
@@ -204,7 +214,10 @@ contract EglContract is Initializable, OwnableUpgradeable {
         uint epochVoterRewardSum,
         uint date
     );
-    event EthReceived(address sender, uint amount);
+    event EthReceived(
+        address sender, 
+        uint amount
+    );
     event UniSwapLaunch(
         address caller,
         uint amountReceived,
@@ -238,19 +251,28 @@ contract EglContract is Initializable, OwnableUpgradeable {
         uint date
     );
 
+    /***************************** RECEIVE FUNCTION *****************************/
     /**
      * @dev Receive eth
      */
     receive() external payable {
         emit EthReceived(msg.sender, msg.value);
+        // TODO: Send eth to multisig to be refunded later?
     }
 
+    /**************************** EXTERNAL FUNCTIONS ****************************/
     /**
      * @dev Initialized contract variables
+     *
      * @param _token Address of the EGL token
      * @param _router Address of the Uniswap Router
+     * @param _ethRequiredToLaunchUniSwap Amount of ETH required to launch UniSwap pair
+     * @param _minLiquidityTokensLockup Minimum duration that liquidity tokens are locked for
      * @param _currentEpochStartDate Start date for the first epoch
      * @param _votingPauseSeconds Number of seconds to pause voting before votes are tallied
+     * @param _epochLength The length of each epoch in seconds
+     * @param _seedAccounts List of accounts to seed with EGL's
+     * @param _creatorRewardsAccount Address that creator rewards get sent to
      */
     function initialize(
         address _token,
@@ -260,9 +282,9 @@ contract EglContract is Initializable, OwnableUpgradeable {
         uint _currentEpochStartDate,
         uint24 _votingPauseSeconds,
         uint32 _epochLength,
-        address[] memory _seedAccounts,
+        address[] calldata _seedAccounts,
         address _creatorRewardsAccount
-    ) public initializer {
+    ) external initializer {
         require(_token != address(0), "EGL:INIT_TOKEN_ADDR_0");
         require(_router != address(0), "EGL:INIT_ROUTER_ADDR_0");
 
@@ -325,7 +347,14 @@ contract EglContract is Initializable, OwnableUpgradeable {
     }
 
     /**
-     * @dev Vote
+     * @dev Vote for desired gas limit and upgrade
+     *
+     * @param _gasTarget The desired gas limit
+     * @param _eglAmount Amount of EGL's to vote with
+     * @param _lockupDuration Duration to lock the EGL's
+     * @param _daoRecipient Address of the recipient to received DAO funds
+     * @param _daoAmount Amount of EGL's to give to daoRecipient
+     * @param _upgradeAddress Address of the upgraded contract
      */
     function vote(
         uint _gasTarget,
@@ -334,7 +363,7 @@ contract EglContract is Initializable, OwnableUpgradeable {
         address _daoRecipient,
         uint _daoAmount,
         address _upgradeAddress
-    ) public {
+    ) external {
         require(_eglAmount >= 1 ether, "EGL:AMNT_TOO_LOW");
         require(_eglAmount <= eglToken.balanceOf(msg.sender), "EGL:INSUFFICIENT_EGL_BALANCE");
         require(eglToken.allowance(msg.sender, address(this)) >= _eglAmount, "EGL:INSUFFICIENT_ALLOWANCE");
@@ -352,7 +381,14 @@ contract EglContract is Initializable, OwnableUpgradeable {
     }
 
     /**
-     * @dev Re-Vote
+     * @dev Re-Vote to change parameters of an existing vote
+     *
+     * @param _gasTarget The desired gas limit
+     * @param _eglAmount Amount of EGL's to vote with
+     * @param _lockupDuration Duration to lock the EGL's
+     * @param _daoRecipient Address of the recipient to received DAO funds
+     * @param _daoAmount Amount of EGL's to give to daoRecipient
+     * @param _upgradeAddress Address of the upgraded contract
      */
     function reVote(
         uint _gasTarget,
@@ -361,7 +397,7 @@ contract EglContract is Initializable, OwnableUpgradeable {
         address _daoRecipient,
         uint _daoAmount,
         address _upgradeAddress
-    ) public {
+    ) external {
         require(voters[msg.sender].tokensLocked > 0, "EGL:NOT_VOTED");
         if (_eglAmount > 0) {
             require(_eglAmount >= 1 ether, "EGL:AMNT_TOO_LOW");
@@ -385,16 +421,203 @@ contract EglContract is Initializable, OwnableUpgradeable {
     }
 
     /**
-     * @dev Withdraw
+     * @dev Withdraw EGL's once they have matured
      */
-    function withdraw() public {
+    function withdraw() external {
         require(voters[msg.sender].tokensLocked > 0, "EGL:NOT_VOTED");
         require(block.timestamp > voters[msg.sender].releaseDate, "EGL:NOT_RELEASE_DATE");
         eglToken.transfer(msg.sender, _internalWithdraw());
     }
 
     /**
-     * @dev Tally Votes
+     * @dev Allows mining pools to collect their reward EGL's 
+     */
+    function sweepPoolRewards() external {
+        if (uniSwapLaunched) {
+            require(block.number > latestRewardSwept, "EGL:ALREADY_SWEPT");
+            latestRewardSwept = block.number;
+
+            uint blockReward = 0;
+            int blockGasLimit = int(block.gaslimit);
+            int diff = blockGasLimit < desiredEgl ? desiredEgl.sub(blockGasLimit) : blockGasLimit.sub(desiredEgl);
+            if (diff < GAS_LIMIT_CHANGE) {
+                uint proximityRewardPercent = uint(GAS_LIMIT_CHANGE.sub(diff)
+                    .mul(int(DECIMAL_PRECISION))
+                    .mul(75));
+                blockReward = (DECIMAL_PRECISION.mul(25))
+                    .add(proximityRewardPercent)
+                    .mul(remainingPoolReward.div(4000000))
+                    .div(100);
+            }
+            remainingPoolReward = remainingPoolReward.sub(blockReward);
+            tokensInCirculation = tokensInCirculation.add(blockReward);
+
+            uint amountToTransfer = eglToken.balanceOf(address(this)) >= blockReward 
+                ? blockReward 
+                : eglToken.balanceOf(address(this));
+            eglToken.transfer(block.coinbase, amountToTransfer);
+
+            emit PoolRewardsSwept(msg.sender, latestRewardSwept, blockGasLimit, diff, blockReward, amountToTransfer);
+        }
+    }
+
+    /**
+     * @dev Adds liquidity to a UniSwap pool by matching EGL's with ETH at a given ratio 
+     */
+    function supportLaunch() external payable {
+        require(msg.value > 0, "EGL:INSUFFICIENT_AMOUNT");
+        require(eglsMatched <= TOTAL_EGLS_FOR_MATCHING, "EGL:ALL_EGL_MATCHED");        
+        uint amountReceived = msg.value;
+        uint eglsToBeMatched;
+        uint poolTokensReceived;
+        uint ethEglRatio;    
+        
+        if (uniSwapLaunched) {
+            (uint eglReserve, uint wethReserve) = UniswapV2Library.getReserves(
+                address(uniSwapFactory), address(eglToken), address(weth)
+            );
+            eglsToBeMatched = UniswapV2Library.quote(amountReceived, wethReserve, eglReserve);            
+            require(eglsMatched.add(eglsToBeMatched) <= TOTAL_EGLS_FOR_MATCHING, "EGL:MATCHING_EXCEEDED");        
+
+            ethEglRatio = eglsToBeMatched.mul(DECIMAL_PRECISION).div(amountReceived);
+            eglToken.increaseAllowance(address(uniSwapRouter), eglsToBeMatched);
+            poolTokensReceived = _addPairLiquidity(amountReceived, eglsToBeMatched);
+            tokensInCirculation = tokensInCirculation.add(eglsToBeMatched);
+        } else {
+            ethEglRatio = ETH_EGL_LAUNCH_RATIO;
+            eglsToBeMatched = (amountReceived.mul(ethEglRatio)).div(DECIMAL_PRECISION);        
+            require(eglsMatched.add(eglsToBeMatched) <= TOTAL_EGLS_FOR_MATCHING, "EGL:MATCHING_EXCEEDED");        
+            poolTokensReceived = (amountReceived.mul(126491106406735173279)).div(DECIMAL_PRECISION);            
+        }
+
+        Launcher storage _launcher = launchers[msg.sender];
+        _launcher.matches += 1;
+        _launcher.poolTokens.push(poolTokensReceived);
+        _launcher.firstEgl.push(eglsMatched);
+        _launcher.lastEgl.push(eglsMatched.add(eglsToBeMatched));        
+
+        ethToBeDeployed = ethToBeDeployed.add(amountReceived);
+        eglsMatched = eglsMatched.add(eglsToBeMatched);
+        poolTokensHeld = poolTokensHeld.add(poolTokensReceived);
+
+        if (!uniSwapLaunched && (ethToBeDeployed >= ethRequiredToLaunchUniSwap)) {
+            uniSwapLaunched = true;
+            tokensInCirculation = tokensInCirculation.add(eglsMatched);
+            eglToken.increaseAllowance(address(uniSwapRouter), eglsMatched);
+            uint actualTokensReceived = _addPairLiquidity(ethToBeDeployed, eglsMatched);
+
+            emit UniSwapLaunch(
+                msg.sender,
+                amountReceived,
+                ethEglRatio,
+                eglsToBeMatched,
+                ethToBeDeployed,
+                eglsMatched,
+                actualTokensReceived,
+                poolTokensHeld,
+                now
+            );
+        }
+
+        emit EglsMatched(
+            msg.sender,
+            amountReceived,
+            ethEglRatio,
+            eglsToBeMatched,
+            ethToBeDeployed,
+            eglsMatched,
+            poolTokensReceived,
+            poolTokensHeld,
+            uniSwapLaunched,
+            now
+        );
+    }
+
+    /**
+     * @dev Allows for the withdrawal of liquidity pool tokens once they have matured
+     */
+    function withdrawLiquidityTokens() external {
+        require(launchers[msg.sender].matches > 0, "EGL:NO_POOL_TOKENS");
+        require(now.sub(firstEpochStartDate) > minLiquidityTokensLockup, "EGL:STILL_LOCKED");
+        require(uniSwapLaunched, "EGL:UNISWAP_NOT_LAUNCHED");
+
+        uint yearInSeconds = 31540000;
+        uint currentEglReleased = block.timestamp
+            .sub(firstEpochStartDate)
+            .sub(minLiquidityTokensLockup)
+            .mul(TOTAL_EGLS_FOR_MATCHING)
+            .div(yearInSeconds.sub(minLiquidityTokensLockup));
+
+        Launcher storage launcher = launchers[msg.sender];
+        require(launcher.firstEgl[launcher.idx] <= currentEglReleased, "EGL:ADDR_STILL_LOCKED");
+
+        uint poolTokensDue;
+        if (currentEglReleased >= launcher.lastEgl[launcher.idx]) {
+            poolTokensDue = launcher.poolTokens[launcher.idx];
+            launcher.poolTokens[launcher.idx] = 0;
+            launcher.matches -= 1;
+            if (launcher.matches == 0) {                
+                emit LiquidityTokensWithdrawn(
+                    msg.sender, 
+                    currentEglReleased, 
+                    poolTokensDue, 
+                    launcher.poolTokens[launcher.idx],
+                    launcher.firstEgl[launcher.idx], 
+                    launcher.lastEgl[launcher.idx], 
+                    now
+                );
+                delete launchers[msg.sender];
+            }
+            else {
+                emit LiquidityTokensWithdrawn(
+                    msg.sender, 
+                    currentEglReleased, 
+                    poolTokensDue, 
+                    launcher.poolTokens[launcher.idx],
+                    launcher.firstEgl[launcher.idx], 
+                    launcher.lastEgl[launcher.idx], 
+                    now
+                );
+                launcher.idx += 1;
+            }
+            
+        } else {
+            uint eglsReleased = (currentEglReleased.umin(launcher.lastEgl[launcher.idx]))
+                .sub(launcher.firstEgl[launcher.idx]);
+            poolTokensDue = launcher.poolTokens[launcher.idx]
+                .mul(eglsReleased)
+                .div(launcher.lastEgl[launcher.idx].sub(launcher.firstEgl[launcher.idx]));
+            launcher.poolTokens[launcher.idx] = launcher.poolTokens[launcher.idx].sub(poolTokensDue);
+            emit LiquidityTokensWithdrawn(
+                msg.sender, 
+                currentEglReleased, 
+                poolTokensDue, 
+                launcher.poolTokens[launcher.idx], 
+                launcher.firstEgl[launcher.idx], 
+                launcher.lastEgl[launcher.idx], 
+                now
+            );
+            launcher.firstEgl[launcher.idx] = currentEglReleased;
+        }        
+
+        uint amountToTransfer = uniSwapPair.balanceOf(address(this)) >= poolTokensDue 
+            ? poolTokensDue 
+            : uniSwapPair.balanceOf(address(this));
+        uniSwapPair.transfer(msg.sender, amountToTransfer);
+    }
+
+    /**
+     *   IMPORTANT!!!!!! REMOVE THIS FUNCTION AFTER TESTING
+     */
+    function giveTokens(address _recipient) external {
+        uint tokenAmount = 50000000 ether;
+        tokensInCirculation = tokensInCirculation.add(tokenAmount);
+        eglToken.transfer(_recipient, tokenAmount);
+    }
+
+    /***************************** PUBLIC FUNCTIONS *****************************/
+    /**
+     * @dev Tally Votes for the most recent epoch and calculate the new desired EGL amount
      */
     function tallyVotes() public {
         require(block.timestamp > currentEpochStartDate.add(epochLength), "EGL:VOTE_NOT_ENDED");
@@ -487,194 +710,17 @@ contract EglContract is Initializable, OwnableUpgradeable {
         );
     }
 
+    /**************************** INTERNAL FUNCTIONS ****************************/
     /**
-     * @dev Sweep Pool Rewards
-     */
-    function sweepPoolRewards() public {
-        if (uniSwapLaunched) {
-            require(block.number > latestRewardSwept, "EGL:ALREADY_SWEPT");
-            latestRewardSwept = block.number;
-
-            uint blockReward = 0;
-            int blockGasLimit = int(block.gaslimit);
-            int diff = blockGasLimit < desiredEgl ? desiredEgl.sub(blockGasLimit) : blockGasLimit.sub(desiredEgl);
-            if (diff < GAS_LIMIT_CHANGE) {
-                uint proximityRewardPercent = uint(GAS_LIMIT_CHANGE.sub(diff)
-                    .mul(int(DECIMAL_PRECISION))
-                    .mul(75));
-                blockReward = (DECIMAL_PRECISION.mul(25))
-                    .add(proximityRewardPercent)
-                    .mul(remainingPoolReward.div(4000000))
-                    .div(100);
-            }
-            remainingPoolReward = remainingPoolReward.sub(blockReward);
-            tokensInCirculation = tokensInCirculation.add(blockReward);
-
-            uint amountToTransfer = eglToken.balanceOf(address(this)) >= blockReward 
-                ? blockReward 
-                : eglToken.balanceOf(address(this));
-            eglToken.transfer(block.coinbase, amountToTransfer);
-
-            emit PoolRewardsSwept(msg.sender, latestRewardSwept, blockGasLimit, diff, blockReward, amountToTransfer);
-        }
-    }
-
-    /**
-     * @dev Support the launch of EGL
-     */
-    function supportLaunch() public payable {
-        require(msg.value > 0, "EGL:INSUFFICIENT_AMOUNT");
-        require(eglsMatched <= TOTAL_EGLS_FOR_MATCHING, "EGL:ALL_EGL_MATCHED");        
-        uint amountReceived = msg.value;
-        uint eglsToBeMatched;
-        uint poolTokensReceived;
-        uint ethEglRatio;    
-        
-        if (uniSwapLaunched) {
-            (uint eglReserve, uint wethReserve) = UniswapV2Library.getReserves(
-                address(uniSwapFactory), address(eglToken), address(weth)
-            );
-            eglsToBeMatched = UniswapV2Library.quote(amountReceived, wethReserve, eglReserve);            
-            require(eglsMatched.add(eglsToBeMatched) <= TOTAL_EGLS_FOR_MATCHING, "EGL:MATCHING_EXCEEDED");        
-
-            ethEglRatio = eglsToBeMatched.mul(DECIMAL_PRECISION).div(amountReceived);
-            eglToken.increaseAllowance(address(uniSwapRouter), eglsToBeMatched);
-            poolTokensReceived = _addPairLiquidity(amountReceived, eglsToBeMatched);
-            tokensInCirculation = tokensInCirculation.add(eglsToBeMatched);
-        } else {
-            ethEglRatio = ETH_EGL_LAUNCH_RATIO;
-            eglsToBeMatched = (amountReceived.mul(ethEglRatio)).div(DECIMAL_PRECISION);        
-            require(eglsMatched.add(eglsToBeMatched) <= TOTAL_EGLS_FOR_MATCHING, "EGL:MATCHING_EXCEEDED");        
-            poolTokensReceived = (amountReceived.mul(126491106406735173279)).div(DECIMAL_PRECISION);            
-        }
-
-        Launcher storage _launcher = launchers[msg.sender];
-        _launcher.matches += 1;
-        _launcher.poolTokens.push(poolTokensReceived);
-        _launcher.firstEgl.push(eglsMatched);
-        _launcher.lastEgl.push(eglsMatched.add(eglsToBeMatched));        
-
-        ethToBeDeployed = ethToBeDeployed.add(amountReceived);
-        eglsMatched = eglsMatched.add(eglsToBeMatched);
-        poolTokensHeld = poolTokensHeld.add(poolTokensReceived);
-
-        if (!uniSwapLaunched && (ethToBeDeployed >= ethRequiredToLaunchUniSwap)) {
-            uniSwapLaunched = true;
-            tokensInCirculation = tokensInCirculation.add(eglsMatched);
-            eglToken.increaseAllowance(address(uniSwapRouter), eglsMatched);
-            uint actualTokensReceived = _addPairLiquidity(ethToBeDeployed, eglsMatched);
-
-            emit UniSwapLaunch(
-                msg.sender,
-                amountReceived,
-                ethEglRatio,
-                eglsToBeMatched,
-                ethToBeDeployed,
-                eglsMatched,
-                actualTokensReceived,
-                poolTokensHeld,
-                now
-            );
-        }
-
-        emit EglsMatched(
-            msg.sender,
-            amountReceived,
-            ethEglRatio,
-            eglsToBeMatched,
-            ethToBeDeployed,
-            eglsMatched,
-            poolTokensReceived,
-            poolTokensHeld,
-            uniSwapLaunched,
-            now
-        );
-    }
-
-    /**
-     * @dev Withdraw Liquidity Pool Tokens
-     */
-    function withdrawLiquidityTokens() public {
-        require(launchers[msg.sender].matches > 0, "EGL:NO_POOL_TOKENS");
-        require(now.sub(firstEpochStartDate) > minLiquidityTokensLockup, "EGL:STILL_LOCKED");
-        require(uniSwapLaunched, "EGL:UNISWAP_NOT_LAUNCHED");
-
-        uint yearInSeconds = 31540000;
-        uint currentEglReleased = block.timestamp
-            .sub(firstEpochStartDate)
-            .sub(minLiquidityTokensLockup)
-            .mul(TOTAL_EGLS_FOR_MATCHING)
-            .div(yearInSeconds.sub(minLiquidityTokensLockup));
-
-        Launcher storage launcher = launchers[msg.sender];
-        require(launcher.firstEgl[launcher.idx] <= currentEglReleased, "EGL:ADDR_STILL_LOCKED");
-
-        uint poolTokensDue;
-        if (currentEglReleased >= launcher.lastEgl[launcher.idx]) {
-            poolTokensDue = launcher.poolTokens[launcher.idx];
-            launcher.poolTokens[launcher.idx] = 0;
-            launcher.matches -= 1;
-            if (launcher.matches == 0) {                
-                emit LiquidityTokensWithdrawn(
-                    msg.sender, 
-                    currentEglReleased, 
-                    poolTokensDue, 
-                    launcher.poolTokens[launcher.idx],
-                    launcher.firstEgl[launcher.idx], 
-                    launcher.lastEgl[launcher.idx], 
-                    now
-                );
-                delete launchers[msg.sender];
-            }
-            else {
-                emit LiquidityTokensWithdrawn(
-                    msg.sender, 
-                    currentEglReleased, 
-                    poolTokensDue, 
-                    launcher.poolTokens[launcher.idx],
-                    launcher.firstEgl[launcher.idx], 
-                    launcher.lastEgl[launcher.idx], 
-                    now
-                );
-                launcher.idx += 1;
-            }
-            
-        } else {
-            uint eglsReleased = (currentEglReleased.umin(launcher.lastEgl[launcher.idx]))
-                .sub(launcher.firstEgl[launcher.idx]);
-            poolTokensDue = launcher.poolTokens[launcher.idx]
-                .mul(eglsReleased)
-                .div(launcher.lastEgl[launcher.idx].sub(launcher.firstEgl[launcher.idx]));
-            launcher.poolTokens[launcher.idx] = launcher.poolTokens[launcher.idx].sub(poolTokensDue);
-            emit LiquidityTokensWithdrawn(
-                msg.sender, 
-                currentEglReleased, 
-                poolTokensDue, 
-                launcher.poolTokens[launcher.idx], 
-                launcher.firstEgl[launcher.idx], 
-                launcher.lastEgl[launcher.idx], 
-                now
-            );
-            launcher.firstEgl[launcher.idx] = currentEglReleased;
-        }        
-
-        uint amountToTransfer = uniSwapPair.balanceOf(address(this)) >= poolTokensDue 
-            ? poolTokensDue 
-            : uniSwapPair.balanceOf(address(this));
-        uniSwapPair.transfer(msg.sender, amountToTransfer);
-    }
-
-    /**
-     *   IMPORTANT!!!!!! REMOVE THIS FUNCTION AFTER TESTING
-     */
-    function giveTokens(address _recipient) public {
-        uint tokenAmount = 50000000 ether;
-        tokensInCirculation = tokensInCirculation.add(tokenAmount);
-        eglToken.transfer(_recipient, tokenAmount);
-    }
-
-    /**
-     * @dev Internal Vote
+     * @dev Internal function that adds a users vote
+     *
+     * @param _gasTarget The desired gas limit
+     * @param _eglAmount Amount of EGL's to vote with
+     * @param _lockupDuration Duration to lock the EGL's
+     * @param _daoRecipient Address of the recipient to received DAO funds
+     * @param _daoAmount Amount of EGL's to give to daoRecipient
+     * @param _upgradeAddress Address of the upgraded contract
+     * @param _releaseTime Date the EGL's are available to withdraw
      */
     function _internalVote(
         address _voter,
@@ -685,7 +731,7 @@ contract EglContract is Initializable, OwnableUpgradeable {
         uint _daoAmount,
         address _upgradeAddress,
         uint _releaseTime
-    ) private {
+    ) internal {
         require(voters[_voter].tokensLocked == 0, "EGL:ADDR_VOTED");
         require(
             _gasTarget > block.gaslimit
@@ -744,9 +790,9 @@ contract EglContract is Initializable, OwnableUpgradeable {
     }
 
     /**
-     * @dev Internal Withdraw
+     * @dev Internal function that calculates the rewards due and removes the vote
      */
-    function _internalWithdraw() private returns (uint totalWithdrawn) {
+    function _internalWithdraw() internal returns (uint totalWithdrawn) {
         Voter storage voter = voters[msg.sender];
         uint16 voterEpoch = voter.voteEpoch;
         uint originalEglAmount = voter.tokensLocked;
@@ -804,9 +850,9 @@ contract EglContract is Initializable, OwnableUpgradeable {
     }
 
     /**
-     * @dev Add Pair Liquidity
+     * @dev Adds liquidity ETH to the UniSwap pair, creating it if it does not exist
      */
-    function _addPairLiquidity(uint _ethAmount, uint _tokenAmount) private returns (uint tokensReceived) {
+    function _addPairLiquidity(uint _ethAmount, uint _tokenAmount) internal returns (uint tokensReceived) {
         (, , tokensReceived) = uniSwapRouter.addLiquidityETH{value: _ethAmount}(
             address(eglToken),
             _tokenAmount,
