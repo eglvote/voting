@@ -34,9 +34,9 @@ export default ({ contract, token, walletAddress }) => {
                             values.desiredChange,
                             values.weeksLocked
                         )
-                        setTsxLink(
-                            `etherscan.io/tx/${transactionReceipt.transactionHash}`
-                        )
+                        // setTsxLink(
+                        //     `etherscan.io/tx/${transactionReceipt.transactionHash}`
+                        // )
                     } else {
                         alert('Connect to Metamask!')
                     }
@@ -79,7 +79,7 @@ export default ({ contract, token, walletAddress }) => {
                     <button type="submit">Submit</button>
                 </Form>
             </Formik>
-            {txLink && <p>{txLink}</p>}
+            {/* {txLink && <p>{txLink}</p>} */}
         </div>
     )
 }

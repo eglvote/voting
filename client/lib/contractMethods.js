@@ -16,15 +16,20 @@ export const vote = async (
         !contract ||
         !token ||
         !walletAddress ||
-        !amount ||
-        !desiredChange ||
-        !weeksLocked ||
-        weeksLocked < 1
+        eglAmount === undefined ||
+        desiredChange === undefined ||
+        weeksLocked === undefined ||
+        eglAmount === '' ||
+        desiredChange === '' ||
+        weeksLocked === '' ||
+        eglAmount < 0 ||
+        desiredChange < 0 ||
+        weeksLocked < 0
     ) {
         alert('Vote called with invalid parameters')
         return
     }
-
+    console.log(eglAmount, desiredChange, weeksLocked)
     const response = await contract.methods
         .vote(
             desiredChange, // desired change enum
@@ -52,7 +57,7 @@ export const revote = async (
     contract,
     token,
     walletAddress,
-    amount,
+    eglAmount,
     desiredChange,
     weeksLocked
 ) => {
@@ -60,10 +65,15 @@ export const revote = async (
         !contract ||
         !token ||
         !walletAddress ||
-        !amount ||
-        !desiredChange ||
-        !weeksLocked ||
-        weeksLocked < 1
+        eglAmount === undefined ||
+        desiredChange === undefined ||
+        weeksLocked === undefined ||
+        eglAmount === '' ||
+        desiredChange === '' ||
+        weeksLocked === '' ||
+        eglAmount < 0 ||
+        desiredChange < 0 ||
+        weeksLocked < 0
     ) {
         alert('revote called with invalid parameters')
         return
@@ -72,7 +82,7 @@ export const revote = async (
     const response = await contract.methods
         .reVote(
             desiredChange,
-            web3.utils.toWei(String(amount)),
+            web3.utils.toWei(String(eglAmount)),
             weeksLocked,
             daoRecipient,
             daoAmount,
