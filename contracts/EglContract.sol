@@ -318,8 +318,8 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
             baselineEgl = epochGasLimitSum.div(epochVoteCount);
 
             desiredEgl = baselineEgl > averageGasTarget
-                ? desiredEgl.sub(baselineEgl.sub(averageGasTarget).min(GAS_LIMIT_CHANGE))
-                : desiredEgl.add(averageGasTarget.sub(baselineEgl).min(GAS_LIMIT_CHANGE));
+                ? baselineEgl.sub(baselineEgl.sub(averageGasTarget).min(GAS_LIMIT_CHANGE))
+                : baselineEgl.add(averageGasTarget.sub(baselineEgl).min(GAS_LIMIT_CHANGE));
 
             emit VoteThresholdMet(
                 msg.sender,
@@ -333,7 +333,7 @@ contract EglContract is Initializable, OwnableUpgradeSafe {
                 now
             );
         } else {
-            desiredEgl = ((baselineEgl.add(initialEgl.sub(baselineEgl)).mul(95)).div(100));
+            desiredEgl = baselineEgl.add((initialEgl.sub(baselineEgl).mul(95)).div(100));
             emit VoteThresholdFailed(
                 msg.sender,
                 currentEpoch,

@@ -3,8 +3,8 @@ import React from 'react'
 import Button from '../../components/atoms/Button.tsx'
 
 export default {
-  title: 'Example/Button',
-  component: Button,
+    title: 'Example/Button',
+    component: Button,
 }
 
 const Template = () => <Button>Click me!</Button>
