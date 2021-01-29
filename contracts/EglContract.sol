@@ -28,6 +28,7 @@ contract EglContract is Initializable, OwnableUpgradeable {
     uint8 constant CREATOR_REWARD_FIRST_EPOCH = 9;
     uint constant GAS_TARGET_TOLERANCE = 4000000;
     uint constant SEED_LOCKUP_PERIOD = 31536000;
+    uint constant GRACE_PERIOD = 3628800;
     uint constant DECIMAL_PRECISION = 10**18;
     uint constant DAO_RECIPIENT_MIN_AMOUNT = 1 ether;
     uint constant DAO_RECIPIENT_MAX_AMOUNT = 5000000 ether;
@@ -446,15 +447,16 @@ contract EglContract is Initializable, OwnableUpgradeable {
                     .mul(75));
                 blockReward = (DECIMAL_PRECISION.mul(25))
                     .add(proximityRewardPercent)
-                    .mul(remainingPoolReward.div(4000000))
+                    .mul(remainingPoolReward.div(2**22))
                     .div(100);
             }
-            remainingPoolReward = remainingPoolReward.sub(blockReward);
-            tokensInCirculation = tokensInCirculation.add(blockReward);
 
             uint amountToTransfer = eglToken.balanceOf(address(this)) >= blockReward 
                 ? blockReward 
                 : eglToken.balanceOf(address(this));
+
+            remainingPoolReward = remainingPoolReward.sub(amountToTransfer);
+            tokensInCirculation = tokensInCirculation.add(amountToTransfer);
             eglToken.transfer(block.coinbase, amountToTransfer);
 
             emit PoolRewardsSwept(msg.sender, latestRewardSwept, blockGasLimit, diff, blockReward, amountToTransfer);
@@ -502,9 +504,9 @@ contract EglContract is Initializable, OwnableUpgradeable {
 
         if (!uniSwapLaunched && (ethToBeDeployed >= ethRequiredToLaunchUniSwap)) {
             uniSwapLaunched = true;
-            tokensInCirculation = tokensInCirculation.add(eglsMatched);
             eglToken.increaseAllowance(address(uniSwapRouter), eglsMatched);
             uint actualTokensReceived = _addPairLiquidity(ethToBeDeployed, eglsMatched);
+            tokensInCirculation = tokensInCirculation.add(eglsMatched);
 
             emit UniSwapLaunch(
                 msg.sender,
@@ -654,8 +656,8 @@ contract EglContract is Initializable, OwnableUpgradeable {
                 now
             );
         } else {
-            // TODO: Add grace period of 6 weeks before doing the below calc
-            desiredEgl = baselineEgl.add((initialEgl.sub(baselineEgl).mul(95)).div(100));
+            if (block.timestamp.sub(firstEpochStartDate) >= GRACE_PERIOD)
+                desiredEgl = baselineEgl.add((initialEgl.sub(baselineEgl).mul(95)).div(100));
             emit VoteThresholdFailed(
                 msg.sender,
                 currentEpoch,
@@ -683,9 +685,9 @@ contract EglContract is Initializable, OwnableUpgradeable {
 
         if (currentEpoch >= CREATOR_REWARD_FIRST_EPOCH && remainingCreatorReward > 0) {
             uint creatorRewardForEpoch = weeklyCreatorRewardAmount.umin(remainingCreatorReward);
+            eglToken.transfer(creatorRewardsAddress, creatorRewardForEpoch);
             remainingCreatorReward = remainingCreatorReward.sub(creatorRewardForEpoch);
             tokensInCirculation = tokensInCirculation.add(creatorRewardForEpoch);
-            eglToken.transfer(creatorRewardsAddress, creatorRewardForEpoch);
             emit CreatorRewardsClaimed(
                 msg.sender,
                 creatorRewardsAddress,
