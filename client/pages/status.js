@@ -561,8 +561,7 @@ class EglContractStatus extends React.Component {
                 <div>
                     <b>VoterReward Calculation:</b>
                     <div>
-                        Voter Rewards = (Vote Weight / Epoch Total Votes) * Reward
-                        Multiplier * Reward Weeks
+                        Voter Rewards = (Vote Weight / Epoch Total Votes) * Reward Multiplier
                     </div>
                     <table style={tableWidth1000}>
                         <thead style={thead}>
