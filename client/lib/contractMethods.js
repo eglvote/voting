@@ -217,3 +217,17 @@ export const allowance = async (contract, token, walletAddress) => {
 
     return response
 }
+
+export const supportLaunch = async (contract, walletAddress, ethValue) => {
+    if (!contract || !walletAddress) {
+        alert('supportLaunch called with invalid parameters')
+        return
+    }
+
+    const result = await contract.methods.supportLaunch().send({
+        value: web3.utils.toWei(String(ethValue)),
+        from: walletAddress,
+    })
+
+    return result
+}

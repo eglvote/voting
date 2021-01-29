@@ -19,6 +19,7 @@ import SectionHeader from '../components/atoms/SectionHeader'
 import m from 'moment'
 import { fromWei } from '../lib/helpers'
 import BN from 'bn.js'
+import SupportLaunchForm from '../components/organisms/SupportLaunchForm'
 
 const ALERT_MESSAGE = 'Please connect to Metamask'
 const IS_DEV = false
@@ -351,6 +352,11 @@ class Dapp extends React.Component {
                         </table>
                     </div>
                 </div>
+                <SupportLaunchForm
+                    contract={this.props.contract}
+                    token={this.props.token}
+                    walletAddress={this.state.walletAddress}
+                />
                 <VoteForm
                     contract={this.props.contract}
                     token={this.props.token}
