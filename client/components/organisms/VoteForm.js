@@ -86,7 +86,9 @@ export default ({ contract, token, walletAddress, hasNotVoted }) => {
                             placeholder="0"
                         />
                     </FormRow>
-                    <button type="submit">Submit</button>
+                    <button style={{ 'margin-top': '1em' }} type="submit">
+                        Submit
+                    </button>
                 </Form>
             </Formik>
             {/* {txLink && <p>{txLink}</p>} */}

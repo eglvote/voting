@@ -2,7 +2,10 @@ import React from 'react'
 import styled from 'styled-components'
 import { Formik, Field, Form } from 'formik'
 import Row from '../atoms/Row'
-import { supportLaunch } from '../../lib/contractMethods'
+import {
+    supportLaunch,
+    withdrawLiquidityTokens,
+} from '../../lib/contractMethods'
 import SectionHeader from '../atoms/SectionHeader'
 
 const FormRow = styled(Row)`
@@ -19,7 +22,7 @@ const FormField = styled(Field)`
 //     border-radius: 5px;
 //     margin-top: 1em;
 // `
-export default function SupportLaunchForm({ contract, token, walletAddress }) {
+export default function SupportLaunchForm({ contract, walletAddress }) {
     return (
         <div>
             <SectionHeader>{'Support Launch'}</SectionHeader>
@@ -49,9 +52,17 @@ export default function SupportLaunchForm({ contract, token, walletAddress }) {
                             placeholder="0"
                         />
                     </FormRow>
-                    <button type="submit">Submit</button>
+                    <button style={{ 'margin-top': '1em' }} type="submit">
+                        Submit
+                    </button>
                 </Form>
             </Formik>
+            <button
+                style={{ 'margin-top': '1em' }}
+                onClick={() => withdrawLiquidityTokens(contract, walletAddress)}
+            >
+                Withdraw Liquidity Tokens
+            </button>
         </div>
     )
 }

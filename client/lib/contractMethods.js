@@ -231,3 +231,16 @@ export const supportLaunch = async (contract, walletAddress, ethValue) => {
 
     return result
 }
+
+export const withdrawLiquidityTokens = async (contract, walletAddress) => {
+    if (!contract || !walletAddress) {
+        alert('supportLaunch called with invalid parameters')
+        return
+    }
+
+    const result = await contract.methods.withdrawLiquidityTokens().send({
+        from: walletAddress,
+    })
+
+    return result
+}
