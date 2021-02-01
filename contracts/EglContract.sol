@@ -198,10 +198,15 @@ contract EglContract is Initializable, OwnableUpgradeable {
         uint blockReward, 
         uint actualAmountTransferred
     );
-    event SeedAccountsFunded(
+    event SeedAccountFunded(
         address seedAddress, 
         uint initialSeedAmount, 
-        uint seedAmountPerAccount, 
+        uint individualSeedAmount, 
+        uint date
+    );
+    event GiftAccountFunded(
+        address giftAddress, 
+        uint individualGiftAmount, 
         uint date
     );
     event VoterRewardCalculated(
@@ -284,10 +289,11 @@ contract EglContract is Initializable, OwnableUpgradeable {
         uint24 _votingPauseSeconds,
         uint32 _epochLength,
         address[] calldata _seedAccounts,
+        uint _eglsGifted,
         address _creatorRewardsAccount
     ) external initializer {
-        require(_token != address(0), "EGL:INIT_TOKEN_ADDR_0");
-        require(_router != address(0), "EGL:INIT_ROUTER_ADDR_0");
+        require(_token != address(0), "EGL:INVALID_TOKEN_ADDR");
+        require(_router != address(0), "EGL:INVALID_ROUTER_ADDR");
 
         eglToken = EglToken(_token);
         uniSwapRouter = IUniswapV2Router02(_router);
@@ -304,8 +310,8 @@ contract EglContract is Initializable, OwnableUpgradeable {
         votingPauseSeconds = _votingPauseSeconds;
         epochLength = _epochLength;
         creatorRewardsAddress = _creatorRewardsAccount;
+        tokensInCirculation = _eglsGifted;
 
-        uniSwapLaunched = false;
         initialEgl = 12500000;
         desiredEgl = 13000000;
         baselineEgl = 12500000;
@@ -315,20 +321,21 @@ contract EglContract is Initializable, OwnableUpgradeable {
         weeklyCreatorRewardAmount = remainingCreatorReward.div(WEEKS_IN_YEAR.sub(CREATOR_REWARD_FIRST_EPOCH));
 
         if (_seedAccounts.length > 0) {
-            tokensInCirculation = tokensInCirculation.add(INITIAL_SEED_AMOUNT);
-            uint seedAmountPerAccount = INITIAL_SEED_AMOUNT.div(_seedAccounts.length);
+            uint individualSeedAmount = INITIAL_SEED_AMOUNT.div(_seedAccounts.length);
             for (uint8 i = 0; i < _seedAccounts.length; i++) {
-                emit SeedAccountsFunded(_seedAccounts[i], INITIAL_SEED_AMOUNT, seedAmountPerAccount, now);
+                tokensInCirculation = tokensInCirculation.add(individualSeedAmount);
                 _internalVote(
                     _seedAccounts[i],
                     block.gaslimit,
-                    seedAmountPerAccount,
+                    individualSeedAmount,
                     8,
                     address(0), 0, address(0),
                     currentEpochStartDate.add(SEED_LOCKUP_PERIOD)
                 );
+                emit SeedAccountFunded(_seedAccounts[i], INITIAL_SEED_AMOUNT, individualSeedAmount, now);
             }
         }
+        
         emit Initialized(
             msg.sender,
             address(this),
@@ -540,7 +547,7 @@ contract EglContract is Initializable, OwnableUpgradeable {
      */
     function withdrawLiquidityTokens() external {
         require(launchers[msg.sender].matches > 0, "EGL:NO_POOL_TOKENS");
-        require(now.sub(firstEpochStartDate) > minLiquidityTokensLockup, "EGL:STILL_LOCKED");
+        require(now.sub(firstEpochStartDate) > minLiquidityTokensLockup, "EGL:ALL_TOKENS_LOCKED");
         require(uniSwapLaunched, "EGL:UNISWAP_NOT_LAUNCHED");
 
         uint yearInSeconds = 31540000;
@@ -551,7 +558,7 @@ contract EglContract is Initializable, OwnableUpgradeable {
             .div(yearInSeconds.sub(minLiquidityTokensLockup));
 
         Launcher storage launcher = launchers[msg.sender];
-        require(launcher.firstEgl[launcher.idx] <= currentEglReleased, "EGL:ADDR_STILL_LOCKED");
+        require(launcher.firstEgl[launcher.idx] <= currentEglReleased, "EGL:ADDR_TOKENS_LOCKED");
 
         uint poolTokensDue;
         if (currentEglReleased >= launcher.lastEgl[launcher.idx]) {
@@ -606,15 +613,6 @@ contract EglContract is Initializable, OwnableUpgradeable {
             ? poolTokensDue 
             : uniSwapPair.balanceOf(address(this));
         uniSwapPair.transfer(msg.sender, amountToTransfer);
-    }
-
-    /**
-     *   IMPORTANT!!!!!! REMOVE THIS FUNCTION AFTER TESTING
-     */
-    function giveTokens(address _recipient) external {
-        uint tokenAmount = 50000000 ether;
-        tokensInCirculation = tokensInCirculation.add(tokenAmount);
-        eglToken.transfer(_recipient, tokenAmount);
     }
 
     /***************************** PUBLIC FUNCTIONS *****************************/
