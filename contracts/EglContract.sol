@@ -732,7 +732,7 @@ contract EglContract is Initializable, OwnableUpgradeable {
         address _upgradeAddress,
         uint _releaseTime
     ) internal {
-        require(voters[_voter].tokensLocked == 0, "EGL:ADDR_VOTED");
+        require(voters[_voter].tokensLocked == 0, "EGL:ALREADY_VOTED");
         require(
             _gasTarget > block.gaslimit
             ? _gasTarget.sub(block.gaslimit) < GAS_TARGET_TOLERANCE
