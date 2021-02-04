@@ -116,13 +116,12 @@ class Vote extends React.Component<VoteProps> {
 
         const eventInitialized = await this.getAllEventsForType('Initialized')
         const epochLength = eventInitialized[0].returnValues.epochLength
-        // console.log(epochLength)
         const eglBalance = await token.methods
             .balanceOf(this.state.walletAddress)
             .call()
         const epochEndDate = m.unix(
             parseInt(await contract.methods.currentEpochStartDate().call()) +
-                300
+                Number(epochLength)
         )
         const countdown = m.duration(+epochEndDate - +m())
         const nextEpoch =
