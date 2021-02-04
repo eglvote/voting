@@ -20,9 +20,11 @@ export default function RevoteModalForm({
     releaseDate,
     epochLength,
 }: VoteFormProps) {
-    const lockupOptions = [...Array(MAXIMUM_LOCKUP_PERIODS).keys()]
+    let lockupOptions = [...Array(MAXIMUM_LOCKUP_PERIODS).keys()]
         .map((x) => x + 1)
         .filter((x) => releaseDate < m().unix() + Number(epochLength) * x)
+
+    if (!lockupOptions.length) lockupOptions.push(8)
 
     const [weeksLocked, setWeeksLocked] = useState(lockupOptions[0] || 1)
 
