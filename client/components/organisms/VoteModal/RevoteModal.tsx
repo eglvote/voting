@@ -11,6 +11,7 @@ interface RevoteModalProps {
     walletAddress: any
     handleOutsideClick: any
     releaseDate: any
+    epochLength: string
 }
 
 export default function RevoteModal({
@@ -21,6 +22,7 @@ export default function RevoteModal({
     walletAddress,
     handleOutsideClick,
     releaseDate,
+    epochLength,
 }: RevoteModalProps) {
     return (
         <Modal
@@ -47,6 +49,7 @@ export default function RevoteModal({
                         token={token}
                         walletAddress={walletAddress}
                         releaseDate={releaseDate}
+                        epochLength={epochLength}
                     />
                 </div>
             </div>

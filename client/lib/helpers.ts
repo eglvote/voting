@@ -1,5 +1,6 @@
 import web3 from 'web3'
-import BN from 'bn.js'
+// import BigNumber from 'bn.js'
+import BigNumber from 'bignumber.js'
 
 export const fromWei = (num) => web3.utils.fromWei(String(num))
 export const toWei = (num) => web3.utils.toWei(String(num))
@@ -28,11 +29,17 @@ export const calculateIndividualReward = (
     ) {
         return 0
     }
-    const voteWeight = new BN(tokensLocked).mul(new BN(lockupDuration))
+    const voteWeight = new BigNumber(tokensLocked).multipliedBy(
+        new BigNumber(lockupDuration)
+    )
 
-    const individualPercent = voteWeight.div(new BN(voteWeightsSum))
+    const individualPercent = voteWeight.dividedBy(
+        new BigNumber(voteWeightsSum)
+    )
 
-    const result = new BN(reward).mul(individualPercent).toString()
+    const result = new BigNumber(reward)
+        .multipliedBy(individualPercent)
+        .toString()
 
     return result
 }

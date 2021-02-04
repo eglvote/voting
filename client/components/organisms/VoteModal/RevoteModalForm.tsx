@@ -2,10 +2,7 @@ import React, { useState } from 'react'
 import { Formik, Field, Form } from 'formik'
 import { revote } from '../../../lib/contractMethods'
 import Button from '../../atoms/Button'
-import {
-    SECONDS_IN_EPOCH,
-    MAXIMUM_LOCKUP_PERIODS,
-} from '../../../lib/constants'
+import { MAXIMUM_LOCKUP_PERIODS } from '../../../lib/constants'
 import m from 'moment'
 
 interface VoteFormProps {
@@ -13,6 +10,7 @@ interface VoteFormProps {
     token: any
     walletAddress: any
     releaseDate: any
+    epochLength: string
 }
 
 export default function RevoteModalForm({
@@ -20,10 +18,11 @@ export default function RevoteModalForm({
     token,
     walletAddress,
     releaseDate,
+    epochLength,
 }: VoteFormProps) {
     const lockupOptions = [...Array(MAXIMUM_LOCKUP_PERIODS).keys()]
         .map((x) => x + 1)
-        .filter((x) => releaseDate < m().unix() + SECONDS_IN_EPOCH * x)
+        .filter((x) => releaseDate < m().unix() + Number(epochLength) * x)
 
     const [weeksLocked, setWeeksLocked] = useState(lockupOptions[0] || 1)
 

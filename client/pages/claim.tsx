@@ -7,7 +7,7 @@ import connectToWeb3 from '../lib/connectToWeb3'
 import BigNumber from 'bignumber.js'
 import Button from '../components/atoms/Button'
 import ClaimModal from '../components/organisms/ClaimModal'
-import { EGLS_AVAILABLE } from '../lib/constants'
+import { EGLS_AVAILABLE, DEFAULT_ETH_EGL_RATIO } from '../lib/constants'
 import { withdrawLiquidityTokens } from '../lib/contractMethods'
 
 interface ClaimProps {
@@ -76,7 +76,7 @@ class Claim extends React.Component<ClaimProps> {
         const ethEglRatio = eventEglsMatched.length
             ? eventEglsMatched[eventEglsMatched.length - 1].returnValues
                   .ethEglRatio
-            : 16000000000000000000000
+            : DEFAULT_ETH_EGL_RATIO
 
         const eglsClaimed = eventEglsMatched.reduce(
             (acc, e) =>
@@ -152,7 +152,6 @@ class Claim extends React.Component<ClaimProps> {
                             <p>CLAIM</p>
                         </Button>
                         <Button
-                            // style={{ 'margin-top': '1em' }}
                             className={'w-32'}
                             handleClick={() =>
                                 withdrawLiquidityTokens(contract, walletAddress)

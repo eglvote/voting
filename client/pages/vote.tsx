@@ -20,9 +20,10 @@ import {
     calculateIndividualReward,
     fromWei,
 } from '../lib/helpers'
-import BN from 'bn.js'
+// import BN from 'bn.js'
+import BigNumber from 'bignumber.js'
 import m from 'moment'
-import { SECONDS_IN_EPOCH } from '../lib/constants'
+import { REWARD_MULTIPLIER } from '../lib/constants'
 
 declare global {
     interface Window {
@@ -55,6 +56,7 @@ class Vote extends React.Component<VoteProps> {
         revoteClicked: false,
         tokensUnlocked: 0,
         currentAllowance: 0,
+        epochLength: '300',
     }
 
     timeout = null
@@ -100,10 +102,21 @@ class Vote extends React.Component<VoteProps> {
         clearInterval(this.timeout)
     }
 
+    getAllEventsForType = async (eventName) => {
+        const { contract } = this.props
+        return await contract.getPastEvents(eventName, {
+            fromBlock: 0,
+            toBlock: 'latest',
+        })
+    }
+
     ticker = async () => {
         const { web3, accounts, contract, token } = this.props
         if (!this.state.walletAddress) return
 
+        const eventInitialized = await this.getAllEventsForType('Initialized')
+        const epochLength = eventInitialized[0].returnValues.epochLength
+        // console.log(epochLength)
         const eglBalance = await token.methods
             .balanceOf(this.state.walletAddress)
             .call()
@@ -125,16 +138,21 @@ class Vote extends React.Component<VoteProps> {
         const baselineEgl = await getLatestGasLimit(web3)
         const currentEpoch = await contract.methods.currentEpoch().call()
         const voteWeightsSum = await contract.methods.voteWeightsSum(0).call()
-        const reward = new BN(544267.054)
-            .mul(new BN(52 - currentEpoch))
-            .toString()
+        const reward = new BigNumber(REWARD_MULTIPLIER)
+            .multipliedBy(new BigNumber(52 - currentEpoch))
+            .toFixed()
 
         const lockupDate = voterData
-            ? voterData.releaseDate -
-              SECONDS_IN_EPOCH * voterData.lockupDuration
+            ? new BigNumber(voterData.releaseDate)
+                  .minus(
+                      new BigNumber(epochLength).multipliedBy(
+                          voterData.lockupDuration
+                      )
+                  )
+                  .toFixed()
             : 0
-        // Voter Rewards = (Vote Weight / Epoch Total Votes) * Reward Multiplier * Reward Weeks
 
+        // Voter Rewards = (Vote Weight / Epoch Total Votes) * Reward Multiplier * Reward Weeks
         const individualReward = calculateIndividualReward(
             voterData.tokensLocked,
             voterData.lockupDuration,
@@ -164,6 +182,7 @@ class Vote extends React.Component<VoteProps> {
             eglBalance,
             tokensUnlocked,
             currentAllowance,
+            epochLength,
         })
     }
 
@@ -184,6 +203,7 @@ class Vote extends React.Component<VoteProps> {
             walletAddress,
             tokensUnlocked,
             currentAllowance,
+            epochLength,
         } = this.state
         return (
             <GenericPageTemplate
@@ -207,7 +227,7 @@ class Vote extends React.Component<VoteProps> {
                     <div className={'flex justify-center items-center mt-12'}>
                         <HatBox
                             title={'CURRENT GAS LIMIT'}
-                            className={'bg-babyBlue'}
+                            className={'bg-babyBlue w-96'}
                         >
                             <p className={'font-extrabold text-4xl text-white'}>
                                 {baselineEgl
@@ -219,7 +239,7 @@ class Vote extends React.Component<VoteProps> {
                     <div className={'flex justify-center items-center mt-20'}>
                         <HatBox
                             title={'NEXT VOTE CLOSING'}
-                            className={'bg-black mr-20'}
+                            className={'bg-black mr-20 w-96'}
                         >
                             <p
                                 className={
@@ -231,7 +251,7 @@ class Vote extends React.Component<VoteProps> {
                         </HatBox>
                         <HatBox
                             title={'EGLs TO BE REWARDED'}
-                            className={'bg-black'}
+                            className={'bg-black w-96'}
                         >
                             <p className={'font-extrabold text-4xl text-white'}>
                                 {Number(totalEglReward) > 0
@@ -248,7 +268,6 @@ class Vote extends React.Component<VoteProps> {
                             lockupDuration={lockupDuration}
                             voterReward={voterReward}
                             lockupDate={lockupDate}
-                            // tokensUnlocked={fromWei(String(tokensUnlocked))}
                             tokensUnlocked={
                                 tokensUnlocked
                                     ? fromWei(String(tokensUnlocked))
@@ -334,6 +353,7 @@ class Vote extends React.Component<VoteProps> {
                             this.setState({ revoteClicked: false })
                         }
                         releaseDate={releaseDate}
+                        epochLength={epochLength}
                     />
                 )}
             </GenericPageTemplate>
