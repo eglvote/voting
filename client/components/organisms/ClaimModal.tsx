@@ -28,7 +28,6 @@ const safeGetMatch = (amount, ethEglRatio) => {
     ) {
         return 0
     }
-    console.log('O.O', ethEglRatio, amount)
     const result = fromWei(
         new BigNumber(ethEglRatio).multipliedBy(new BigNumber(amount)).toFixed()
     )
@@ -66,8 +65,16 @@ export default function ClaimModal({
                         initialValues={{
                             amount: '0',
                         }}
-                        onSubmit={(values) => {
-                            supportLaunch(contract, walletAddress, amount)
+                        onSubmit={(values, actions) => {
+                            supportLaunch(contract, walletAddress, amount, () =>
+                                handleOutsideClick()
+                            )
+                            // actions.resetForm({
+                            //     values: {
+                            //         amount: '0',
+                            //     },
+                            // })
+                            // setTimeout(() => setAmount('1'), 1000)
                         }}
                     >
                         <Form>

@@ -36,6 +36,7 @@ export default function VoteModal({
                     contract={contract}
                     token={token}
                     walletAddress={walletAddress}
+                    handleOutsideClick={() => handleOutsideClick()}
                 />
             </div>
         </Modal>

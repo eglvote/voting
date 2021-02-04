@@ -10,7 +10,8 @@ export const vote = async (
     walletAddress,
     eglAmount,
     desiredChange,
-    weeksLocked
+    weeksLocked,
+    callback
 ) => {
     if (
         !contract ||
@@ -41,13 +42,18 @@ export const vote = async (
         )
         .send({ from: walletAddress })
         .then((result, e) => {
-            console.log('vote', result, e)
             if (!e) {
                 console.log('Waiting for tx to be mined...', result)
             } else {
                 console.log('Unable to send trans action', e)
             }
+            callback()
+
             return result
+        })
+        .catch((e) => {
+            console.log('eee', e)
+            callback()
         })
 
     return response
@@ -59,7 +65,8 @@ export const revote = async (
     walletAddress,
     eglAmount,
     desiredChange,
-    weeksLocked
+    weeksLocked,
+    callback
 ) => {
     if (
         !contract ||
@@ -90,13 +97,17 @@ export const revote = async (
         )
         .send({ from: walletAddress })
         .then((result, e) => {
-            console.log(result, e)
             if (!e) {
                 console.log('Waiting for tx to be mined...', result)
             } else {
                 console.log('Unable to send trans action', e)
             }
+            callback()
             return result
+        })
+        .catch((e) => {
+            console.log(e)
+            callback()
         })
 
     return response
@@ -226,16 +237,36 @@ export const getLatestGasLimit = async (Web3) => {
     return result
 }
 
-export const supportLaunch = async (contract, walletAddress, ethValue) => {
+export const supportLaunch = async (
+    contract,
+    walletAddress,
+    ethValue,
+    callback
+) => {
     if (!contract || !walletAddress) {
         alert('supportLaunch called with invalid parameters')
         return
     }
 
-    const result = await contract.methods.supportLaunch().send({
-        value: web3.utils.toWei(String(ethValue)),
-        from: walletAddress,
-    })
+    const result = await contract.methods
+        .supportLaunch()
+        .send({
+            value: web3.utils.toWei(String(ethValue)),
+            from: walletAddress,
+        })
+        .then((result, e) => {
+            if (!e) {
+                console.log('Waiting for tx to be mined...', result)
+            } else {
+                console.log('Unable to send trans action', e)
+            }
+            callback()
+            return result
+        })
+        .catch((e) => {
+            console.log(e)
+            callback()
+        })
 
     return result
 }

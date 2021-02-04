@@ -24,14 +24,14 @@ export default () => {
                     'flex justify-center items-center flex-col bg-dark h-screen text-white'
                 }
             >
-                <div className={'fixed z-0 top-.5 left-0 -ml-72'}>
+                <div className={'fixed z-0 top-.5 left-0 -ml-32'}>
                     <img src={pngImage} width={'1000'} height={'1000'} />
                 </div>
-                <div className={'-mr-72 z-10'}>
+                <div className={'z-10 -mr-64'}>
                     <div className={'mb-10'}>
                         <h1>A fully decentralized protocol to influence the</h1>
                         <h1 className={'font-bold text-6xl'}>
-                            <U>E</U>thereum <U>G</U>as <U>L</U>imit
+                            Ethereum Gas Limit
                         </h1>
                     </div>
 

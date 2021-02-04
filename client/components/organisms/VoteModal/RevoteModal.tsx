@@ -50,6 +50,7 @@ export default function RevoteModal({
                         walletAddress={walletAddress}
                         releaseDate={releaseDate}
                         epochLength={epochLength}
+                        callback={() => handleOutsideClick()}
                     />
                 </div>
             </div>

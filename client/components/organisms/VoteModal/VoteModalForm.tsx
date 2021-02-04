@@ -8,12 +8,14 @@ interface VoteFormProps {
     contract: any
     token: any
     walletAddress: any
+    handleOutsideClick: any
 }
 
 export default function VoteModalForm({
     contract,
     token,
     walletAddress,
+    handleOutsideClick,
 }: VoteFormProps) {
     const lockupOptions = [...Array(MAXIMUM_LOCKUP_PERIODS).keys()].map(
         (i) => i + 1
@@ -35,7 +37,8 @@ export default function VoteModalForm({
                         walletAddress,
                         values.amount,
                         values.desiredChange,
-                        weeksLocked
+                        weeksLocked,
+                        () => handleOutsideClick()
                     )
                 }}
             >
@@ -49,7 +52,7 @@ export default function VoteModalForm({
                                         <input
                                             {...field}
                                             className={
-                                                'w-16 border-babyBlue border-b mx-2 '
+                                                'w-32 border-babyBlue border-b mx-2 '
                                             }
                                             type="number"
                                             placeholder=""

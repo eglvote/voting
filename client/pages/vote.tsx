@@ -20,7 +20,6 @@ import {
     calculateIndividualReward,
     fromWei,
 } from '../lib/helpers'
-// import BN from 'bn.js'
 import BigNumber from 'bignumber.js'
 import m from 'moment'
 import { REWARD_MULTIPLIER } from '../lib/constants'
@@ -214,7 +213,7 @@ class Vote extends React.Component<VoteProps> {
                     <h1 className={'text-salmon text-4xl font-extrabold'}>
                         VOTE<span className={'text-black'}>.</span>
                     </h1>
-                    <h3 className={'text-2xl font-bold'}>This weeks vote</h3>
+                    <h3 className={'text-2xl font-bold'}>This week's vote</h3>
                     <p className={'mt-8 text-center'}>
                         ⚠ Disclaimer: EGL was{' '}
                         <span className={'text-babyBlue underline'}>

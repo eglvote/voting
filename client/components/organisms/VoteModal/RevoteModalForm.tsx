@@ -11,6 +11,7 @@ interface VoteFormProps {
     walletAddress: any
     releaseDate: any
     epochLength: string
+    callback: any
 }
 
 export default function RevoteModalForm({
@@ -19,6 +20,7 @@ export default function RevoteModalForm({
     walletAddress,
     releaseDate,
     epochLength,
+    callback,
 }: VoteFormProps) {
     let lockupOptions = [...Array(MAXIMUM_LOCKUP_PERIODS).keys()]
         .map((x) => x + 1)
@@ -43,7 +45,8 @@ export default function RevoteModalForm({
                         walletAddress,
                         values.amount,
                         values.desiredChange,
-                        values.weeksLocked
+                        weeksLocked,
+                        () => callback()
                     )
                 }}
             >
