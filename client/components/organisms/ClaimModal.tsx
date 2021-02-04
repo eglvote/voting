@@ -28,7 +28,7 @@ const safeGetMatch = (amount, ethEglRatio) => {
     ) {
         return 0
     }
-
+    console.log('O.O', ethEglRatio, amount)
     const result = fromWei(
         new BigNumber(ethEglRatio).multipliedBy(new BigNumber(amount)).toFixed()
     )

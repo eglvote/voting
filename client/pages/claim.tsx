@@ -69,7 +69,7 @@ class Claim extends React.Component<ClaimProps> {
         const ethEglRatio = eventEglsMatched.length
             ? eventEglsMatched[eventEglsMatched.length - 1].returnValues
                   .ethEglRatio
-            : 1
+            : 16000000000000000000000
 
         const eglsClaimed = eventEglsMatched.reduce(
             (acc, e) =>

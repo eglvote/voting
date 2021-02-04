@@ -248,7 +248,12 @@ class Vote extends React.Component<VoteProps> {
                             lockupDuration={lockupDuration}
                             voterReward={voterReward}
                             lockupDate={lockupDate}
-                            tokensUnlocked={fromWei(String(tokensUnlocked))}
+                            // tokensUnlocked={fromWei(String(tokensUnlocked))}
+                            tokensUnlocked={
+                                tokensUnlocked
+                                    ? fromWei(String(tokensUnlocked))
+                                    : '0'
+                            }
                         />
                     </div>
                     <div className={'w-full'}>
