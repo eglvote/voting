@@ -1,4 +1,5 @@
 import React from 'react'
+import '../../styles/globals.css'
 
 import Button from '../../components/atoms/Button.tsx'
 

@@ -17,17 +17,26 @@ import connectToWeb3 from '../lib/connectToWeb3'
 import web3 from 'web3'
 import SectionHeader from '../components/atoms/SectionHeader'
 import m from 'moment'
-import { fromWei } from '../lib/helpers'
+import { fromWei, displayComma } from '../lib/helpers'
 import BN from 'bn.js'
+import SupportLaunchForm from '../components/organisms/SupportLaunchForm'
+import GenericPageTemplate from '../components/pageTemplates/GenericPageTemplate'
 
 const ALERT_MESSAGE = 'Please connect to Metamask'
 const IS_DEV = false
 
 const Body = styled.div`
-    margin-top: 2em;
+    margin-top: 7em;
     margin-left: 2em;
 `
-
+const Button = styled.button`
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 0.5em;
+    padding-left: 1em;
+    padding-right: 1em;
+    margin-right: 1em;
+`
 class Dapp extends React.Component {
     state = {
         ethBalance: null,
@@ -44,60 +53,19 @@ class Dapp extends React.Component {
     }
 
     componentDidMount() {
-        // const { web3, web3Reader, accounts, contract, token } = this.props
-
         window.ethereum.on('accountsChanged', (accounts) => {
             this.setState({ walletAddress: accounts[0] })
         })
 
-        this.interval = setInterval(() => {
+        const interval = () => {
             this.state.walletAddress && this.ticker()
-        }, 1000)
+            this.timeout = setTimeout(() => interval(), 1000)
+        }
 
-        // web3Reader.eth
-        //   .subscribe('pendingTransactions', (e, event) => {
-        //     console.log('pendingTransactions', e, event)
-        //   })
-        //   .on('data', (transaction) => {
-        //     console.log('data', transaction)
-        //   })
-
-        // web3Reader.eth
-        //   .subscribe('newBlockHeaders', (e, event) => {
-        //     console.log('newBlockHeaders', e, event)
-        //   })
-        //   .on('connected', function (subscriptionId) {
-        //     console.log('connected', subscriptionId)
-        //   })
-        //   .on('data', function (blockHeader) {
-        //     console.log('newBlockHeaders', blockHeader)
-        //   })
-
-        // web3Reader.eth
-        //   .subscribe(
-        //     'logs',
-        //     {
-        //       address: this.state.walletAddress,
-        //       topics: contract._jsonInterface
-        //         .filter((element) => element.type === 'event')
-        //         .map((event) => event.signature),
-        //     },
-        //     function (error, result) {
-        //       if (!error) console.log(result)
-        //     }
-        //   )
-        //   .on('connected', function (subscriptionId) {
-        //     console.log(subscriptionId)
-        //   })
-        //   .on('data', function (log) {
-        //     console.log('log data', log)
-        //   })
-        //   .on('changed', function (log) {})
+        interval()
     }
 
     componentWillUnmount() {
-        const { web3Reader } = this.props
-        web3Reader.eth.clearSubscriptions()
         clearInterval(this.interval)
     }
 
@@ -151,7 +119,7 @@ class Dapp extends React.Component {
             currentEpoch,
             timeToNextEpoch,
             allowance: getAllowance,
-            eglBalance: fromWei(eglBalance),
+            eglBalance: eglBalance,
             voterData,
             ethBalance: fromWei(ethBalance),
             baselineEgl,
@@ -177,7 +145,6 @@ class Dapp extends React.Component {
                 contract,
                 this.state.walletAddress
             )
-            console.log(transactionReceipt)
             this.setState({
                 votesTallied:
                     transactionReceipt.events.VotesTallied.returnValues,
@@ -198,179 +165,219 @@ class Dapp extends React.Component {
             voterData = null,
             votesTallied = null,
         } = this.state
-
         return (
-            <Body>
-                <h1>Dapp</h1>
-                <button onClick={this.connectWebWallet}>
-                    Connect to Metamask
-                </button>
-                <div style={{ marginTop: '1em' }}>
-                    <Link href="/accounts">
-                        <a>My Accounts</a>
-                    </Link>
-                </div>
-                <div>
-                    <Link href="/">
-                        <a>Home</a>
-                    </Link>
-                </div>
-                <div>
-                    <Link href="/status">
-                        <a>Status</a>
-                    </Link>
-                </div>
-                <div>
-                    <SectionHeader>Contract</SectionHeader>
-                    <button onClick={this.tally}>Tally Votes</button>
-                    <Row style={{ marginTop: '1em' }}>
-                        Address: {this.props.token._address}
-                    </Row>
-                    <Row>{`Time to Next Epoch: ${this.state.timeToNextEpoch}`}</Row>
-                    <Row>{`Current Epoch: ${this.state.currentEpoch}`}</Row>
-                    <Row>{`Actual Gas Limit:  ${this.state.baselineEgl}`}</Row>
-                    <Row>{`Desired Gas Limit:  ${this.state.desiredEgl}`}</Row>
-                    <Row>{`Average Vote:  ${this.state.averageVote}`}</Row>
-                </div>
-                <div>
-                    <SectionHeader>Wallet</SectionHeader>
-                    <button onClick={this.allowance}>
-                        increaseAllowance 50 mil
-                    </button>
-                    {IS_DEV && (
-                        <button
+            <GenericPageTemplate
+                connectWeb3={this.connectWebWallet}
+                walletAddress={this.state.walletAddress}
+                eglBalance={eglBalance}
+            >
+                <Body>
+                    <h1 className={'font-bold text-2xl'}>Dapp</h1>
+                    {/* <Button
+                        className={'hover:bg-gray-300'}
+                        onClick={this.connectWebWallet}
+                    >
+                        Connect to Metamask
+                    </Button> */}
+                    <div style={{ marginTop: '1em' }}>
+                        <Link href="/accounts">
+                            <a>My Accounts</a>
+                        </Link>
+                    </div>
+                    <div>
+                        <Link href="/">
+                            <a>Home</a>
+                        </Link>
+                    </div>
+                    <div>
+                        <Link href="/status">
+                            <a>Status</a>
+                        </Link>
+                    </div>
+                    <div>
+                        <SectionHeader>Contract</SectionHeader>
+                        <Button
+                            className={'hover:bg-gray-300'}
+                            onClick={this.tally}
+                        >
+                            Tally Votes
+                        </Button>
+                        <Row style={{ marginTop: '1em' }}>
+                            Address: {this.props.token._address}
+                        </Row>
+                        <Row>{`Time to Next Epoch: ${this.state.timeToNextEpoch}`}</Row>
+                        <Row>{`Current Epoch: ${this.state.currentEpoch}`}</Row>
+                        <Row>{`Actual Gas Limit:  ${this.state.baselineEgl}`}</Row>
+                        <Row>{`Desired Gas Limit:  ${this.state.desiredEgl}`}</Row>
+                        <Row>{`Average Vote:  ${this.state.averageVote}`}</Row>
+                    </div>
+                    <div>
+                        <SectionHeader>Wallet</SectionHeader>
+                        <Button
+                            className={'hover:bg-gray-300 mb-5'}
+                            onClick={this.allowance}
+                        >
+                            increaseAllowance 50 mil
+                        </Button>
+                        {IS_DEV && (
+                            <Button
+                                className={'hover:bg-gray-300'}
+                                onClick={() =>
+                                    approve(
+                                        this.props.token,
+                                        this.state.walletAddress
+                                    )
+                                }
+                            >
+                                approve 1 mil
+                            </Button>
+                        )}
+                        {IS_DEV && (
+                            <Button
+                                className={'hover:bg-gray-300'}
+                                onClick={() =>
+                                    mint(
+                                        this.props.token,
+                                        this.state.walletAddress
+                                    )
+                                }
+                            >
+                                mint 1 mil
+                            </Button>
+                        )}
+                        <Button
+                            className={'hover:bg-gray-300'}
                             onClick={() =>
-                                approve(
-                                    this.props.token,
+                                withdraw(
+                                    this.props.contract,
                                     this.state.walletAddress
                                 )
                             }
                         >
-                            approve 1 mil
-                        </button>
-                    )}
-                    {IS_DEV && (
-                        <button
-                            onClick={() =>
-                                mint(this.props.token, this.state.walletAddress)
-                            }
-                        >
-                            mint 1 mil
-                        </button>
-                    )}
-                    <button
-                        onClick={() =>
-                            withdraw(
-                                this.props.contract,
-                                this.state.walletAddress
-                            )
-                        }
-                    >
-                        withdraw
-                    </button>
-                    <div>
-                        <table style={{ margintTop: '1em' }}>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <b>Address: </b>
-                                        <span>{this.state.walletAddress}</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <b>Ether Balance: </b>
-                                        <span>{ethBalance}</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <b>EGL Balance: </b>
-                                        <span>
-                                            {eglBalance &&
-                                                parseFloat(
-                                                    eglBalance
-                                                ).toLocaleString('en-US', {
-                                                    maximumFractionDigits: 3,
-                                                })}
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <b>EGLs Locked: </b>
-                                        {voterData && (
+                            withdraw
+                        </Button>
+                        <div>
+                            <table style={{ margintTop: '1em' }}>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <b>Address: </b>
                                             <span>
-                                                {parseFloat(
-                                                    fromWei(
-                                                        voterData.tokensLocked
-                                                    )
-                                                ).toLocaleString('en-US', {
-                                                    maximumFractionDigits: 3,
-                                                })}
+                                                {this.state.walletAddress}
                                             </span>
-                                        )}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <b>Release Date: </b>
-                                        {voterData && (
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <b>Ether Balance: </b>
+                                            <span>{ethBalance}</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <b>EGL Balance: </b>
                                             <span>
-                                                {voterData.releaseDate !== '0'
-                                                    ? m
-                                                          .unix(
-                                                              voterData.releaseDate
-                                                          )
-                                                          .format(
-                                                              'dddd, MMMM Do, YYYY h:mm:ss A'
-                                                          )
-                                                    : 'N/A'}
+                                                {eglBalance &&
+                                                    displayComma(
+                                                        fromWei(eglBalance)
+                                                    )}
                                             </span>
-                                        )}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <b>Allowance: </b>
-                                        <span>
-                                            {this.state.allowance &&
-                                                parseFloat(
-                                                    web3.utils.fromWei(
-                                                        String(
-                                                            this.state.allowance
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <b>EGLs Locked: </b>
+                                            {voterData && (
+                                                <span>
+                                                    {parseFloat(
+                                                        fromWei(
+                                                            voterData.tokensLocked
                                                         )
-                                                    )
-                                                ).toLocaleString('en-US', {
-                                                    maximumFractionDigits: 3,
-                                                })}
-                                        </span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                                    ).toLocaleString('en-US', {
+                                                        maximumFractionDigits: 3,
+                                                    })}
+                                                </span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <b>Release Date: </b>
+                                            {voterData && (
+                                                <span>
+                                                    {voterData.releaseDate !==
+                                                    '0'
+                                                        ? m
+                                                              .unix(
+                                                                  voterData.releaseDate
+                                                              )
+                                                              .format(
+                                                                  'dddd, MMMM Do, YYYY h:mm:ss A'
+                                                              )
+                                                        : 'N/A'}
+                                                </span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <b>Allowance: </b>
+                                            <span>
+                                                {this.state.allowance &&
+                                                    parseFloat(
+                                                        web3.utils.fromWei(
+                                                            String(
+                                                                this.state
+                                                                    .allowance
+                                                            )
+                                                        )
+                                                    ).toLocaleString('en-US', {
+                                                        maximumFractionDigits: 3,
+                                                    })}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
-                <VoteForm
-                    contract={this.props.contract}
-                    token={this.props.token}
-                    walletAddress={this.state.walletAddress}
-                    hasNotVoted={true}
-                />
-                <VoteForm
-                    contract={this.props.contract}
-                    token={this.props.token}
-                    walletAddress={this.state.walletAddress}
-                    hasNotVoted={false}
-                />
-            </Body>
+                    <SupportLaunchForm
+                        contract={this.props.contract}
+                        token={this.props.token}
+                        walletAddress={this.state.walletAddress}
+                    />
+                    <VoteForm
+                        contract={this.props.contract}
+                        token={this.props.token}
+                        walletAddress={this.state.walletAddress}
+                        hasNotVoted={true}
+                    />
+                    <VoteForm
+                        contract={this.props.contract}
+                        token={this.props.token}
+                        walletAddress={this.state.walletAddress}
+                        hasNotVoted={false}
+                    />
+                </Body>
+            </GenericPageTemplate>
         )
     }
 }
 
 export default () => (
     <Web3Container
-        renderLoading={() => <div>Loading Dapp Page...</div>}
+        renderLoading={() => (
+            <GenericPageTemplate
+                connectWeb3={null}
+                walletAddress={null}
+                eglBalance={null}
+            >
+                <div
+                    style={{ animation: `fadeIn 1s` }}
+                    className="opacity-25 fixed inset-0 z-30 bg-black"
+                />
+            </GenericPageTemplate>
+        )}
         render={({ web3, web3Reader, accounts, contract, token }) => (
             <Dapp
                 accounts={accounts}
