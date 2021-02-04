@@ -23,7 +23,6 @@ export default class Web3Container extends React.Component {
             const token = await getContract(web3, tokenDefinition)
             // this.setState({ web3, web3Reader, accounts, contract, token })
             this.setState({ web3, accounts, contract, token })
-            // console.log('$%$%$%', this.state)
         } catch (error) {
             alert(
                 'Failed to load web3, accounts, or contract. Check console for details.'

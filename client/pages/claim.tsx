@@ -80,8 +80,6 @@ class Claim extends React.Component<ClaimProps> {
         )
         const eglsAvailable = new BigNumber(EGLS_AVAILABLE).minus(eglsClaimed)
 
-        console.log(eglsClaimed, eglsAvailable)
-
         this.setState({
             eglBalance,
             eglsClaimed: eglsClaimed.toFixed(),
