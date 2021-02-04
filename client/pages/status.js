@@ -102,8 +102,8 @@ class EglContractStatus extends React.Component {
         const currentVotesTotal = await eglContract.methods.votesTotal(0).call()
 
         const epochEndDate = moment.unix(
-            parseInt(await eglContract.methods.currentEpochStartDate().call()) +
-                300
+            parseInt(await eglContract.methods.currentEpochStartDate().call()) + 
+            parseInt(eventInitialized[0].returnValues.epochLength)
         )
         const endEpochCountdown = moment.duration(epochEndDate - moment())
 
