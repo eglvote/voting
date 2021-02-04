@@ -1,6 +1,6 @@
 import React from 'react'
 import Button from '../components/atoms/Button'
-import Image from 'next/image'
+// import Image from 'next/image'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
 
@@ -25,7 +25,7 @@ export default () => {
                 }
             >
                 <div className={'fixed z-0 top-.5 left-0 -ml-72'}>
-                    <Image src={pngImage} width={'1000'} height={'1000'} />
+                    <img src={pngImage} width={'1000'} height={'1000'} />
                 </div>
                 <div className={'-mr-72 z-10'}>
                     <div className={'mb-10'}>
@@ -37,7 +37,7 @@ export default () => {
 
                     <Button handleClick={() => router.push('/vote')}>
                         <div className={'flex flex-row items-center'}>
-                            <Image src={logo} width={'30'} height={'30'} />
+                            <img src={logo} width={'30'} height={'30'} />
                             <p className={'ml-2'}>Launch App</p>
                         </div>
                     </Button>

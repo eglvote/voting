@@ -2,7 +2,7 @@ import React from 'react'
 import Link from 'next/link'
 import ConnectToWeb3Button from '../../molecules/ConnectToWeb3Button'
 import NavBarLinkContainer from './NavBarLinkContainer'
-import Image from 'next/image'
+// import Image from 'next/image'
 import Card from '../../atoms/Card'
 import { fromWei, displayComma } from '../../../lib/helpers'
 
@@ -37,7 +37,7 @@ export default function NavBar({
                 <div
                     className={'cursor-pointer hover:opacity-50 w-28 m-2 ml-4'}
                 >
-                    <Image src={logo} width={'65'} height={'65'} />
+                    <img src={logo} width={'65'} height={'65'} />
                 </div>
             </Link>
             <NavBarLinkContainer>{children}</NavBarLinkContainer>
