@@ -49,6 +49,13 @@ class Claim extends React.Component<ClaimProps> {
                 }, 1000)
             }
         })
+        this.timeout = setInterval(() => {
+            this.state.walletAddress && this.ticker()
+        }, 1000)
+    }
+
+    componentWillUnmount() {
+        clearInterval(this.timeout)
     }
 
     getAllEventsForType = async (eventName) => {
