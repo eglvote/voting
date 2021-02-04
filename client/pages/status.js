@@ -55,6 +55,34 @@ class EglContractStatus extends React.Component {
     refreshContractData = async () => {
         const { eglContract, web3, tokenContract } = this.props
 
+        const eventInitialized = await this.getAllEventsForType("Initialized")
+        const eventVotesTallied = await this.getAllEventsForType('VotesTallied')
+        const eventCreatorRewardsClaimed = await this.getAllEventsForType(
+            'CreatorRewardsClaimed'
+        )
+        const eventVote = await this.getAllEventsForType('Vote')
+        const eventWithdraw = await this.getAllEventsForType('Withdraw')
+        const eventSeedAccountFunded = await this.getAllEventsForType(
+            'SeedAccountFunded'
+        )
+        const eventVoteThresholdMet = await this.getAllEventsForType(
+            'VoteThresholdMet'
+        )
+        const eventVoteThresholdFailed = await this.getAllEventsForType(
+            'VoteThresholdFailed'
+        )
+        const eventVoterRewardCalculated = await this.getAllEventsForType(
+            'VoterRewardCalculated'
+        )
+        const eventEglsMatched = await this.getAllEventsForType('EglsMatched')
+        const eventUniSwapLaunch = await this.getAllEventsForType(
+            'UniSwapLaunch'
+        )
+        const eventEthReceived = await this.getAllEventsForType('EthReceived')
+        const eventLiquidityTokensWithdrawn = await this.getAllEventsForType(
+            'LiquidityTokensWithdrawn'
+        )
+
         const eglContractTokenBalance = await tokenContract.methods
             .balanceOf(eglContract._address)
             .call()
@@ -77,16 +105,16 @@ class EglContractStatus extends React.Component {
             parseInt(await eglContract.methods.currentEpochStartDate().call()) +
                 300
         )
-        const countdown = moment.duration(epochEndDate - moment())
+        const endEpochCountdown = moment.duration(epochEndDate - moment())
 
         const timeToNextEpoch =
-            countdown.days() +
+            endEpochCountdown.days() +
             ' days ' +
-            countdown.hours() +
+            endEpochCountdown.hours() +
             ' hours ' +
-            countdown.minutes() +
+            endEpochCountdown.minutes() +
             ' minutes ' +
-            countdown.seconds() +
+            endEpochCountdown.seconds() +
             ' seconds'
 
         const voterRewardsSums = []
@@ -96,33 +124,26 @@ class EglContractStatus extends React.Component {
             )
         }
 
-        const eventVotesTallied = await this.getAllEventsForType('VotesTallied')
-        const eventCreatorRewardsClaimed = await this.getAllEventsForType(
-            'CreatorRewardsClaimed'
+        const lpTokenReleaseDate = moment.unix(
+            parseInt(eventInitialized[0].returnValues.firstEpochStartDate) + 
+            parseInt(eventInitialized[0].returnValues.minLiquidityTokensLockup)
         )
-        const eventVote = await this.getAllEventsForType('Vote')
-        const eventWithdraw = await this.getAllEventsForType('Withdraw')
-        // const eventSeedAccountsFunded = await this.getAllEventsForType(
-        //     'SeedAccountsFunded'
-        // )
-        const eventVoteThresholdMet = await this.getAllEventsForType(
-            'VoteThresholdMet'
-        )
-        const eventVoteThresholdFailed = await this.getAllEventsForType(
-            'VoteThresholdFailed'
-        )
-        const eventVoterRewardCalculated = await this.getAllEventsForType(
-            'VoterRewardCalculated'
-        )
-        const eventEglsMatched = await this.getAllEventsForType('EglsMatched')
-        const eventUniSwapLaunch = await this.getAllEventsForType(
-            'UniSwapLaunch'
-        )
-        const eventEthReceived = await this.getAllEventsForType('EthReceived')
-        const eventLiquidityTokensWithdrawn = await this.getAllEventsForType(
-            'LiquidityTokensWithdrawn'
-        )
-        const eventInitialized = await this.getAllEventsForType('Initialized')
+        const lpTokenCountdown = moment.duration(lpTokenReleaseDate - moment())
+
+        let timeToLPTokenRelease = lpTokenCountdown < 0 
+            ? "0 days 0 hours 0 minutes 0 seconds" 
+            : lpTokenCountdown.days() + " days " +
+                lpTokenCountdown.hours() + " hours " +
+                lpTokenCountdown.minutes() + " minutes " +
+                lpTokenCountdown.seconds() + " seconds";
+            
+        let currentlyReleasedLPToken = lpTokenCountdown > 0 
+            ? 0 
+            : ((new Date().getTime() / 1000) - 
+                parseInt(eventInitialized[0].returnValues.firstEpochStartDate) - 
+                parseInt(eventInitialized[0].returnValues.minLiquidityTokensLockup)) * 
+                750000000 /
+                (31540000 - parseInt(eventInitialized[0].returnValues.minLiquidityTokensLockup));
 
         const upcomingVotes = []
         for (let i = 1; i < 8; i++) {
@@ -152,7 +173,9 @@ class EglContractStatus extends React.Component {
             desiredEgl: desiredEgl,
             upcomingVotes: upcomingVotes,
             voterRewardsSums: voterRewardsSums,
-            // eventSeedAccountsFunded: eventSeedAccountsFunded,
+            currentlyReleasedLPToken: currentlyReleasedLPToken,
+            timeToLPTokenRelease: timeToLPTokenRelease,
+            eventSeedAccountFunded: eventSeedAccountFunded,
             eventVotesTallied: eventVotesTallied,
             eventCreatorRewardsClaimed: eventCreatorRewardsClaimed,
             eventVote: eventVote,
@@ -164,7 +187,7 @@ class EglContractStatus extends React.Component {
             eventUniSwapLaunch: eventUniSwapLaunch,
             eventEthReceived: eventEthReceived,
             eventLiquidityTokensWithdrawn: eventLiquidityTokensWithdrawn,
-            eventInitialized: eventInitialized,
+            eventInitialized: eventInitialized[0].returnValues,
             eglBalance,
         })
     }
@@ -190,7 +213,9 @@ class EglContractStatus extends React.Component {
             currentVotesTotal = '-',
             upcomingVotes = [],
             voterRewardsSums = [],
-            eventSeedAccountsFunded = [],
+            timeToLPTokenRelease = "-",
+            currentlyReleasedLPToken = 0,
+            eventSeedAccountFunded = [],
             eventVotesTallied = [],
             eventCreatorRewardsClaimed = [],
             eventVote = [],
@@ -202,7 +227,7 @@ class EglContractStatus extends React.Component {
             eventUniSwapLaunch = [],
             eventEthReceived = [],
             eventLiquidityTokensWithdrawn = [],
-            eventInitialized = [],
+            eventInitialized = {},
             eglBalance = 0,
         } = this.state
 
@@ -214,21 +239,6 @@ class EglContractStatus extends React.Component {
             >
                 <div>
                     <h1>EGL Contract Status</h1>
-                    {/* <div>
-                        <Link href="/dapp">
-                            <a>Dapp</a>
-                        </Link>
-                    </div>
-                    <div>
-                        <Link href="/accounts">
-                            <a>My Accounts</a>
-                        </Link>
-                    </div>
-                    <div>
-                        <Link href="/">
-                            <a>Home</a>
-                        </Link>
-                    </div> */}
                     <hr />
 
                     <div>
@@ -299,6 +309,21 @@ class EglContractStatus extends React.Component {
                                         </span>
                                     </td>
                                 </tr>
+                                <tr><td>&nbsp;</td></tr>
+                                <tr>
+                                    <td>
+                                        <b>Time to LP Token Release: </b>
+                                        <span style={contractAttributeValue}>{timeToLPTokenRelease}</span>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <b>Currently Released EGL Token: </b>
+                                        <span style={contractAttributeValue}>{currentlyReleasedLPToken}</span>
+                                    </td>
+                                    <td></td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -306,128 +331,70 @@ class EglContractStatus extends React.Component {
 
                     <hr />
                     <div>
-                        <h3>Addresses:</h3>
-                        <table style={tableWidth1000}>
-                            <thead style={thead}>
+                        <table  style={tableWidth1000}>
+                            <tbody>
                                 <tr>
-                                    <td>EGL Contract Address</td>
-                                    <td>EGL Token Address</td>
-                                    <td>UniSwap Router Address</td>
-                                    <td>UniSwap Pair Address</td>
+                                    <td colSpan="2"><h3>Addresses:</h3></td>
+                                    <td colSpan="2"><h3>Deployment Params:</h3></td>
                                 </tr>
-                            </thead>
-                            <tbody style={contractAttributeValue}>
-                                {eventInitialized.map((event) => {
-                                    return (
-                                        <tr>
-                                            <td>
-                                                {event.returnValues.eglContract}
-                                            </td>
-                                            <td>
-                                                {event.returnValues.eglToken}
-                                            </td>
-                                            <td>
-                                                {
-                                                    event.returnValues
-                                                        .uniSwapRouter
-                                                }
-                                            </td>
-                                            <td>
-                                                {event.returnValues.uniSwapPair}
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                    <br />
-                    <div>
-                        <h3>Deployment Params:</h3>
-                        <table style={tableWidth1000}>
-                            <thead style={thead}>
                                 <tr>
-                                    <td>Date</td>
-                                    <td>Time</td>
-                                    <td>Deployer</td>
-                                    <td>ETH Require to Launch</td>
-                                    <td>Liquidity Token Lockup</td>
+                                    <td><b>EGL Contract: </b></td>
+                                    <td><span style={contractAttributeValue}>{eventInitialized.eglContract}</span></td>
+                                    <td><b>Required ETH to Launch UniSwap: </b></td>
+                                    <td><span style={contractAttributeValue}>{this.formatBigNumberAttribute(eventInitialized.ethRequiredToLaunchUniSwap)} ETH</span></td>
                                 </tr>
-                            </thead>
-                            <tbody style={contractAttributeValue}>
-                                {eventInitialized.map((event) => {
-                                    return (
-                                        <tr>
-                                            <td>
-                                                {moment
-                                                    .unix(
-                                                        event.returnValues.date
-                                                    )
-                                                    .local()
-                                                    .toDate()
-                                                    .toLocaleDateString()}
-                                            </td>
-                                            <td>
-                                                {moment
-                                                    .unix(
-                                                        event.returnValues.date
-                                                    )
-                                                    .local()
-                                                    .toDate()
-                                                    .toLocaleTimeString()}
-                                            </td>
-                                            <td>
-                                                {event.returnValues.deployer}
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .ethRequiredToLaunchUniSwap
-                                                )}
-                                            </td>
-                                            <td>
-                                                {
-                                                    event.returnValues
-                                                        .minLiquidityTokensLockup
-                                                }
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
+                                <tr>
+                                    <td><b>EGL Token: </b></td>
+                                    <td><span style={contractAttributeValue}>{eventInitialized.eglToken}</span></td>
+                                    <td><b>Liquidity Pool Lockup: </b></td>
+                                    <td><span style={contractAttributeValue}>{eventInitialized.minLiquidityTokensLockup} seconds</span></td>
+                                </tr>
+                                <tr>
+                                    <td><b>UniSwap Router: </b></td>
+                                    <td><span style={contractAttributeValue}>{eventInitialized.uniSwapRouter}</span></td>
+                                    <td><b>Voting Pause: </b></td>
+                                    <td><span style={contractAttributeValue}>{eventInitialized.votingPauseSeconds} seconds before next epoch</span></td>
+                                </tr>
+                                <tr>
+                                    <td><b>UniSwap Pair: </b></td>
+                                    <td><span style={contractAttributeValue}>{eventInitialized.uniSwapPair}</span></td>
+                                    <td><b>Epoch Length: </b></td>
+                                    <td><span style={contractAttributeValue}>{eventInitialized.epochLength} seconds</span></td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
                     <br />
 
-                    {/* <hr />*/}
-                    {/*<div>*/}
-                    {/*  <h3>Seed Accounts:</h3>*/}
-                    {/*  <table style={tableWidth1000}>*/}
-                    {/*    <thead style={thead}>*/}
-                    {/*      <tr>*/}
-                    {/*        <td>Date</td>*/}
-                    {/*        <td>Time</td>*/}
-                    {/*        <td>Seed Account</td>*/}
-                    {/*        <td>Total Seed Amount</td>*/}
-                    {/*        <td>Seed Amount per Account</td>*/}
-                    {/*      </tr>*/}
-                    {/*    </thead>*/}
-                    {/*    <tbody style={contractAttributeValue}>*/}
-                    {/*      {eventSeedAccountsFunded.map((event) => {*/}
-                    {/*        return (*/}
-                    {/*          <tr>*/}
-                    {/*            <td>{moment.unix(event.returnValues.date).local().toDate().toLocaleDateString()}</td>*/}
-                    {/*            <td>{moment.unix(event.returnValues.date).local().toDate().toLocaleTimeString()}</td>*/}
-                    {/*            <td>{event.returnValues.seedAddress}</td>*/}
-                    {/*            <td>{this.formatBigNumberAttribute(event.returnValues.initialSeedAmount)}</td>*/}
-                    {/*            <td>{this.formatBigNumberAttribute(event.returnValues.seedAmountPerAccount)}</td>*/}
-                    {/*          </tr>*/}
-                    {/*        )*/}
-                    {/*      })}*/}
-                    {/*    </tbody>*/}
-                    {/*  </table>*/}
-                    {/*</div>*/}
-                    {/*<br /> */}
+                    <hr />
+                    <div>
+                        <h3>Seed Accounts:</h3>
+                        <table style={tableWidth1000}>
+                            <thead style={thead}>
+                                <tr>
+                                <td>Date</td>
+                                <td>Time</td>
+                                <td>Seed Account</td>
+                                <td>Total Seed Amount</td>
+                                <td>Seed Amount per Account</td>
+                                </tr>
+                            </thead>
+                            <tbody style={contractAttributeValue}>
+                                {eventSeedAccountFunded.map((event) => {
+                                return (
+                                    <tr>
+                                    <td>{moment.unix(event.returnValues.date).local().toDate().toLocaleDateString()}</td>
+                                    <td>{moment.unix(event.returnValues.date).local().toDate().toLocaleTimeString()}</td>
+                                    <td>{event.returnValues.seedAddress}</td>
+                                    <td>{this.formatBigNumberAttribute(event.returnValues.initialSeedAmount)}</td>
+                                    <td>{this.formatBigNumberAttribute(event.returnValues.individualSeedAmount)}</td>
+                                    </tr>
+                                )
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                    <br />
 
                     <hr />
                     <br />
