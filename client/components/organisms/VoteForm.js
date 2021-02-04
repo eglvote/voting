@@ -11,13 +11,24 @@ const FormRow = styled(Row)`
 `
 const FormField = styled(Field)`
     width: 8em;
+    border: 1px solid black;
+`
+const Button = styled.button`
+    border: 1px solid black;
+    padding: 5px;
+    padding-left: 1em;
+    padding-right: 1em;
+    border-radius: 5px;
+    margin-top: 1em;
 `
 export default ({ contract, token, walletAddress, hasNotVoted }) => {
     const [txLink, setTsxLink] = useState(null)
 
     return (
         <div>
-            <SectionHeader>{hasNotVoted ? 'Vote' : 'Revote'}</SectionHeader>
+            <SectionHeader style={{ marginTop: '1em', marginBottom: '1em' }}>
+                {hasNotVoted ? 'Vote' : 'Revote'}
+            </SectionHeader>
             <Formik
                 initialValues={{
                     amount: '0',
@@ -86,9 +97,9 @@ export default ({ contract, token, walletAddress, hasNotVoted }) => {
                             placeholder="0"
                         />
                     </FormRow>
-                    <button style={{ 'margin-top': '1em' }} type="submit">
+                    <Button className={'hover:bg-gray-300'} type="submit">
                         Submit
-                    </button>
+                    </Button>
                 </Form>
             </Formik>
             {/* {txLink && <p>{txLink}</p>} */}

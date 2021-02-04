@@ -1,10 +1,37 @@
 import React from 'react'
-import '../../styles/globals.css'
 
-export default ({ style, children }) => (
-    <button
-        className={`${style} border border-indigo-500 bg-indigo-500 text-white rounded-md px-4 py-2 m-2 transition duration-500 ease select-none hover:bg-indigo-600 focus:outline-none focus:shadow-outline`}
-    >
-        {children}
-    </button>
-)
+interface handleClickParameters {
+    (): void
+}
+
+interface ButtonProps {
+    style?: object
+    className?: string
+    children?: JSX.Element | JSX.Element[]
+    type?: any
+    handleClick?: handleClickParameters
+}
+
+export default function Button({
+    style,
+    className,
+    children,
+    type,
+    handleClick,
+}: ButtonProps) {
+    return (
+        <button
+            onClick={handleClick}
+            type={type}
+            style={{
+                boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px',
+                ...style,
+            }}
+            className={`${className} shadow-xl bg-salmon text-white font-bold text-center rounded-md px-4 py-2 transition duration-500 ease select-none hover:bg-salmon-dark`}
+        >
+            {children}
+        </button>
+    )
+}
+// focus:outline-none focus:shadow-outline
+// box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;

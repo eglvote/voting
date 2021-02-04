@@ -28,3 +28,20 @@ export default () =>
             resolveWeb3(resolve)
         }
     })
+
+//     const Web3 = require('web3'); // import web3 v1.0 constructor from node_modules
+// if(window.ethereum) {
+//     const web3Instance = new Web3(window['ethereum']);
+
+//     var methods = {
+//         getAddressETHBalance: function(address)    {
+//             return new Promise(function(resolve, reject) {
+//                 resolve(web3Instance.eth.getBalance(address));
+//             });
+//         }
+//     };
+
+//     methods.getAddressETHBalance(<ADDRESS>);
+// } else {
+//     alert('Missing MetaMask extention.');
+// }

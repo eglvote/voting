@@ -13,8 +13,6 @@ const FormField = styled(Field)`
     width: 8em;
 `
 export default ({ contract, token, walletAddress }) => {
-    const [txLink, setTsxLink] = useState(null)
-
     return (
         <div>
             <SectionHeader>Revote</SectionHeader>
@@ -34,9 +32,6 @@ export default ({ contract, token, walletAddress }) => {
                             values.desiredChange,
                             values.weeksLocked
                         )
-                        // setTsxLink(
-                        //     `etherscan.io/tx/${transactionReceipt.transactionHash}`
-                        // )
                     } else {
                         alert('Connect to Metamask!')
                     }
