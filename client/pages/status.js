@@ -82,6 +82,12 @@ class EglContractStatus extends React.Component {
         const eventLiquidityTokensWithdrawn = await this.getAllEventsForType(
             'LiquidityTokensWithdrawn'
         )
+        const eventPoolRewardsSwept = await this.getAllEventsForType(
+            'PoolRewardsSwept'
+        )
+        const eventLiquidityAdded = await this.getAllEventsForType(
+            'LiquidityAdded'
+        )
 
         const eglContractTokenBalance = await tokenContract.methods
             .balanceOf(eglContract._address)
@@ -188,6 +194,8 @@ class EglContractStatus extends React.Component {
             eventEthReceived: eventEthReceived,
             eventLiquidityTokensWithdrawn: eventLiquidityTokensWithdrawn,
             eventInitialized: eventInitialized[0].returnValues,
+            eventPoolRewardsSwept: eventPoolRewardsSwept,
+            eventLiquidityAdded: eventLiquidityAdded,
             eglBalance,
         })
     }
@@ -228,6 +236,8 @@ class EglContractStatus extends React.Component {
             eventEthReceived = [],
             eventLiquidityTokensWithdrawn = [],
             eventInitialized = {},
+            eventPoolRewardsSwept = [],
+            eventLiquidityAdded = [],
             eglBalance = 0,
         } = this.state
 
@@ -1076,6 +1086,66 @@ class EglContractStatus extends React.Component {
                             </tbody>
                         </table>
                     </div>
+                    <br />
+
+                    <hr />
+                    <div>
+                        <b>Pool Rewards Swept:</b>
+                        <table style={tableWidth1000}>
+                            <thead style={thead}>
+                                <tr>
+                                    <td>Block Number</td>
+                                    <td>Caller</td>
+                                    <td>Block Gas Limit</td>
+                                    <td>Difference From EGL</td>
+                                    <td>Reward Percentage</td>
+                                    <td>Calculated Reward Amount</td>
+                                    <td>Reward Amount Transferred</td>
+                                </tr>
+                            </thead>
+                            <tbody style={contractAttributeValue}>
+                                {eventPoolRewardsSwept.map((event) => {
+                                    return (
+                                        <tr>
+                                            <td>{event.returnValues.blockNumber}</td>
+                                            <td>{event.returnValues.caller}</td>
+                                            <td>
+                                                {
+                                                    event.returnValues
+                                                        .blockGasLimit
+                                                }
+                                            </td>
+                                            <td>
+                                                {
+                                                    event.returnValues
+                                                        .difference
+                                                }
+                                            </td>
+                                            <td>
+                                                {this.formatBigNumberAttribute(
+                                                    event.returnValues
+                                                        .rewardPercentage
+                                                )}
+                                            </td>
+                                            <td>
+                                                {this.formatBigNumberAttribute(
+                                                    event.returnValues
+                                                        .blockReward
+                                                )}
+                                            </td>
+                                            <td>
+                                                {this.formatBigNumberAttribute(
+                                                    event.returnValues
+                                                        .actualAmountTransferred
+                                                )}
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                    <br />
 
                     <hr />
                     <div>
@@ -1163,6 +1233,82 @@ class EglContractStatus extends React.Component {
                                                 {this.formatBigNumberAttribute(
                                                     event.returnValues
                                                         .poolTokensHeld
+                                                )}
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                    <br />
+                    <div>
+                        <b>Uniswap - Added Liquidity:</b>
+                        <table style={tableWidth1000}>
+                            <thead style={thead}>
+                                <tr>
+                                    <td>Date</td>
+                                    <td>Time</td>
+                                    <td>Caller</td>
+                                    <td>Desired EGL's</td>
+                                    <td>ETH Amount</td>
+                                    <td>Minimum EGL's</td>
+                                    <td>Minimum ETH amount</td>
+                                    <td>Pool Tokens Received</td>
+                                </tr>
+                            </thead>
+                            <tbody style={contractAttributeValue}>
+                                {eventLiquidityAdded.map((event) => {
+                                    return (
+                                        <tr>
+                                            <td>
+                                                {moment
+                                                    .unix(
+                                                        event.returnValues.date
+                                                    )
+                                                    .local()
+                                                    .toDate()
+                                                    .toLocaleDateString()}
+                                            </td>
+                                            <td>
+                                                {moment
+                                                    .unix(
+                                                        event.returnValues.date
+                                                    )
+                                                    .local()
+                                                    .toDate()
+                                                    .toLocaleTimeString()}
+                                            </td>
+                                            <td>{event.returnValues.caller}</td>
+                                            <td>
+                                                1:
+                                                {this.formatBigNumberAttribute(
+                                                    event.returnValues
+                                                        .desiredTokenAmount
+                                                )}
+                                            </td>
+                                            <td>
+                                                {this.formatBigNumberAttribute(
+                                                    event.returnValues
+                                                        .ethAmount
+                                                )}
+                                            </td>
+                                            <td>
+                                                {this.formatBigNumberAttribute(
+                                                    event.returnValues
+                                                        .minTokenAmount
+                                                )}
+                                            </td>
+                                            <td>
+                                                {this.formatBigNumberAttribute(
+                                                    event.returnValues
+                                                        .minEthAmount
+                                                )}
+                                            </td>
+                                            <td>
+                                                {this.formatBigNumberAttribute(
+                                                    event.returnValues
+                                                        .poolTokensReceived
                                                 )}
                                             </td>
                                         </tr>

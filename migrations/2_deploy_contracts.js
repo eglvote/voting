@@ -24,6 +24,8 @@ let firstEpochStartDate;
 let votePauseSeconds;
 let epochLengthSeconds;
 let seedAccounts;
+let initialGasLimit;
+let desiredEgl;
 let eglsGifted;
 let creatorRewardAccount;
 
@@ -53,6 +55,8 @@ module.exports = async function (deployer, network, accounts) {
         firstEpochStartDate = Math.round(new Date().getTime() / 1000);
         votePauseSeconds = 21600; // 6 hours
         epochLengthSeconds = 604800; // 1 week
+        initialGasLimit = 12500000;
+        desiredEgl = 13000000;
         seedAccounts = [];
         eglsGifted = new BN("0"); // No gift tokens in mainnet
         creatorRewardAccount = accounts[0];
@@ -74,6 +78,8 @@ module.exports = async function (deployer, network, accounts) {
         firstEpochStartDate = Math.round(new Date().getTime() / 1000);
         votePauseSeconds = 60; // 1 minute
         epochLengthSeconds = 600; // 10 minutes
+        initialGasLimit = 8000000;
+        desiredEgl = 8500000;
         seedAccounts = [
             "0x2C596F42d15848b6dD997B255B9c033Ce7240644",
             "0x2755f888047Db8E3d169C6A427470C44b19a7270",
@@ -90,8 +96,8 @@ module.exports = async function (deployer, network, accounts) {
         let routerContract = await UniswapV2Router.deployed();
 
         giftAccounts = {
-            "Account 1": accounts[3],
-            "Account 2": accounts[4],
+            "Account 3": accounts[3],
+            "Account 4": accounts[4],
         }
         
         routerAddress = routerContract.address;
@@ -100,6 +106,8 @@ module.exports = async function (deployer, network, accounts) {
         firstEpochStartDate = Math.round(new Date().getTime() / 1000);
         votePauseSeconds = 60; // 1 minute
         epochLengthSeconds = 300; // 5 minutes
+        initialGasLimit = 6700000;
+        desiredEgl = 7300000;
         seedAccounts = [accounts[1], accounts[2]];
         eglsGifted = await giveFreeTokens(giftAccounts);
         creatorRewardAccount = accounts[9];
@@ -115,6 +123,8 @@ module.exports = async function (deployer, network, accounts) {
             firstEpochStartDate,
             votePauseSeconds,
             epochLengthSeconds,
+            initialGasLimit,
+            desiredEgl,
             seedAccounts,
             eglsGifted.toString(),
             creatorRewardAccount
@@ -126,7 +136,6 @@ module.exports = async function (deployer, network, accounts) {
     // Transfer all tokens to EGL contract
     await eglToken.transfer(eglContract.address, totalEglSupply.sub(eglsGifted).toString());
 
-    // TODO: Fix this ownership call
     // Owns itself - and is the only one that can initiate upgrades
-    // await eglContract.transferOwnership(eglContract.address);
+    await eglContract.transferOwnership(eglContract.address);
 };
