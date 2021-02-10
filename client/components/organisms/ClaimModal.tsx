@@ -69,12 +69,6 @@ export default function ClaimModal({
                             supportLaunch(contract, walletAddress, amount, () =>
                                 handleOutsideClick()
                             )
-                            // actions.resetForm({
-                            //     values: {
-                            //         amount: '0',
-                            //     },
-                            // })
-                            // setTimeout(() => setAmount('1'), 1000)
                         }}
                     >
                         <Form>

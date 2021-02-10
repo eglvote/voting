@@ -1,6 +1,8 @@
 import web3 from 'web3'
 // import BigNumber from 'bn.js'
 import BigNumber from 'bignumber.js'
+import { REWARD_MULTIPLIER } from './constants'
+import vote from '../pages/vote'
 
 export const fromWei = (num) => web3.utils.fromWei(String(num))
 export const toWei = (num) => web3.utils.toWei(String(num))

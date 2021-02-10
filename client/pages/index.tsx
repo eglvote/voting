@@ -27,7 +27,7 @@ export default () => {
                 <div className={'fixed z-0 top-.5 left-0 -ml-32'}>
                     <img src={pngImage} width={'1000'} height={'1000'} />
                 </div>
-                <div className={'z-10 -mr-64'}>
+                <div className={'z-10 -mr-64 p-4 rounded-xl bg-dark'}>
                     <div className={'mb-10'}>
                         <h1>A fully decentralized protocol to influence the</h1>
                         <h1 className={'font-bold text-6xl'}>

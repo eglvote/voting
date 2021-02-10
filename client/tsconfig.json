@@ -16,6 +16,15 @@
         "isolatedModules": true,
         "jsx": "preserve"
     },
-    "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+    "include": [
+        "next-env.d.ts",
+        "**/*.ts",
+        "**/*.tsx",
+        "lib/getWeb3.spec.js",
+        "lib/helpers.js",
+        "test/index.test.js",
+        "lib/Web3Container.js",
+        "lib/getWeb3.js"
+    ],
     "exclude": ["node_modules"]
 }

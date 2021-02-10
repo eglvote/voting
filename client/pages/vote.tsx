@@ -13,13 +13,10 @@ import {
     tallyVotes,
     increaseAllowance,
     allowance,
+    calculateCumulativeRewards,
 } from '../lib/contractMethods'
 import StatusWidget from '../components/organisms/StatusWidget'
-import {
-    displayComma,
-    calculateIndividualReward,
-    fromWei,
-} from '../lib/helpers'
+import { displayComma, fromWei } from '../lib/helpers'
 import BigNumber from 'bignumber.js'
 import m from 'moment'
 import { REWARD_MULTIPLIER } from '../lib/constants'
@@ -61,18 +58,15 @@ class Vote extends React.Component<VoteProps> {
     timeout = null
 
     componentWillMount() {
-        this.state.walletAddress && this.ticker()
+        this.ticker()
 
         window.ethereum.on('accountsChanged', (accounts) => {
             if (!accounts.length) {
                 this.setState({
-                    timeToNextEpoch: null,
                     tokensLocked: null,
                     releaseDate: null,
                     gasTarget: null,
                     lockupDuration: null,
-                    baselineEgl: null,
-                    totalEglReward: null,
                     voterReward: null,
                     lockupDate: null,
                     eglBalance: 0,
@@ -82,18 +76,17 @@ class Vote extends React.Component<VoteProps> {
                     tokensUnlocked: 0,
                     currentAllowance: 0,
                 })
-                clearInterval(this.timeout)
             } else {
                 this.setState({
                     walletAddress: accounts[0],
                 })
                 this.timeout = setInterval(() => {
-                    this.state.walletAddress && this.ticker()
+                    this.ticker()
                 }, 1000)
             }
         })
         this.timeout = setInterval(() => {
-            this.state.walletAddress && this.ticker()
+            this.ticker()
         }, 1000)
     }
 
@@ -110,14 +103,65 @@ class Vote extends React.Component<VoteProps> {
     }
 
     ticker = async () => {
-        const { web3, accounts, contract, token } = this.props
-        if (!this.state.walletAddress) return
+        const { web3, contract, token } = this.props
 
         const eventInitialized = await this.getAllEventsForType('Initialized')
         const epochLength = eventInitialized[0].returnValues.epochLength
-        const eglBalance = await token.methods
-            .balanceOf(this.state.walletAddress)
-            .call()
+        const currentEpoch = await contract.methods.currentEpoch().call()
+        const reward = new BigNumber(REWARD_MULTIPLIER)
+            .multipliedBy(new BigNumber(52 - currentEpoch))
+            .toFixed()
+
+        if (this.state.walletAddress) {
+            const eglBalance = await token.methods
+                .balanceOf(this.state.walletAddress)
+                .call()
+
+            const voterData = await getVoters(
+                contract,
+                this.state.walletAddress
+            )
+
+            const lockupDate = voterData
+                ? new BigNumber(voterData.releaseDate)
+                      .minus(
+                          new BigNumber(epochLength).multipliedBy(
+                              voterData.lockupDuration
+                          )
+                      )
+                      .toFixed()
+                : 0
+
+            const tokensUnlocked =
+                m().unix() > voterData.releaseDate ? voterData.tokensLocked : 0
+
+            const currentAllowance = await allowance(
+                contract,
+                token,
+                this.state.walletAddress
+            )
+
+            const rewards = await calculateCumulativeRewards(
+                voterData.voteEpoch,
+                currentEpoch,
+                voterData.tokensLocked,
+                voterData.lockupDuration,
+                contract
+            )
+            // console.log(rewards)
+            this.setState({
+                tokensLocked: voterData.tokensLocked,
+                releaseDate: voterData.releaseDate,
+                gasTarget: voterData.gasTarget,
+                lockupDuration: voterData.lockupDuration,
+                voterReward: rewards,
+                lockupDate: String(lockupDate),
+                eglBalance,
+                tokensUnlocked,
+                currentAllowance,
+            })
+        }
+
         const epochEndDate = m.unix(
             parseInt(await contract.methods.currentEpochStartDate().call()) +
                 Number(epochLength)
@@ -132,55 +176,13 @@ class Vote extends React.Component<VoteProps> {
             ' minutes ' +
             countdown.seconds() +
             ' seconds'
-        const voterData = await getVoters(contract, this.state.walletAddress)
         const baselineEgl = await getLatestGasLimit(web3)
-        const currentEpoch = await contract.methods.currentEpoch().call()
-        const voteWeightsSum = await contract.methods.voteWeightsSum(0).call()
-        const reward = new BigNumber(REWARD_MULTIPLIER)
-            .multipliedBy(new BigNumber(52 - currentEpoch))
-            .toFixed()
-
-        const lockupDate = voterData
-            ? new BigNumber(voterData.releaseDate)
-                  .minus(
-                      new BigNumber(epochLength).multipliedBy(
-                          voterData.lockupDuration
-                      )
-                  )
-                  .toFixed()
-            : 0
-
-        // Voter Rewards = (Vote Weight / Epoch Total Votes) * Reward Multiplier * Reward Weeks
-        const individualReward = calculateIndividualReward(
-            voterData.tokensLocked,
-            voterData.lockupDuration,
-            voteWeightsSum.toString(),
-            reward.toString()
-        )
-
-        const tokensUnlocked =
-            m().unix() > voterData.releaseDate ? voterData.tokensLocked : 0
-
-        const currentAllowance = await allowance(
-            contract,
-            token,
-            this.state.walletAddress
-        )
 
         this.setState({
             timeToNextEpoch: nextEpoch,
-            tokensLocked: voterData.tokensLocked,
-            releaseDate: voterData.releaseDate,
-            gasTarget: voterData.gasTarget,
-            lockupDuration: voterData.lockupDuration,
             baselineEgl,
-            totalEglReward: String(reward),
-            voterReward: individualReward,
-            lockupDate: String(lockupDate),
-            eglBalance,
-            tokensUnlocked,
-            currentAllowance,
             epochLength,
+            totalEglReward: String(reward),
         })
     }
 
@@ -203,6 +205,7 @@ class Vote extends React.Component<VoteProps> {
             currentAllowance,
             epochLength,
         } = this.state
+        // console.log(this.props.contract)
         return (
             <GenericPageTemplate
                 connectWeb3={this.handleConnectToWeb3}

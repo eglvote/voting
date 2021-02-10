@@ -38,7 +38,12 @@ export default function SupportLaunchForm({ contract, walletAddress }) {
                     } else if (!values.amount) {
                         alert('Please enter an amount')
                     } else {
-                        supportLaunch(contract, walletAddress, values.amount)
+                        supportLaunch(
+                            contract,
+                            walletAddress,
+                            values.amount,
+                            () => {}
+                        )
                     }
                 }}
             >

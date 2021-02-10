@@ -31,7 +31,7 @@ class Claim extends React.Component<ClaimProps> {
     timeout = null
 
     componentWillMount() {
-        this.state.walletAddress && this.ticker()
+        this.ticker()
 
         window.ethereum.on('accountsChanged', (accounts) => {
             if (!accounts.length) {
@@ -45,12 +45,12 @@ class Claim extends React.Component<ClaimProps> {
                     walletAddress: accounts[0],
                 })
                 this.timeout = setInterval(() => {
-                    this.state.walletAddress && this.ticker()
+                    this.ticker()
                 }, 1000)
             }
         })
         this.timeout = setInterval(() => {
-            this.state.walletAddress && this.ticker()
+            this.ticker()
         }, 1000)
     }
 
@@ -69,9 +69,9 @@ class Claim extends React.Component<ClaimProps> {
     ticker = async () => {
         const { token } = this.props
 
-        const eglBalance = await token.methods
-            .balanceOf(this.state.walletAddress)
-            .call()
+        const eglBalance = this.state.walletAddress
+            ? await token.methods.balanceOf(this.state.walletAddress).call()
+            : 0
         const eventEglsMatched = await this.getAllEventsForType('EglsMatched')
         const ethEglRatio = eventEglsMatched.length
             ? eventEglsMatched[eventEglsMatched.length - 1].returnValues

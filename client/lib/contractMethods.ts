@@ -1,4 +1,6 @@
 import web3 from 'web3'
+import BigNumber from 'bignumber.js'
+import { REWARD_MULTIPLIER } from './constants'
 
 const daoRecipient = '0x0000000000000000000000000000000000000000'
 const daoAmount = 0
@@ -287,4 +289,46 @@ export const withdrawLiquidityTokens = async (contract, walletAddress) => {
 export const getEglBalance = async (token, walletAddress) => {
     const eglBalance = await token.methods.balanceOf(walletAddress).call()
     return eglBalance
+}
+
+export const calculateCumulativeRewards = async (
+    voteEpoch,
+    currentEpoch,
+    tokensLocked,
+    lockupDuration,
+    contract
+) => {
+    const voteWeight = new BigNumber(tokensLocked).multipliedBy(
+        new BigNumber(lockupDuration)
+    )
+
+    let totalVoteWeight
+    let totalIndividualReward = new BigNumber(0)
+    let epochReward
+
+    for (let i = 1; i <= currentEpoch - voteEpoch; i++) {
+        const relevantEpoch = currentEpoch - i
+        let voterRewardSums = await contract.methods // 1 to lockupdur
+            .voterRewardSums(relevantEpoch)
+            .call()
+
+        totalVoteWeight = new BigNumber(voterRewardSums)
+
+        epochReward = new BigNumber(REWARD_MULTIPLIER).multipliedBy(
+            new BigNumber(52 - relevantEpoch) // epoch numbers
+        )
+
+        const individualPercent = voteWeight.dividedBy(voterRewardSums)
+        const individualEpochReward = epochReward.multipliedBy(
+            individualPercent
+        )
+
+        if (isFinite(individualEpochReward.toFixed())) {
+            totalIndividualReward = totalIndividualReward.plus(
+                individualEpochReward
+            )
+        }
+    }
+
+    return totalIndividualReward.toFixed()
 }

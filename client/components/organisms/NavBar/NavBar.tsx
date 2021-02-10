@@ -31,7 +31,7 @@ export default function NavBar({
     return (
         <header
             style={style}
-            className={`${className} z-0 fixed inset-0 flex w-screen h-20 bg-hailStorm shadow`}
+            className={`${className} z-10 fixed inset-0 flex w-screen h-20 bg-hailStorm shadow`}
         >
             <Link href={'/'}>
                 <div
@@ -45,7 +45,6 @@ export default function NavBar({
                 <Card className={'bg-salmon shadow h-12 mr-4 min-w-max'}>
                     <p className={'text-white text-center font-bold'}>{`${
                         eglBalance ? displayComma(fromWei(eglBalance)) : 0
-                        // eglBalance ? eglBalance : 0
                     } EGL`}</p>
                 </Card>
                 <ConnectToWeb3Button
