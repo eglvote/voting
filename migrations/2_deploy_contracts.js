@@ -1,4 +1,4 @@
-const BN = require("bn.js");
+const { BN } = require("bn.js");
 const { deployProxy } = require("@openzeppelin/truffle-upgrades");
 const Contract = require('@truffle/contract');
 const FactoryJson = require('@uniswap/v2-core/build/UniswapV2Factory.json')
@@ -14,22 +14,7 @@ UniswapV2Factory.setProvider(this.web3._provider);
 const UniswapV2Router = Contract(RouterJson);
 UniswapV2Router.setProvider(this.web3._provider);
 
-let totalEglSupply;
-let eglToken;
-let eglContract;
-let routerAddress;
-let ethToLaunchUniSwap;
-let minPoolTokensLockup;
-let firstEpochStartDate;
-let votePauseSeconds;
-let epochLengthSeconds;
-let seedAccounts;
-let initialGasLimit;
-let desiredEgl;
-let eglsGifted;
-let creatorRewardAccount;
-
-async function giveFreeTokens(giftAccounts) {
+async function giveFreeTokens(giftAccounts, eglToken) {
     let giftEgls = new BN("0");
     for (let [name, address] of Object.entries(giftAccounts)) {
         await eglToken.transfer(address, web3.utils.toWei("50000000"));
@@ -40,28 +25,26 @@ async function giveFreeTokens(giftAccounts) {
 }
 
 module.exports = async function (deployer, network, accounts) {    
-    totalEglSupply = new BN(web3.utils.toWei("4000000000")); // 4 billion
-
-    eglToken = await deployProxy(
+    let totalEglSupply = new BN(web3.utils.toWei("4000000000")); // 4 billion
+    let eglToken = await deployProxy(
         EglToken,
         ["TestToken", "TTK", totalEglSupply.toString()],
     );
     console.log("EGL Token deployed to address: ", eglToken.address);
 
-    if (network === "mainnet") {
-        routerAddress = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"; // Uniswap Router
-        ethToLaunchUniSwap = web3.utils.toWei("1000");
-        minPoolTokensLockup = 6048000; // 10 weeks
-        firstEpochStartDate = Math.round(new Date().getTime() / 1000);
-        votePauseSeconds = 21600; // 6 hours
-        epochLengthSeconds = 604800; // 1 week
-        initialGasLimit = 12500000;
-        desiredEgl = 13000000;
-        seedAccounts = [];
-        eglsGifted = new BN("0"); // No gift tokens in mainnet
-        creatorRewardAccount = accounts[0];
-    }
-
+    // Default values are for mainnet
+    let routerAddress = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"; // Uniswap Router
+    let ethToLaunchUniSwap = web3.utils.toWei("1000");
+    let minPoolTokensLockup = 6048000; // 10 weeks
+    let firstEpochStartDate = Math.round(new Date().getTime() / 1000);
+    let votePauseSeconds = 21600; // 6 hours
+    let epochLengthSeconds = 604800; // 1 week
+    let initialGasLimit = 12500000;
+    let desiredEgl = 13000000;
+    let seedAccounts = [];
+    let eglsGifted = new BN("0"); // No gift tokens in mainnet
+    let creatorRewardAccount = accounts[0];
+    
     if (network === "ropsten") {
         giftAccounts = {
             // "Uri": "0xb079b14b218013C81Fe17Cb0D4B665E448722dc5",
@@ -72,7 +55,6 @@ module.exports = async function (deployer, network, accounts) {
             // "Greg": "0x8E85bD36Cce941b76D1c668B282D842f867e6F0d",
         }
 
-        routerAddress = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"; // Uniswap Router
         ethToLaunchUniSwap = web3.utils.toWei("1000");
         minPoolTokensLockup = 3600; // 1 hour 
         firstEpochStartDate = Math.round(new Date().getTime() / 1000);
@@ -84,7 +66,7 @@ module.exports = async function (deployer, network, accounts) {
             "0x2C596F42d15848b6dD997B255B9c033Ce7240644",
             "0x2755f888047Db8E3d169C6A427470C44b19a7270",
         ];
-        eglsGifted = await giveFreeTokens(giftAccounts);
+        eglsGifted = await giveFreeTokens(giftAccounts, eglToken);
         creatorRewardAccount = accounts[0];
     }
 
@@ -109,11 +91,11 @@ module.exports = async function (deployer, network, accounts) {
         initialGasLimit = 6700000;
         desiredEgl = 7300000;
         seedAccounts = [accounts[1], accounts[2]];
-        eglsGifted = await giveFreeTokens(giftAccounts);
+        eglsGifted = await giveFreeTokens(giftAccounts, eglToken);
         creatorRewardAccount = accounts[9];
     }
 
-    eglContract = await deployProxy(
+    let eglContract = await deployProxy(
         EglContract,
         [
             eglToken.address,
@@ -129,9 +111,10 @@ module.exports = async function (deployer, network, accounts) {
             eglsGifted.toString(),
             creatorRewardAccount
         ],
-        {deployer, unsafeAllowCustomTypes: true}
     );
     console.log("EGL Contract deployed to address: ", eglContract.address);
+
+    // web3.eth.sendTransaction({ from: deployer, to: eglContract.address, value:1000 });
 
     // Transfer all tokens to EGL contract
     await eglToken.transfer(eglContract.address, totalEglSupply.sub(eglsGifted).toString());
