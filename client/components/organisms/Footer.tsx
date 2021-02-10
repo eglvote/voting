@@ -20,33 +20,43 @@ export default function Footer({ style, className, children }: FooterProps) {
             className={`${className} flex justify-center items-center	bg-hailStorm shadow h-12 object-contain border static bottom-0`}
         >
             <Link href={'https://discord.com/'}>
-                <div className={linkStyle}>
-                    <img src={discord} width={'30'} height={'30'} />
-                </div>
+                <a target="_blank" rel="noreferrer">
+                    <div className={linkStyle}>
+                        <img src={discord} width={'30'} height={'30'} />
+                    </div>
+                </a>
             </Link>
             <Link href={'https://github.com/'}>
-                <div className={linkStyle}>
-                    <img src={github} width={'25'} height={'25'} />
-                </div>
+                <a target="_blank" rel="noreferrer">
+                    <div className={linkStyle}>
+                        <img src={github} width={'25'} height={'25'} />
+                    </div>
+                </a>
             </Link>
             <Link href={'https://medium.com/'}>
-                <div className={linkStyle}>
-                    <img src={medium} width={'25'} height={'25'} />
-                </div>
+                <a target="_blank" rel="noreferrer">
+                    <div className={linkStyle}>
+                        <img src={medium} width={'25'} height={'25'} />
+                    </div>
+                </a>
             </Link>
             <Link href={'https://twitter.com/'}>
-                <div className={linkStyle}>
-                    <img src={twitter} width={'25'} height={'25'} />
-                </div>
+                <a target="_blank" rel="noreferrer">
+                    <div className={linkStyle}>
+                        <img src={twitter} width={'25'} height={'25'} />
+                    </div>
+                </a>
             </Link>
             <Link
                 href={
                     'https://eglterms.s3-us-west-1.amazonaws.com/Terms+of+Service.pdf'
                 }
             >
-                <div className={linkStyle}>
-                    <p className={'text-babyBlue'}>Terms</p>
-                </div>
+                <a target="_blank" rel="noreferrer">
+                    <div className={linkStyle}>
+                        <p className={'text-babyBlue'}>Terms</p>
+                    </div>
+                </a>
             </Link>
         </footer>
     )

@@ -106,7 +106,9 @@ class Vote extends React.Component<VoteProps> {
         const { web3, contract, token } = this.props
 
         const eventInitialized = await this.getAllEventsForType('Initialized')
-        const epochLength = eventInitialized[0].returnValues.epochLength
+        const epochLength = eventInitialized.length
+            ? eventInitialized[0].returnValues.epochLength
+            : 300
         const currentEpoch = await contract.methods.currentEpoch().call()
         const reward = new BigNumber(REWARD_MULTIPLIER)
             .multipliedBy(new BigNumber(52 - currentEpoch))
