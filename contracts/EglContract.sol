@@ -37,7 +37,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
     uint constant DAO_RECIPIENT_MIN_AMOUNT = 1 ether;
     uint constant DAO_RECIPIENT_MAX_AMOUNT = 5000000 ether;
     uint constant VOTER_REWARD_MULTIPLIER = 544267.054 ether;
-    uint constant INITIAL_SEED_AMOUNT = 25000000 ether;
+    uint constant INITIAL_SEED_AMOUNT = 5000000 ether;
     uint constant ETH_EGL_LAUNCH_RATIO = 16000 ether;
     uint constant TOTAL_EGLS_FOR_MATCHING = 750000000 ether;
 
@@ -180,6 +180,8 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         int averageGasTarget,
         uint votingThreshold,
         uint actualVotePercentage,
+        uint daoVotePercentage,
+        uint upgradeVotePercentage,
         uint date
     );
     event CreatorRewardsClaimed(
@@ -289,6 +291,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
     );
     event CandidateVoteAdded(
         address candidate, 
+        uint currentEpoch,
         uint candidateVoteCount,
         uint candidateAmountSum,
         uint8 candidateIdx,
@@ -300,6 +303,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
     );
     event CandidateVoteRemoved(
         address candidate, 
+        uint currentEpoch,
         uint candidateVoteCount,
         uint candidateAmountSum,
         uint8 candidateIdx,
@@ -308,9 +312,11 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
     );
     event CandidateVoteEvaluated(
         address winner, 
+        uint currentEpoch,
         uint winnerVotes,
         uint winnerAmount,
         uint totalVoteWeight,
+        uint totalVotePercentage,
         bool thresholdPassed,
         uint date
     );
@@ -330,7 +336,6 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
      * @param _token Address of the EGL token
      * @param _router Address of the Uniswap Router
      * @param _ethRequiredToLaunchUniSwap Amount of ETH required to launch UniSwap pair
-     * @param _minLiquidityTokensLockup Minimum duration that liquidity tokens are locked for
      * @param _currentEpochStartDate Start date for the first epoch
      * @param _votingPauseSeconds Number of seconds to pause voting before votes are tallied
      * @param _epochLength The length of each epoch in seconds
@@ -341,7 +346,6 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         address _token,
         address _router,
         uint _ethRequiredToLaunchUniSwap,
-        uint _minLiquidityTokensLockup,
         uint _currentEpochStartDate,
         uint24 _votingPauseSeconds,
         uint32 _epochLength,
@@ -369,7 +373,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         require(uniSwapFactory.getPair(address(eglToken), address(weth)) == address(0), "EGL:UNISWAP_EXISTS");
         uniSwapPair = IUniswapV2Pair(UniswapV2Library.pairFor(address(uniSwapFactory), address(eglToken), address(weth)));
         ethRequiredToLaunchUniSwap = _ethRequiredToLaunchUniSwap;
-        minLiquidityTokensLockup = _minLiquidityTokensLockup;        
+        minLiquidityTokensLockup = _epochLength.mul(10);
 
         firstEpochStartDate = _currentEpochStartDate;
         currentEpochStartDate = _currentEpochStartDate;
@@ -780,9 +784,13 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             );
         }
 
-        if (daoCandidateList.length > 0 && votePercentage >= 20 * DECIMAL_PRECISION) {            
+        uint daoVotePercentage = tokensInCirculation > 0
+            ? daoVoteEglSum.mul(DECIMAL_PRECISION).div(tokensInCirculation).mul(100)
+            : 0;
+        if (daoCandidateList.length > 0 && daoVotePercentage >= 20 * DECIMAL_PRECISION) {            
             (bool thresholdPassed, address winnerAddress, uint winnerAmount) = _evaluateCandidateVote(
-                daoCandidateList
+                daoCandidateList,
+                daoVotePercentage
             );
             delete daoCandidateList;
             if (thresholdPassed) {
@@ -796,11 +804,19 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
                 previousEpochDaoCandidate = address(0);
                 previousEpochDaoSum = 0;
             }            
+        } else {
+            previousEpochDaoCandidate = address(0);
+            previousEpochDaoSum = 0;
+            daoVoteEglSum = 0;
         }
 
-        if (upgradeCandidateList.length > 0 && votePercentage >= 50 * DECIMAL_PRECISION) {
+        uint upgradeVotePercentage = tokensInCirculation > 0
+            ? upgradeVoteEglSum.mul(DECIMAL_PRECISION).div(tokensInCirculation).mul(100)
+            : 0;
+        if (upgradeCandidateList.length > 0 && upgradeVotePercentage >= 50 * DECIMAL_PRECISION) {
             (bool thresholdPassed, address winnerAddress, ) = _evaluateCandidateVote(
-                upgradeCandidateList
+                upgradeCandidateList,
+                upgradeVotePercentage
             );
             delete upgradeCandidateList;
             if (thresholdPassed) {
@@ -811,6 +827,9 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
                     previousEpochUpgradeCandidate = winnerAddress;
             } else
                 previousEpochUpgradeCandidate = address(0);
+        } else {
+            previousEpochUpgradeCandidate = address(0);
+            upgradeVoteEglSum = 0;
         }
 
         // move values 1 slot earlier and put a '0' at the last slot
@@ -851,6 +870,8 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             averageGasTarget,
             votingThreshold,
             votePercentage,
+            daoVotePercentage,
+            upgradeVotePercentage,
             now
         );
     }
@@ -1070,6 +1091,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         }
         emit CandidateVoteAdded(
             _candidateAddress,
+            currentEpoch,
             _candidate.voteCount,
             _candidate.amountSum,
             _candidate.idx,
@@ -1108,6 +1130,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
 
             emit CandidateVoteRemoved(
                 _candidateAddress,
+                currentEpoch,
                 _candidate.voteCount,
                 _candidate.amountSum,
                 _candidate.idx,
@@ -1118,12 +1141,14 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
     }
 
     function _evaluateCandidateVote(
-        address[] memory _candidateList
+        address[] memory _candidateList,
+        uint _totalVotePercentage
     ) 
         internal 
         returns (bool thresholdPassed, address winnerAddress, uint winnerAmount) 
     {
         uint winnerVotes;
+        uint winnerAmountSum;
         uint totalVoteWeight;
 
         for (uint8 i = 0; i < _candidateList.length; i++) {
@@ -1131,20 +1156,24 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             if (_candidate.voteCount > winnerVotes) {
                 winnerAddress = _candidateList[i];
                 winnerVotes = _candidate.voteCount;
-                winnerAmount = _candidate.amountSum;
+                winnerAmountSum = _candidate.amountSum;
             }
             totalVoteWeight = totalVoteWeight.add(_candidate.voteCount);
             delete voteCandidates[_candidateList[i]];
         }
 
-        if (winnerVotes >= totalVoteWeight.div(2))
+        if (winnerVotes >= totalVoteWeight.div(2)) {
+            winnerAmount = winnerAmountSum.div(totalVoteWeight);
             thresholdPassed = true;
+        }
         
         emit CandidateVoteEvaluated(
             winnerAddress,
+            currentEpoch,
             winnerVotes,
             winnerAmount,
             totalVoteWeight,
+            _totalVotePercentage,
             thresholdPassed,
             now
         );

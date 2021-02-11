@@ -12,7 +12,6 @@ const {
     VoterAttributes,
     ZeroAddress,
     DefaultEthToLaunch,
-    DefaultMinLpLockupSeconds,
     DefaultVotePauseSeconds,
     DefaultEpochLengthSeconds,
     ValidGasTarget,
@@ -77,7 +76,6 @@ contract("EglTests", (accounts) => {
             eglTokenInstance.address,
             routerContract.address,
             DefaultEthToLaunch,
-            DefaultMinLpLockupSeconds,
             Math.round(new Date().getTime() / 1000),
             DefaultVotePauseSeconds,
             DefaultEpochLengthSeconds,
@@ -97,41 +95,6 @@ contract("EglTests", (accounts) => {
 
     describe.skip("Debug", function () {
         it("", async () => {
-            // let txReceipt = await eglContractInstance.test_addUpgradeCandidateVote(
-            //     accounts[5],
-            //     web3.utils.toWei("5")
-            // );
-            // let event = await populateEventDataFromLogs(txReceipt, EventType.CANDIDATE_VOTE_ADDED);
-            // console.log("Egl Amount: ", event.candidateEglAmount.toString());            
-            // console.log("Idx: ", event.candidateIdx.toString());            
-            // console.log("No Candidates: ", event.numberOfCandidates.toString());            
-            // console.log("Losing Candidate: ", event.losingCandidate.toString());            
-            // console.log("Losing Candidate Idx: ", event.losingCandidateIdx.toString());
-            // console.log("");
-
-            // txReceipt = await eglContractInstance.test_addUpgradeCandidateVote(
-            //     accounts[7],
-            //     web3.utils.toWei("1")
-            // );            
-            // event = await populateEventDataFromLogs(txReceipt, EventType.CANDIDATE_VOTE_ADDED);
-            // console.log("Egl Amount: ", event.candidateEglAmount.toString());            
-            // console.log("Idx: ", event.candidateIdx.toString());            
-            // console.log("No Candidates: ", event.numberOfCandidates.toString());            
-            // console.log("Losing Candidate: ", event.losingCandidate.toString());            
-            // console.log("Losing Candidate Idx: ", event.losingCandidateIdx.toString());
-            // console.log("");
-
-            // txReceipt = await eglContractInstance.test_addUpgradeCandidateVote(
-            //     accounts[6],
-            //     web3.utils.toWei("3")
-            // );            
-            // event = await populateEventDataFromLogs(txReceipt, EventType.CANDIDATE_VOTE_ADDED);
-            // console.log("Egl Amount: ", event.candidateEglAmount.toString());            
-            // console.log("Idx: ", event.candidateIdx.toString());            
-            // console.log("No Candidates: ", event.numberOfCandidates.toString());            
-            // console.log("Losing Candidate: ", event.losingCandidate.toString());            
-            // console.log("Losing Candidate Idx: ", event.losingCandidateIdx.toString());
-            // console.log("");
         });
     });
 
@@ -174,7 +137,7 @@ contract("EglTests", (accounts) => {
                 );
                 assert.equal(
                     seedAccount[VoterAttributes.TOKENS_LOCKED],
-                    web3.utils.toWei("12500000"),
+                    web3.utils.toWei("2500000"),
                     "Incorrect seed account tokens locked"
                 );
                 assert.equal(
@@ -204,28 +167,28 @@ contract("EglTests", (accounts) => {
                 // Vote weight total for epoch
                 assert.equal(
                     (await eglContractInstance.voteWeightsSum(i)).toString(),
-                    web3.utils.toWei("200000000"),
+                    web3.utils.toWei("40000000"),
                     "Incorrect initial vote weight sum - week " + i
                 );
 
                 // Gas target total for epoch
                 assert.equal(
                     (await eglContractInstance.gasTargetSum(i)).toString(),
-                    new BN(web3.utils.toWei("200000000")).mul(new BN(eglContractDeployGasLimit)).toString(),
+                    new BN(web3.utils.toWei("40000000")).mul(new BN(eglContractDeployGasLimit)).toString(),
                     "Incorrect initial gas target sum - week " + i
                 );
 
                 // Votes total for epoch
                 assert.equal(
                     (await eglContractInstance.votesTotal(i)).toString(),
-                    web3.utils.toWei("25000000"),
+                    web3.utils.toWei("5000000"),
                     "Incorrect initial votes total - week " + i
                 );
 
                 // Voter reward total for epoch
                 assert.equal(
                     (await eglContractInstance.voterRewardSums(i)).toString(),
-                    web3.utils.toWei("200000000"),
+                    web3.utils.toWei("40000000"),
                     "Incorrect initial voter reward sum - week " + i
                 );
             }
@@ -466,13 +429,13 @@ contract("EglTests", (accounts) => {
             );            
 
             let voteWeight = voteAmount.mul(new BN("2"));
-            let seedEpochGasTargetTotal = new BN(web3.utils.toWei("200000000")).mul(new BN(eglContractDeployGasLimit));
+            let seedEpochGasTargetTotal = new BN(web3.utils.toWei("40000000")).mul(new BN(eglContractDeployGasLimit));
             // Include voters vote for 2 periods
             for (let i = 0; i < 2; i++) {
                 // Vote weight total for epoch
                 assert.equal(
                     (await eglContractInstance.voteWeightsSum(i)).toString(),
-                    web3.utils.toWei("200000020"),
+                    web3.utils.toWei("40000020"),
                     "Incorrect vote weight sum after vote - week " + i
                 );
 
@@ -486,14 +449,14 @@ contract("EglTests", (accounts) => {
                 // Votes total
                 assert.equal(
                     (await eglContractInstance.votesTotal(i)).toString(),
-                    web3.utils.toWei("25000010"),
+                    web3.utils.toWei("5000010"),
                     "Incorrect votes total after vote() - week " + i
                 );
 
                 // Voter reward sums
                 assert.equal(
                     (await eglContractInstance.voterRewardSums(i)).toString(),
-                    web3.utils.toWei("200000020"),
+                    web3.utils.toWei("40000020"),
                     "Incorrect voter reward sums after vote() - week " + i
                 );
             }
@@ -503,7 +466,7 @@ contract("EglTests", (accounts) => {
                 // Vote weight total for epoch
                 assert.equal(
                     (await eglContractInstance.voteWeightsSum(i)).toString(),
-                    web3.utils.toWei("200000000"),
+                    web3.utils.toWei("40000000"),
                     "Incorrect vote weight sum after vote - week " + i
                 );
 
@@ -517,14 +480,14 @@ contract("EglTests", (accounts) => {
                 // Votes total
                 assert.equal(
                     (await eglContractInstance.votesTotal(i)).toString(),
-                    web3.utils.toWei("25000000"),
+                    web3.utils.toWei("5000000"),
                     "Incorrect votes total after vote() - week " + i
                 );
 
                 // Voter reward sums
                 assert.equal(
                     (await eglContractInstance.voterRewardSums(i)).toString(),
-                    web3.utils.toWei("200000000"),
+                    web3.utils.toWei("40000000"),
                     "Incorrect voter reward sums after vote() - week " + i
                 );
             }
@@ -739,7 +702,7 @@ contract("EglTests", (accounts) => {
                 // Vote weight total for epoch
                 assert.equal(
                     (await eglContractInstance.voteWeightsSum(i)).toString(),
-                    web3.utils.toWei("150000000"),
+                    web3.utils.toWei("30000000"),
                     "Incorrect vote weight sum after re-vote - week " + i
                 );
 
@@ -748,14 +711,14 @@ contract("EglTests", (accounts) => {
                 // Votes total
                 assert.equal(
                     (await eglContractInstance.votesTotal(i)).toString(),
-                    web3.utils.toWei("25000000"),
+                    web3.utils.toWei("5000000"),
                     "Incorrect votes total after re-vote() - week " + i
                 );
 
                 // Voter reward sums
                 assert.equal(
                     (await eglContractInstance.voterRewardSums(i)).toString(),
-                    web3.utils.toWei("150000000"),
+                    web3.utils.toWei("30000000"),
                     "Incorrect voter reward sums after re-vote() - week " + i
                 );
             }
@@ -764,21 +727,21 @@ contract("EglTests", (accounts) => {
                 // Vote weight total for epoch
                 assert.equal(
                     (await eglContractInstance.voteWeightsSum(i)).toString(),
-                    web3.utils.toWei("100000000"),
+                    web3.utils.toWei("20000000"),
                     "Incorrect vote weight sum after re-vote - week " + i
                 );
 
                 // Votes total
                 assert.equal(
                     (await eglContractInstance.votesTotal(i)).toString(),
-                    web3.utils.toWei("12500000"),
+                    web3.utils.toWei("2500000"),
                     "Incorrect votes total after vote() - week " + i
                 );
 
                 // Voter reward sums
                 assert.equal(
                     (await eglContractInstance.voterRewardSums(i)).toString(),
-                    web3.utils.toWei("100000000"),
+                    web3.utils.toWei("20000000"),
                     "Incorrect voter reward sums after vote() - week " + i
                 );
             }
@@ -883,21 +846,21 @@ contract("EglTests", (accounts) => {
                 // Vote weight total for epoch
                 assert.equal(
                     (await eglContractInstance.voteWeightsSum(i)).toString(),
-                    web3.utils.toWei("200000280"),
+                    web3.utils.toWei("40000280"),
                     "Incorrect vote weight sum after re-vote - week " + i
                 );
 
                 // Votes total
                 assert.equal(
                     (await eglContractInstance.votesTotal(i)).toString(),
-                    web3.utils.toWei("25000070"),
+                    web3.utils.toWei("5000070"),
                     "Incorrect votes total after re-vote() - week " + i
                 );
 
                 // Voter reward sums
                 assert.equal(
                     (await eglContractInstance.voterRewardSums(i)).toString(),
-                    web3.utils.toWei("200000280"),
+                    web3.utils.toWei("40000280"),
                     "Incorrect voter reward sums after re-vote() - week " + i
                 );
             }
@@ -906,21 +869,21 @@ contract("EglTests", (accounts) => {
                 // Vote weight total for epoch
                 assert.equal(
                     (await eglContractInstance.voteWeightsSum(i)).toString(),
-                    web3.utils.toWei("200000000"),
+                    web3.utils.toWei("40000000"),
                     "Incorrect vote weight sum after re-vote - week " + i
                 );
 
                 // Votes total
                 assert.equal(
                     (await eglContractInstance.votesTotal(i)).toString(),
-                    web3.utils.toWei("25000000"),
+                    web3.utils.toWei("5000000"),
                     "Incorrect votes total after vote() - week " + i
                 );
 
                 // Voter reward sums
                 assert.equal(
                     (await eglContractInstance.voterRewardSums(i)).toString(),
-                    web3.utils.toWei("200000000"),
+                    web3.utils.toWei("40000000"),
                     "Incorrect voter reward sums after vote() - week " + i
                 );
             }

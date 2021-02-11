@@ -60,11 +60,11 @@ contract TestableEglContract is EglContract {
     }
 
     function test_evaluateUpgradeVote() external {
-        _evaluateCandidateVote(upgradeCandidateList);
+        _evaluateCandidateVote(upgradeCandidateList, 0);
     }
 
     function test_evaluateDaoVote() external {
-        _evaluateCandidateVote(daoCandidateList);
+        _evaluateCandidateVote(daoCandidateList, 0);
     }
 
     function test_addPairLiquidity(uint _ethAmount, uint _desiredTokenAmount) external returns (uint tokensReceived) {

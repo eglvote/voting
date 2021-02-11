@@ -40,7 +40,6 @@ const VoterAttributes = {
 
 const ZeroAddress = "0x0000000000000000000000000000000000000000";
 const DefaultEthToLaunch = web3.utils.toWei("5");
-const DefaultMinLpLockupSeconds = 1;
 const DefaultVotePauseSeconds = 0;
 const DefaultEpochLengthSeconds = 3; 
 
@@ -66,7 +65,6 @@ module.exports = {
     VoterAttributes,
     ZeroAddress,
     DefaultEthToLaunch,
-    DefaultMinLpLockupSeconds,
     DefaultVotePauseSeconds,
     DefaultEpochLengthSeconds,
     ValidGasTarget,
