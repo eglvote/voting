@@ -134,11 +134,11 @@ class Vote extends React.Component<VoteProps> {
                       .toFixed()
                 : 0
 
-            const tokensUnlocked =
-                m().unix() > voterData.releaseDate
+            const tokensUnlocked = voterData
+                ? m().unix() > voterData.releaseDate
                     ? voterData.tokensLocked
                     : '0'
-
+                : '0'
             const currentAllowance = await allowance(
                 contract,
                 token,
