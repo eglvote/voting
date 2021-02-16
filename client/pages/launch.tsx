@@ -183,7 +183,7 @@ class Launch extends React.Component<LaunchProps> {
                                         'font-extrabold text-4xl text-white text-center'
                                     }
                                 >
-                                    {eglsClaimed == '0'
+                                    {!eglsClaimed
                                         ? '-'
                                         : displayComma(fromWei(eglsClaimed))}
                                 </p>
