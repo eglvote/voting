@@ -38,7 +38,7 @@ interface VoteProps {
 class Vote extends React.Component<VoteProps> {
     state = {
         timeToNextEpoch: null,
-        tokensLocked: null,
+        tokensLocked: '0',
         releaseDate: null,
         gasTarget: null,
         lockupDuration: null,
@@ -46,12 +46,12 @@ class Vote extends React.Component<VoteProps> {
         totalEglReward: null,
         voterReward: null,
         lockupDate: null,
-        eglBalance: null,
+        eglBalance: '0',
         walletAddress: this.props.accounts ? this.props.accounts[0] : null,
         voteClicked: false,
         revoteClicked: false,
-        tokensUnlocked: 0,
-        currentAllowance: 0,
+        tokensUnlocked: '0',
+        currentAllowance: '0',
         epochLength: '300',
     }
 
@@ -63,18 +63,18 @@ class Vote extends React.Component<VoteProps> {
         window.ethereum.on('accountsChanged', (accounts) => {
             if (!accounts.length) {
                 this.setState({
-                    tokensLocked: null,
+                    tokensLocked: '0',
                     releaseDate: null,
                     gasTarget: null,
                     lockupDuration: null,
                     voterReward: null,
                     lockupDate: null,
-                    eglBalance: 0,
+                    eglBalance: '0',
                     walletAddress: null,
                     voteClicked: false,
                     revoteClicked: false,
-                    tokensUnlocked: 0,
-                    currentAllowance: 0,
+                    tokensUnlocked: '0',
+                    currentAllowance: '0',
                 })
             } else {
                 this.setState({
@@ -135,7 +135,9 @@ class Vote extends React.Component<VoteProps> {
                 : 0
 
             const tokensUnlocked =
-                m().unix() > voterData.releaseDate ? voterData.tokensLocked : 0
+                m().unix() > voterData.releaseDate
+                    ? voterData.tokensLocked
+                    : '0'
 
             const currentAllowance = await allowance(
                 contract,
@@ -173,11 +175,11 @@ class Vote extends React.Component<VoteProps> {
             countdown.days() +
             ' days ' +
             countdown.hours() +
-            ' hours ' +
+            ' hrs ' +
             countdown.minutes() +
-            ' minutes ' +
+            ' mins ' +
             countdown.seconds() +
-            ' seconds'
+            ' secs'
         const baselineEgl = await getLatestGasLimit(web3)
 
         this.setState({
@@ -207,141 +209,174 @@ class Vote extends React.Component<VoteProps> {
             currentAllowance,
             epochLength,
         } = this.state
-        // console.log(this.props.contract)
+
         return (
             <GenericPageTemplate
                 connectWeb3={this.handleConnectToWeb3}
                 walletAddress={walletAddress}
-                eglBalance={eglBalance ? eglBalance : 0}
+                eglBalance={eglBalance ? eglBalance : '0'}
             >
-                <div className={'p-12 h-screen'}>
-                    <h1 className={'text-salmon text-4xl font-extrabold'}>
-                        VOTE<span className={'text-black'}>.</span>
-                    </h1>
-                    <h3 className={'text-2xl font-bold'}>This week's vote</h3>
-                    <p className={'mt-8 text-center'}>
-                        ⚠ Disclaimer: EGL was{' '}
-                        <span className={'text-babyBlue underline'}>
-                            audited
-                        </span>
-                        . However, it is still experimental software. Please use
-                        at your own risk.
-                    </p>
-                    <div className={'flex justify-center items-center mt-12'}>
-                        <HatBox
-                            title={'CURRENT GAS LIMIT'}
-                            className={'bg-babyBlue w-96'}
-                        >
-                            <p className={'font-extrabold text-4xl text-white'}>
-                                {baselineEgl
-                                    ? displayComma(baselineEgl)
-                                    : 'N/A'}
-                            </p>
-                        </HatBox>
-                    </div>
-                    <div className={'flex justify-center items-center mt-20'}>
-                        <HatBox
-                            title={'NEXT VOTE CLOSING'}
-                            className={'bg-black mr-20 w-96'}
-                        >
-                            <p
-                                className={
-                                    'font-extrabold text-2xl text-white text-center'
-                                }
-                            >
-                                {timeToNextEpoch ? timeToNextEpoch : 'N/A'}
-                            </p>
-                        </HatBox>
-                        <HatBox
-                            title={'EGLs TO BE REWARDED'}
-                            className={'bg-black w-96'}
-                        >
-                            <p className={'font-extrabold text-4xl text-white'}>
-                                {Number(totalEglReward) > 0
-                                    ? displayComma(totalEglReward)
-                                    : 'ALL GONE !'}
-                            </p>
-                        </HatBox>
-                    </div>
-                    <div className={'flex justify-center w-full mt-4'}>
-                        <StatusWidget
-                            tokensLocked={tokensLocked}
-                            releaseDate={releaseDate}
-                            gasTarget={gasTarget}
-                            lockupDuration={lockupDuration}
-                            voterReward={voterReward}
-                            lockupDate={lockupDate}
-                            tokensUnlocked={
-                                tokensUnlocked
-                                    ? fromWei(String(tokensUnlocked))
-                                    : '0'
+                <div className={''}>
+                    <div
+                        style={{ height: '80vh' }}
+                        className={'bg-hailStorm p-12'}
+                    >
+                        <h1 className={'text-salmon text-4xl font-extrabold'}>
+                            VOTE<span className={'text-black'}>.</span>
+                        </h1>
+                        <h3 className={'text-2xl font-bold'}>
+                            This week's vote
+                        </h3>
+                        <p className={'mt-8 text-center'}>
+                            ⚠ Disclaimer: EGL was{' '}
+                            <span className={'text-babyBlue underline'}>
+                                audited
+                            </span>
+                            . However, it is still experimental software. Please
+                            use at your own risk.
+                        </p>
+                        <div
+                            className={
+                                'flex flex-col justify-center items-center mt-12'
                             }
-                        />
-                    </div>
-                    <div className={'w-full'}>
-                        <div className={'w-1/2 text-center'}>
-                            Allowance: {displayComma(fromWei(currentAllowance))}
+                        >
+                            <HatBox
+                                title={'CURRENT GAS LIMIT'}
+                                className={'bg-babyBlue w-96'}
+                            >
+                                <p
+                                    className={
+                                        'font-extrabold text-4xl text-white'
+                                    }
+                                >
+                                    {baselineEgl
+                                        ? displayComma(baselineEgl)
+                                        : 'N/A'}
+                                </p>
+                            </HatBox>
+                            <div className={'w-96'}>
+                                <p className={'text-xs text-left absolute'}>
+                                    {'Gas limit of last block mined'}
+                                </p>
+                            </div>
+                        </div>
+                        <div
+                            className={'flex justify-center items-center mt-20'}
+                        >
+                            <div>
+                                <HatBox
+                                    title={'NEXT VOTE CLOSING'}
+                                    className={'bg-black mr-20 w-96'}
+                                >
+                                    <p
+                                        className={
+                                            'font-extrabold text-2xl text-white text-center'
+                                        }
+                                    >
+                                        {timeToNextEpoch
+                                            ? timeToNextEpoch
+                                            : 'N/A'}
+                                    </p>
+                                </HatBox>
+                                <p className={'absolute w-96 text-xs'}>
+                                    Votes must be locked by Fridays at 2am UTC
+                                    to participate.
+                                </p>
+                                <p className={'absolute mt-4 text-xs'}>
+                                    The vote passes 6 hrs later on Fridays at
+                                    8pm UTC.
+                                </p>
+                            </div>
+
+                            <HatBox
+                                title={'EGLs TO BE AWARDED'}
+                                className={'bg-black w-96'}
+                            >
+                                <p
+                                    className={
+                                        'font-extrabold text-4xl text-white'
+                                    }
+                                >
+                                    {Number(totalEglReward) > 0
+                                        ? displayComma(
+                                              Math.round(totalEglReward)
+                                          )
+                                        : 'ALL GONE !'}
+                                </p>
+                            </HatBox>
                         </div>
                     </div>
-
-                    <div className={'flex justify-center w-full'}>
-                        <div className={'flex justify-between mt-8'}>
-                            <Button
-                                className={'w-40 m-4'}
-                                handleClick={() =>
-                                    increaseAllowance(
-                                        this.props.contract,
-                                        this.props.token,
-                                        walletAddress
-                                    )
+                    <div className={''}>
+                        <h1
+                            className={
+                                'm-8 mt-16 text-xl font-extrabold text-left'
+                            }
+                        >
+                            Your Current EGL Vote
+                        </h1>
+                        <div className={'flex justify-center w-full mt-4'}>
+                            <StatusWidget
+                                contract={this.props.contract}
+                                token={this.props.token}
+                                walletAddress={walletAddress}
+                                tokensLocked={tokensLocked}
+                                releaseDate={releaseDate}
+                                gasTarget={gasTarget}
+                                lockupDuration={lockupDuration}
+                                voterReward={voterReward}
+                                lockupDate={lockupDate}
+                                tokensUnlocked={
+                                    tokensUnlocked
+                                        ? fromWei(String(tokensUnlocked))
+                                        : '0'
                                 }
-                            >
-                                <p>+ALLOWANCE</p>
-                            </Button>
-                            <Button
-                                className={'w-40 m-4'}
-                                handleClick={() =>
+                                noAllowance={
+                                    this.state.currentAllowance === '0'
+                                }
+                                hasVoted={this.state.tokensLocked !== '0'}
+                                canWithdraw={this.state.tokensUnlocked !== '0'}
+                                openVoteModal={() =>
                                     this.setState({ voteClicked: true })
                                 }
-                            >
-                                <p>VOTE</p>
-                            </Button>
-                            <Button
-                                className={'w-40 m-4'}
-                                handleClick={() =>
+                                openRevoteModal={() =>
                                     this.setState({ revoteClicked: true })
                                 }
-                            >
-                                <p>RE-VOTE</p>
-                            </Button>
-                            <Button
-                                className={'w-40 m-4'}
-                                handleClick={() =>
-                                    withdraw(this.props.contract, walletAddress)
-                                }
-                            >
-                                <p>WITHDRAW</p>
-                            </Button>
-                            <Button
-                                className={'w-40 m-4'}
-                                handleClick={() =>
-                                    tallyVotes(
-                                        this.props.contract,
-                                        walletAddress
-                                    )
-                                }
-                            >
-                                <p>TALLY</p>
-                            </Button>
+                            />
+                        </div>
+                        <div className={'w-full'}>
+                            <div className={'w-1/2 text-center'}>
+                                Allowance:{' '}
+                                {displayComma(fromWei(currentAllowance))}
+                            </div>
+                        </div>
+
+                        <div className={'flex justify-center w-full'}>
+                            <div className={'flex justify-between mt-8'}>
+                                <Button
+                                    className={'w-40 m-4'}
+                                    handleClick={() =>
+                                        tallyVotes(
+                                            this.props.contract,
+                                            walletAddress
+                                        )
+                                    }
+                                >
+                                    <p>TALLY</p>
+                                </Button>
+                            </div>
+                        </div>
+                        <div className={'p-32'}>
+                            <img className={'w-full'} src={'static/5.png'} />
                         </div>
                     </div>
                 </div>
                 {this.state.voteClicked && (
                     <VoteModal
-                        // web3Reader={web3Reader}
                         contract={this.props.contract}
                         token={this.props.token}
                         walletAddress={walletAddress}
+                        baselineEgl={baselineEgl}
+                        eglBalance={eglBalance}
                         handleOutsideClick={() =>
                             this.setState({ voteClicked: false })
                         }
@@ -357,6 +392,9 @@ class Vote extends React.Component<VoteProps> {
                         }
                         releaseDate={releaseDate}
                         epochLength={epochLength}
+                        tokensLocked={tokensLocked}
+                        voterReward={voterReward}
+                        baselineEgl={baselineEgl}
                     />
                 )}
             </GenericPageTemplate>

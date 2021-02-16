@@ -2,6 +2,8 @@ import React from 'react'
 import Modal from '../../atoms/Modal'
 import Card from '../../atoms/Card'
 import RevoteForm from './RevoteModalForm'
+import { MAXIMUM_LOCKUP_PERIODS } from '../../../lib/constants'
+import m from 'moment'
 
 interface RevoteModalProps {
     style?: object
@@ -12,8 +14,12 @@ interface RevoteModalProps {
     handleOutsideClick: any
     releaseDate: any
     epochLength: string
+    tokensLocked: string
+    voterReward: string
+    baselineEgl: string
 }
 
+// const RP = ({ children }) => <p className={'text-right'}>{children}</p>
 export default function RevoteModal({
     style,
     className,
@@ -23,7 +29,14 @@ export default function RevoteModal({
     handleOutsideClick,
     releaseDate,
     epochLength,
+    tokensLocked,
+    voterReward,
+    baselineEgl,
 }: RevoteModalProps) {
+    let lockupOptions = [...Array(MAXIMUM_LOCKUP_PERIODS).keys()]
+        .map((x) => x + 1)
+        .filter((x) => releaseDate < m().unix() + Number(epochLength) * x)
+
     return (
         <Modal
             handleOutsideClick={handleOutsideClick}
@@ -38,11 +51,10 @@ export default function RevoteModal({
                     RE-VOTE
                 </h1>
                 <div>
-                    <Card className={'mt-6 px-8 bg-gray-100'}>
-                        <p>Re-voting will apply rewarded EGLs</p>
-                        <p>to your current vote of EGLs. You must</p>
-                        <p>lock your re-vote for at least # weeks - the</p>
-                        <p>remaining locked time of your current vote.</p>
+                    <Card className={'mt-6 px-6 bg-gray-100'}>
+                        <p>
+                            {`Re-voting will apply rewarded EGLs to your current vote of EGLs. You must lock your re-vote for at least ${lockupOptions[0]} week(s) - the remaining locked time of your vote.`}
+                        </p>
                     </Card>
                     <RevoteForm
                         contract={contract}
@@ -50,6 +62,9 @@ export default function RevoteModal({
                         walletAddress={walletAddress}
                         releaseDate={releaseDate}
                         epochLength={epochLength}
+                        tokensLocked={tokensLocked}
+                        voterReward={voterReward}
+                        baselineEgl={baselineEgl}
                         callback={() => handleOutsideClick()}
                     />
                 </div>

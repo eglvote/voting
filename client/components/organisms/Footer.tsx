@@ -17,7 +17,7 @@ export default function Footer({ style, className, children }: FooterProps) {
     return (
         <footer
             style={style}
-            className={`${className} flex justify-center items-center	bg-hailStorm shadow h-12 object-contain border static bottom-0`}
+            className={`${className} flex justify-center items-center bg-hailStorm shadow h-12 object-contain border static w-full bottom-0`}
         >
             <Link href={'https://discord.com/'}>
                 <a target="_blank" rel="noreferrer">

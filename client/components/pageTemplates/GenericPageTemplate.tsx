@@ -37,11 +37,11 @@ export default function GenericPageTemplate({
                     eglBalance={eglBalance}
                 >
                     <NavBarLink href={'/vote'} name={'VOTE'} />
-                    <NavBarLink href={'/claim'} name={'CLAIM'} />
-                    <NavBarLink href={'/dapp'} name={'DAPP'} />
+                    <NavBarLink href={'/launch'} name={'LAUNCH'} />
+                    <NavBarLink href={'/dao'} name={'DAO'} />
                     <NavBarLink href={'/status'} name={'STATUS'} />
                 </NavBar>
-                <div className={'mt-20 mb-32 h-full'}>{children}</div>
+                <div className={'mt-20 h-full'}>{children}</div>
                 <Footer />
             </div>
         </>

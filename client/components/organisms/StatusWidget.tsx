@@ -2,11 +2,14 @@ import React from 'react'
 import { fromWei, displayComma } from '../../lib/helpers'
 import m from 'moment'
 import LabelCard from '../molecules/LabelCard'
+import SmartButton from '../molecules/SmartButton'
 
 interface StatusWidgetProps {
     style?: object
     className?: string
-    children?: JSX.Element | JSX.Element[]
+    contract: any
+    token: any
+    walletAddress: string
     tokensLocked: string
     releaseDate: any
     gasTarget: any
@@ -14,6 +17,11 @@ interface StatusWidgetProps {
     voterReward: any
     lockupDate: any
     tokensUnlocked: string
+    noAllowance: boolean
+    hasVoted: boolean
+    canWithdraw: boolean
+    openVoteModal: any
+    openRevoteModal: any
 }
 
 const Th = ({ children }) => <th className={'w-32'}>{children}</th>
@@ -22,7 +30,9 @@ const Td = ({ children }) => <td className={'w-32 text-center'}>{children}</td>
 export default function StatusWidget({
     style,
     className,
-    children,
+    contract,
+    token,
+    walletAddress,
     tokensLocked,
     releaseDate,
     gasTarget,
@@ -30,12 +40,14 @@ export default function StatusWidget({
     voterReward,
     lockupDate,
     tokensUnlocked,
+    noAllowance,
+    hasVoted,
+    canWithdraw,
+    openVoteModal,
+    openRevoteModal,
 }: StatusWidgetProps) {
     return (
         <div className={`${className}`}>
-            <h1 className={'m-8 text-xl font-extrabold text-center'}>
-                Your Current EGL Vote
-            </h1>
             <div className={'flex flex-row items-end'}>
                 <div>
                     <div className={'flex justify-center items-center'}>
@@ -109,6 +121,18 @@ export default function StatusWidget({
                             : '-'
                     }
                 />
+                <div className={'ml-4'}>
+                    <SmartButton
+                        contract={contract}
+                        token={token}
+                        walletAddress={walletAddress}
+                        noAllowance={noAllowance}
+                        hasVoted={hasVoted}
+                        canWithdraw={canWithdraw}
+                        openVoteModal={() => openVoteModal()}
+                        openRevoteModal={() => openRevoteModal()}
+                    />
+                </div>
             </div>
         </div>
     )

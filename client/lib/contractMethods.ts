@@ -2,9 +2,9 @@ import web3 from 'web3'
 import BigNumber from 'bignumber.js'
 import { REWARD_MULTIPLIER } from './constants'
 
-const daoRecipient = '0x0000000000000000000000000000000000000000'
-const daoAmount = 0
-const upgradeAddress = '0x0000000000000000000000000000000000000000'
+// const daoRecipient = '0x0000000000000000000000000000000000000000'
+// const daoAmount = 0
+// const upgradeAddress = '0x0000000000000000000000000000000000000000'
 
 export const vote = async (
     contract,
@@ -13,6 +13,9 @@ export const vote = async (
     eglAmount,
     desiredChange,
     weeksLocked,
+    daoRecipient,
+    daoAmount,
+    upgradeAddress,
     callback
 ) => {
     if (
@@ -38,9 +41,9 @@ export const vote = async (
             desiredChange, // desired change enum
             web3.utils.toWei(String(eglAmount)),
             String(weeksLocked),
-            daoRecipient,
+            daoRecipient || '0x0000000000000000000000000000000000000000',
             daoAmount,
-            upgradeAddress
+            upgradeAddress || '0x0000000000000000000000000000000000000000'
         )
         .send({ from: walletAddress })
         .then((result, e) => {
@@ -68,6 +71,9 @@ export const revote = async (
     eglAmount,
     desiredChange,
     weeksLocked,
+    daoRecipient,
+    daoAmount,
+    upgradeAddress,
     callback
 ) => {
     if (
@@ -93,9 +99,9 @@ export const revote = async (
             desiredChange,
             web3.utils.toWei(String(eglAmount)),
             weeksLocked,
-            daoRecipient,
+            daoRecipient || '0x0000000000000000000000000000000000000000',
             daoAmount,
-            upgradeAddress
+            upgradeAddress || '0x0000000000000000000000000000000000000000'
         )
         .send({ from: walletAddress })
         .then((result, e) => {
@@ -151,7 +157,10 @@ export const increaseAllowance = async (contract, token, walletAddress) => {
     }
 
     const response = await token.methods
-        .increaseAllowance(contract._address, web3.utils.toWei('50000000'))
+        .increaseAllowance(
+            contract._address,
+            web3.utils.toWei('500000000000000')
+        )
         .send({ from: walletAddress })
 
     return response

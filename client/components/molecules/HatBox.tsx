@@ -11,7 +11,7 @@ const Hat = ({ title }) => (
     <div className={'flex justify-center'}>
         <div
             className={
-                'flex w-2/3 h-8 -mt-4 z-0 bg-white border-gray-400 border-4 text-black justify-center items-center font-bold'
+                'flex w-2/3 h-8 -mt-4 bg-white border-gray-400 border-4 text-black justify-center items-center font-bold'
             }
         >
             <p className={'text-sm'}>{title}</p>

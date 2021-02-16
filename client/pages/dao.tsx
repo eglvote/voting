@@ -7,10 +7,12 @@ import connectToWeb3 from '../lib/connectToWeb3'
 import BigNumber from 'bignumber.js'
 import Button from '../components/atoms/Button'
 import ClaimModal from '../components/organisms/ClaimModal'
-import { EGLS_AVAILABLE, DEFAULT_ETH_EGL_RATIO } from '../lib/constants'
+import { EGLS_AVAILABLE } from '../lib/constants'
 import { withdrawLiquidityTokens } from '../lib/contractMethods'
+import PoolTokenCard from '../components/organisms/PoolTokenCard'
+import ReleaseScheduleCard from '../components/organisms/ReleaseScheduleCard'
 
-interface ClaimProps {
+interface DaoProps {
     accounts: any
     web3Reader?: any
     contract: any
@@ -18,14 +20,12 @@ interface ClaimProps {
     token: any
 }
 
-class Claim extends React.Component<ClaimProps> {
+class Dao extends React.Component<DaoProps> {
     state = {
         walletAddress: this.props.accounts[0],
         eglBalance: 0,
-        eglsClaimed: 0,
         eglsAvailable: 0,
-        ethEglRatio: 0,
-        showClaimModal: false,
+        eglsClaimed: 0,
     }
 
     timeout = null
@@ -73,10 +73,6 @@ class Claim extends React.Component<ClaimProps> {
             ? await token.methods.balanceOf(this.state.walletAddress).call()
             : 0
         const eventEglsMatched = await this.getAllEventsForType('EglsMatched')
-        const ethEglRatio = eventEglsMatched.length
-            ? eventEglsMatched[eventEglsMatched.length - 1].returnValues
-                  .ethEglRatio
-            : DEFAULT_ETH_EGL_RATIO
 
         const eglsClaimed = eventEglsMatched.reduce(
             (acc, e) =>
@@ -91,7 +87,6 @@ class Claim extends React.Component<ClaimProps> {
             eglBalance,
             eglsClaimed: eglsClaimed.toFixed(),
             eglsAvailable: eglsAvailable.toFixed(),
-            ethEglRatio,
         })
     }
 
@@ -101,7 +96,6 @@ class Claim extends React.Component<ClaimProps> {
             eglBalance,
             eglsClaimed,
             eglsAvailable,
-            ethEglRatio,
         } = this.state
         const { contract, token } = this.props
 
@@ -111,15 +105,15 @@ class Claim extends React.Component<ClaimProps> {
                 walletAddress={walletAddress}
                 eglBalance={String(eglBalance)}
             >
-                <div className={'p-12 h-screen'}>
+                <div className={'p-12 h-screen bg-hailStorm'}>
                     <h1 className={'text-salmon text-4xl font-extrabold'}>
-                        CLAIM<span className={'text-black'}>.</span>
+                        DAO<span className={'text-black'}>.</span>
                     </h1>
-                    <h3 className={'text-2xl font-bold'}>EGL Launch</h3>
+                    <h3 className={'text-2xl font-bold'}>Funds available</h3>
                     <div className={'flex justify-center items-start mt-20'}>
                         <div>
                             <HatBox
-                                title={'EGLs CLAIMED'}
+                                title={'EGLs AVAILABLE'}
                                 className={'bg-black mr-20 w-96'}
                             >
                                 <p
@@ -127,51 +121,47 @@ class Claim extends React.Component<ClaimProps> {
                                         'font-extrabold text-4xl text-white text-center'
                                     }
                                 >
-                                    {displayComma(fromWei(eglsClaimed)) ||
+                                    {displayComma(fromWei(eglsAvailable)) ||
                                         'N/A'}
                                 </p>
                             </HatBox>
-                            <p>EGL Contract has 750,000,000 EGLs available.</p>
                         </div>
-                        <HatBox
-                            title={'EGLs AVAILABLE'}
-                            className={'bg-black w-96'}
-                        >
-                            <p className={'font-extrabold text-4xl text-white'}>
-                                {displayComma(fromWei(eglsAvailable)) || 'N/A'}
-                            </p>
-                        </HatBox>
                     </div>
-                    <div className={'mt-8 flex justify-center'}>
-                        <Button
-                            className={'w-32 mr-8'}
-                            handleClick={() =>
-                                this.setState({ showClaimModal: true })
-                            }
-                        >
-                            <p>CLAIM</p>
-                        </Button>
-                        <Button
-                            className={'w-32'}
-                            handleClick={() =>
-                                withdrawLiquidityTokens(contract, walletAddress)
-                            }
-                        >
-                            <p>WITHDRAW</p>
-                        </Button>
+                    <div className={'flex justify-center'}>
+                        <div className={'w-4/5 p-8 mt-8 bg-white rounded-xl'}>
+                            <p className={'mt-4'}>
+                                EGL is a fully decentralized protocol. The EGL
+                                DAO was created to fund and support further
+                                development of the protocol. Any future
+                                development of the EGL contract, security
+                                audits, or any other improvement or advancement
+                                of EGL are to be taken by the Ethereum
+                                community, and EGL holders, not by the EGL
+                                creators.{' '}
+                            </p>
+                            <p className={'mt-4'}>
+                                Allocation of these funds is decided upon by the
+                                EGL voters as part of the voting process.
+                            </p>
+                            <p className={'mt-4'}>
+                                EGL voters can distribute up to 5M EGLs per vote
+                                from the DAO to be sent to a specified address.
+                                For DAO funds to be distributed, at least 20% of
+                                the circulating EGLS must participate in the
+                                vote, and their majority (over 50%) must specify
+                                the same single address. Furthermore, the DAO
+                                recipient address must be voted on to receive
+                                funds in two consecutive weeks.
+                            </p>
+                            <p className={'mt-4'}>
+                                The weighted average of all the voters who voted
+                                in favor of distributing funds is used to
+                                determine the exact amount to be distributed to
+                                the specified address.
+                            </p>
+                        </div>
                     </div>
                 </div>
-                {this.state.showClaimModal && (
-                    <ClaimModal
-                        contract={contract}
-                        token={token}
-                        walletAddress={walletAddress}
-                        ethEglRatio={ethEglRatio}
-                        handleOutsideClick={() =>
-                            this.setState({ showClaimModal: false })
-                        }
-                    />
-                )}
             </GenericPageTemplate>
         )
     }
@@ -192,7 +182,7 @@ export default () => (
             </GenericPageTemplate>
         )}
         render={({ web3, accounts, contract, token }) => (
-            <Claim
+            <Dao
                 accounts={accounts}
                 contract={contract}
                 web3={web3}

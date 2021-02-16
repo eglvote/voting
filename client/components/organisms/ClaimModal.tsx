@@ -81,7 +81,7 @@ export default function ClaimModal({
                                                 <input
                                                     {...field}
                                                     className={
-                                                        'w-16 border-babyBlue border-b mx-2 '
+                                                        'w-16 border-babyBlue border-b mx-2 text-right'
                                                     }
                                                     type="number"
                                                     placeholder="0"
@@ -114,7 +114,7 @@ export default function ClaimModal({
                                             {match}
                                         </span>
                                         {
-                                            ' and sent to the ETH-EGL Uniswap Pool.'
+                                            ' EGL and sent to the ETH-EGL Uniswap Pool.'
                                         }
                                     </p>
                                 </div>

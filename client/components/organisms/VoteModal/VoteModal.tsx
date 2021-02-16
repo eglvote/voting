@@ -1,6 +1,8 @@
 import React from 'react'
 import Modal from '../../atoms/Modal'
 import VoteModalForm from './VoteModalForm'
+import Card from '../../atoms/Card'
+import { displayComma, fromWei } from '../../../lib/helpers'
 
 interface VoteModalProps {
     style?: object
@@ -8,6 +10,8 @@ interface VoteModalProps {
     contract: any
     token: any
     walletAddress: any
+    baselineEgl: any
+    eglBalance: any
     handleOutsideClick: any
 }
 
@@ -17,6 +21,8 @@ export default function VoteModal({
     contract,
     token,
     walletAddress,
+    baselineEgl,
+    eglBalance,
     handleOutsideClick,
 }: VoteModalProps) {
     return (
@@ -32,10 +38,20 @@ export default function VoteModal({
                 >
                     VOTE
                 </h1>
+                <Card className={'mt-6 px-4 bg-gray-100'}>
+                    <p>
+                        {`The current gas limit is ${displayComma(
+                            baselineEgl
+                        )} gas and you have ${displayComma(
+                            fromWei(eglBalance)
+                        )} EGLs to vote with`}
+                    </p>
+                </Card>
                 <VoteModalForm
                     contract={contract}
                     token={token}
                     walletAddress={walletAddress}
+                    baselineEgl={baselineEgl}
                     handleOutsideClick={() => handleOutsideClick()}
                 />
             </div>
