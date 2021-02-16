@@ -1,5 +1,4 @@
-const { BN } = require("@openzeppelin/test-helpers");
-const { web3 } = require("@openzeppelin/test-helpers/src/setup");
+const { BN } = require("bn.js");
 
 async function sleep(seconds) {
     return new Promise((resolve) => {
@@ -15,15 +14,45 @@ function populateEventDataFromLogs(txReceipt, eventName) {
     return contractEvents[eventName];
 }
 
-async function getBlockTimestamp(txReceipt) {
+function populateAllEventDataFromLogs(txReceipt, eventName) {
+    let contractEvents = [];
+    txReceipt.logs.map((event) => {
+        if (event.event === eventName)
+            contractEvents.push(event.args);        
+    });
+    return contractEvents;
+}
+
+async function getAllEventsForType(eventName, eglContract) {
+    let events = await eglContract.getPastEvents(eventName, {
+        fromBlock: 0,
+        toBlock: 'latest',
+    });
+
+    let parsedEvents = []
+    events.map((event) => {
+        parsedEvents.push(event.args);
+    });
+    return parsedEvents;
+}
+
+async function getBlockTimestamp(web3, txReceipt) {
     return (await web3.eth.getBlock(txReceipt.receipt.blockNumber)).timestamp;
+}
+
+async function getBlockGasLimit(web3, txReceipt) {
+    return  (await web3.eth.getBlock(txReceipt.receipt.blockNumber)).gasLimit
+}
+
+function getNewWalletAddress(web3) {
+    return web3.eth.accounts.create()
 }
 
 async function giveFreeTokens(giftAccounts, eglToken) {
     let giftEgls = new BN("0");
-    for (let [name, address] of Object.entries(giftAccounts)) {
-        await eglToken.transfer(address, web3.utils.toWei("50000000"));
-        giftEgls = giftEgls.add(new BN(web3.utils.toWei("50000000")));
+    for (let [, address] of Object.entries(giftAccounts)) {
+        await eglToken.transfer(address, "50000000000000000000000000");
+        giftEgls = giftEgls.add(new BN("50000000000000000000000000"));
     }
     return giftEgls;
 }
@@ -31,6 +60,10 @@ async function giveFreeTokens(giftAccounts, eglToken) {
 module.exports = {
     sleep,
     populateEventDataFromLogs,
+    populateAllEventDataFromLogs,
     getBlockTimestamp,
     giveFreeTokens,
+    getAllEventsForType,
+    getBlockGasLimit,
+    getNewWalletAddress
 }

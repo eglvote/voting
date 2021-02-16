@@ -142,7 +142,7 @@ module.exports = async function (done) {
     // token.increaseAllowance(eagle.address, web3.utils.toWei("100000000"), {from: accounts[4]})
     // eagle.vote(7000000, web3.utils.toWei("10000"), 2, "0x0000000000000000000000000000000000000000", 0, accounts[8], {from: accounts[4]});    
     // eagle.vote(7000000, web3.utils.toWei("50000000"), 2, "0x0000000000000000000000000000000000000000", 0, accounts[8], {from: accounts[4]});
-    // eagle.vote(7000000, web3.utils.toWei("50000000"), 2, "0x0000000000000000000000000000000000000000", 0, accounts[8], {from: accounts[4]});
+    // eagle.vote(7000000, web3.utils.toWei("50000000"), 1, "0x0000000000000000000000000000000000000000", 0, accounts[8], {from: accounts[4]});
     // eagle.withdraw({from: accounts[4]});
     // eagle.tallyVotes();
 

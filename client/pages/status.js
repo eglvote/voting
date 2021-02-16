@@ -133,7 +133,7 @@ class EglContractStatus extends React.Component {
             ' seconds'
 
         const voterRewardsSums = []
-        for (let i = 0; i <= 51; i++) {
+        for (let i = 0; i <= Math.min(currentEpoch, 51); i++) {
             voterRewardsSums.push(
                 await eglContract.methods.voterRewardSums(i).call()
             )
@@ -960,9 +960,9 @@ class EglContractStatus extends React.Component {
                                     <td>Caller</td>
                                     <td>Current Epoch</td>
                                     <td>Desired EGL</td>
-                                    <td>Vote Percentage</td>
-                                    <td>DAO Vote Percentage</td>
-                                    <td>Upgrade Vote Percentage</td>
+                                    <td>EGL Vote %</td>
+                                    <td>DAO Vote %</td>
+                                    <td>Upgrade Vote %</td>
                                     <td>Average Gas Target</td>
                                 </tr>
                             </thead>
