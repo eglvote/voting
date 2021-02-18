@@ -2,7 +2,10 @@ import React, { useState } from 'react'
 import { Formik, Field, Form } from 'formik'
 import { revote } from '../../../lib/contractMethods'
 import Button from '../../atoms/Button'
-import { MAXIMUM_LOCKUP_PERIODS } from '../../../lib/constants'
+import {
+    MAXIMUM_LOCKUP_PERIODS,
+    GAS_TARGET_LIMIT,
+} from '../../../lib/constants'
 import m from 'moment'
 import { fromWei, displayComma } from '../../../lib/helpers'
 import * as Yup from 'yup'
@@ -41,8 +44,8 @@ export default function RevoteModalForm({
 
     const RevoteModalSchema = Yup.object().shape({
         desiredChange: Yup.number()
-            .min(baselineEgl - 4000000, 'Too low!')
-            .max(baselineEgl + 4000000, 'Too high!'),
+            .min(baselineEgl - GAS_TARGET_LIMIT, 'Too low!')
+            .max(baselineEgl + GAS_TARGET_LIMIT, 'Too high!'),
     })
 
     return (

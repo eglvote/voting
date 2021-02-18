@@ -115,55 +115,62 @@ class Vote extends React.Component<VoteProps> {
             .toFixed()
 
         if (this.state.walletAddress) {
-            const eglBalance = await token.methods
-                .balanceOf(this.state.walletAddress)
-                .call()
-
             const voterData = await getVoters(
                 contract,
                 this.state.walletAddress
             )
 
-            const lockupDate = voterData
-                ? new BigNumber(voterData.releaseDate)
-                      .minus(
-                          new BigNumber(epochLength).multipliedBy(
-                              voterData.lockupDuration
+            if (voterData) {
+                const eglBalance = await token.methods
+                    .balanceOf(this.state.walletAddress)
+                    .call()
+
+                const voterData = await getVoters(
+                    contract,
+                    this.state.walletAddress
+                )
+
+                const lockupDate = voterData
+                    ? new BigNumber(voterData.releaseDate)
+                          .minus(
+                              new BigNumber(epochLength).multipliedBy(
+                                  voterData.lockupDuration
+                              )
                           )
-                      )
-                      .toFixed()
-                : 0
+                          .toFixed()
+                    : 0
 
-            const tokensUnlocked = voterData
-                ? m().unix() > voterData.releaseDate
-                    ? voterData.tokensLocked
-                    : '0'
-                : '0'
-            const currentAllowance = await allowance(
-                contract,
-                token,
-                this.state.walletAddress
-            )
+                const tokensUnlocked =
+                    m().unix() > voterData.releaseDate
+                        ? voterData.tokensLocked
+                        : '0'
 
-            const rewards = await calculateCumulativeRewards(
-                voterData.voteEpoch,
-                currentEpoch,
-                voterData.tokensLocked,
-                voterData.lockupDuration,
-                contract
-            )
-            // console.log(rewards)
-            this.setState({
-                tokensLocked: voterData.tokensLocked,
-                releaseDate: voterData.releaseDate,
-                gasTarget: voterData.gasTarget,
-                lockupDuration: voterData.lockupDuration,
-                voterReward: rewards,
-                lockupDate: String(lockupDate),
-                eglBalance,
-                tokensUnlocked,
-                currentAllowance,
-            })
+                const currentAllowance = await allowance(
+                    contract,
+                    token,
+                    this.state.walletAddress
+                )
+
+                const rewards = await calculateCumulativeRewards(
+                    voterData.voteEpoch,
+                    currentEpoch,
+                    voterData.tokensLocked,
+                    voterData.lockupDuration,
+                    contract
+                )
+                // console.log(rewards)
+                this.setState({
+                    tokensLocked: voterData.tokensLocked,
+                    releaseDate: voterData.releaseDate,
+                    gasTarget: voterData.gasTarget,
+                    lockupDuration: voterData.lockupDuration,
+                    voterReward: rewards,
+                    lockupDate: String(lockupDate),
+                    eglBalance,
+                    tokensUnlocked,
+                    currentAllowance,
+                })
+            }
         }
 
         const epochEndDate = m.unix(
