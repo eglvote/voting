@@ -46,6 +46,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
     uint16 public currentEpoch;
     uint public currentEpochStartDate;
     uint public tokensInCirculation;
+    uint public previousEpochDaoSum;
 
     uint[52] public voterRewardSums;
     uint[8] public votesTotal;
@@ -113,7 +114,6 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
     uint private poolTokensHeld;    
     uint private upgradeVoteEglSum;
     uint private daoVoteEglSum;
-    uint private previousEpochDaoSum;
 
     bool private uniSwapLaunched;
 
@@ -316,16 +316,21 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         uint date
     );
     event CandidateVoteEvaluated(
-        address winner, 
+        address leadingCandidate, 
         uint currentEpoch,
-        uint winnerVotes,
-        uint winnerAmount,
+        uint leadingCandidateVotes,
+        uint leadingCandidateAmount,
         uint totalVoteWeight,
         uint totalVotePercentage,
         bool thresholdPassed,
         uint date
     );
-
+    event CandidateVoteWinner (
+        address winnerAddress,
+        uint currentEpoch,
+        uint winnerAmount,
+        uint date
+    );
     /***************************** RECEIVE FUNCTION *****************************/
     /**
      * @dev Receive eth
@@ -762,22 +767,9 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             );
         }
 
-        uint daoVotePercentage = _calculatePercentageOfTokensInCirculation(daoVoteEglSum);
-        if (daoCandidateList.length > 0 && daoVotePercentage >= 20 * DECIMAL_PRECISION) {            
-            _tallyDaoVotes();
-        } else {
-            previousEpochDaoCandidate = address(0);
-            previousEpochDaoSum = 0;
-            daoVoteEglSum = 0;
-        }
+        uint daoVotePercentage = _tallyDaoVotes();
 
-        uint upgradeVotePercentage = _calculatePercentageOfTokensInCirculation(upgradeVoteEglSum);
-        if (upgradeCandidateList.length > 0 && upgradeVotePercentage >= 50 * DECIMAL_PRECISION) {
-            _tallyUpgradeVotes();
-        } else {
-            previousEpochUpgradeCandidate = address(0);
-            upgradeVoteEglSum = 0;
-        }
+        uint upgradeVotePercentage = _tallyUpgradeVotes();
 
         // move values 1 slot earlier and put a '0' at the last slot
         for (uint8 i = 0; i < 7; i++) {
@@ -1055,59 +1047,89 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
     /**
      * @dev Calculates the percentage of tokens in circulation for a given total
      *
-     * @param _itemTotal The value to calculate the percentage on
+     * @param _dividend The value to calculate the percentage on
      * @return votePercentage The percentage
      */
-    function _calculatePercentageOfTokensInCirculation(uint _itemTotal) 
+    function _calculatePercentageOfTokensInCirculation(uint _dividend) 
         internal 
         view 
         returns (uint votePercentage) 
     {
         votePercentage = tokensInCirculation > 0
-            ? _itemTotal.mul(DECIMAL_PRECISION).mul(100).div(tokensInCirculation)
+            ? _dividend.mul(DECIMAL_PRECISION).mul(100).div(tokensInCirculation)
             : 0;
     }
 
     /**
      * @dev Tallies the votes cast for DAO recipient and amount
      */
-    function _tallyDaoVotes() internal {
-        (
-            bool thresholdPassed, 
-            address winnerAddress, 
-            uint winnerAmount
-        ) = _evaluateCandidateVote(daoCandidateList);
-        delete daoCandidateList;
-        if (thresholdPassed) {
-            if (previousEpochDaoCandidate != address(0) && winnerAddress == previousEpochDaoCandidate)
-                eglToken.transfer(winnerAddress, previousEpochDaoSum.add(winnerAmount).div(2));
-            else {
-                previousEpochDaoCandidate = winnerAddress;
-                previousEpochDaoSum = winnerAmount;
-            }
-        } else {
+    function _tallyDaoVotes() internal returns (uint daoVotePercentage) {
+        daoVotePercentage = _calculatePercentageOfTokensInCirculation(daoVoteEglSum);
+        bool continueVote;
+        if (daoCandidateList.length > 0 && daoVotePercentage >= 20 * DECIMAL_PRECISION) {            
+            (
+                bool thresholdPassed, 
+                address leadingCandidateAddress, 
+                uint leadingCandidateAmount
+            ) = _evaluateCandidateVote(daoCandidateList);
+            delete daoCandidateList;
+            if (thresholdPassed) {
+                if (previousEpochDaoCandidate != address(0) && leadingCandidateAddress == previousEpochDaoCandidate) {
+                    uint finalDaoAmount = previousEpochDaoSum.add(leadingCandidateAmount).div(2);
+                    eglToken.transfer(leadingCandidateAddress, finalDaoAmount);
+                    emit CandidateVoteWinner(
+                        leadingCandidateAddress,
+                        currentEpoch,
+                        finalDaoAmount,
+                        now
+                    );
+                }
+                else {
+                    previousEpochDaoCandidate = leadingCandidateAddress;
+                    previousEpochDaoSum = leadingCandidateAmount;
+                    continueVote = true;
+                }
+            }            
+        } 
+        if (!continueVote) {
             previousEpochDaoCandidate = address(0);
             previousEpochDaoSum = 0;
-        }            
+            daoVoteEglSum = 0;
+        }
     }
 
     /**
      * @dev Tallies the votes cast for upgrade address
      */
-    function _tallyUpgradeVotes() internal {
-        (
-            bool thresholdPassed, 
-            address winnerAddress, 
-        ) = _evaluateCandidateVote(upgradeCandidateList);
-        delete upgradeCandidateList;
-        if (thresholdPassed) {
-            if (previousEpochUpgradeCandidate != address(0) && winnerAddress == previousEpochUpgradeCandidate) {
-                // _doUpgrade();
-            }
-            else
-                previousEpochUpgradeCandidate = winnerAddress;
-        } else
+    function _tallyUpgradeVotes() internal returns (uint upgradeVotePercentage) {
+        upgradeVotePercentage = _calculatePercentageOfTokensInCirculation(upgradeVoteEglSum);
+        bool continueVote;
+        if (upgradeCandidateList.length > 0 && upgradeVotePercentage >= 50 * DECIMAL_PRECISION) {
+            (
+                bool thresholdPassed, 
+                address leadingCandidateAddress, 
+            ) = _evaluateCandidateVote(upgradeCandidateList);
+            delete upgradeCandidateList;
+            if (thresholdPassed) {
+                if (previousEpochUpgradeCandidate != address(0) && leadingCandidateAddress == previousEpochUpgradeCandidate) {
+                    // _doUpgrade();
+                    emit CandidateVoteWinner(
+                        leadingCandidateAddress,
+                        currentEpoch,
+                        0,
+                        now
+                    );
+                }
+                else {
+                    previousEpochUpgradeCandidate = leadingCandidateAddress;
+                    continueVote = true;
+                }                    
+            } 
+        } 
+        if (!continueVote) {
             previousEpochUpgradeCandidate = address(0);
+            upgradeVoteEglSum = 0;
+        }
     }
 
     /**
@@ -1210,35 +1232,35 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         address[] memory _candidateList
     ) 
         internal 
-        returns (bool thresholdPassed, address winnerAddress, uint winnerAmount) 
+        returns (bool thresholdPassed, address leadingCandidateAddress, uint leadingCandidateAmount) 
     {
-        uint winnerVotes;
-        uint winnerAmountSum;
+        uint leadingCandidateVotes;
+        uint leadingCandidateAmountSum;
         uint totalVoteWeight;
 
         for (uint8 i = 0; i < _candidateList.length; i++) {
             VoteCandidate memory _candidate = voteCandidates[_candidateList[i]];
-            if (_candidate.voteCount > winnerVotes) {
-                winnerAddress = _candidateList[i];
-                winnerVotes = _candidate.voteCount;
-                winnerAmountSum = _candidate.amountSum;
+            if (_candidate.voteCount > leadingCandidateVotes) {
+                leadingCandidateAddress = _candidateList[i];
+                leadingCandidateVotes = _candidate.voteCount;
+                leadingCandidateAmountSum = _candidate.amountSum;
             }
             totalVoteWeight = totalVoteWeight.add(_candidate.voteCount);
             delete voteCandidates[_candidateList[i]];
         }
 
-        if (winnerVotes >= totalVoteWeight.div(2)) {
-            winnerAmount = winnerAmountSum.div(totalVoteWeight);
+        if (leadingCandidateVotes >= totalVoteWeight.div(2)) {
+            leadingCandidateAmount = leadingCandidateAmountSum.div(totalVoteWeight);
             thresholdPassed = true;
         }
         
         emit CandidateVoteEvaluated(
-            winnerAddress,
+            leadingCandidateAddress,
             currentEpoch,
-            winnerVotes,
-            winnerAmount,
+            leadingCandidateVotes,
+            leadingCandidateAmount,
             totalVoteWeight,
-            winnerVotes.mul(DECIMAL_PRECISION).mul(100).div(totalVoteWeight),
+            leadingCandidateVotes.mul(DECIMAL_PRECISION).mul(100).div(totalVoteWeight),
             thresholdPassed,
             now
         );

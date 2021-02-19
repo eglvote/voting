@@ -42,7 +42,7 @@ export const vote = async (
             web3.utils.toWei(String(eglAmount)),
             String(weeksLocked),
             daoRecipient || '0x0000000000000000000000000000000000000000',
-            daoAmount,
+            web3.utils.toWei(String(daoAmount)),
             upgradeAddress || '0x0000000000000000000000000000000000000000'
         )
         .send({ from: walletAddress })
@@ -100,7 +100,7 @@ export const revote = async (
             web3.utils.toWei(String(eglAmount)),
             weeksLocked,
             daoRecipient || '0x0000000000000000000000000000000000000000',
-            daoAmount,
+            web3.utils.toWei(String(daoAmount)),
             upgradeAddress || '0x0000000000000000000000000000000000000000'
         )
         .send({ from: walletAddress })

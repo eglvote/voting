@@ -98,6 +98,10 @@ class EglContractStatus extends React.Component {
             'CandidateVoteEvaluated'
         )
 
+        const eventCandidateVoteWinner = await this.getAllEventsForType(
+            'CandidateVoteWinner'
+        )
+
         const eglContractTokenBalance = await tokenContract.methods
             .balanceOf(eglContract._address)
             .call()
@@ -171,6 +175,14 @@ class EglContractStatus extends React.Component {
             })
         }
 
+        const previousEpochDaoSum = await eglContract.methods.previousEpochDaoSum().call();
+        const previousEpochDaoCandidate = await eglContract.methods.previousEpochDaoCandidate().call();
+        const previousEpochUpgradeCandidate = await eglContract.methods.previousEpochUpgradeCandidate().call();
+
+        console.log("Dao Amount: ", previousEpochDaoSum)
+        console.log("Dao Candidate: ", previousEpochDaoCandidate)
+        console.log("Upgrade Candidate: ", previousEpochUpgradeCandidate)
+
         const eglBalance = await getEglBalance(
             tokenContract,
             this.props.accounts[0]
@@ -190,6 +202,9 @@ class EglContractStatus extends React.Component {
             voterRewardsSums: voterRewardsSums,
             currentlyReleasedLPToken: currentlyReleasedLPToken,
             timeToLPTokenRelease: timeToLPTokenRelease,
+            previousEpochDaoSum: previousEpochDaoSum,
+            previousEpochDaoCandidate: previousEpochDaoCandidate,
+            previousEpochUpgradeCandidate: previousEpochUpgradeCandidate,
             eventSeedAccountFunded: eventSeedAccountFunded,
             eventVotesTallied: eventVotesTallied,
             eventCreatorRewardsClaimed: eventCreatorRewardsClaimed,
@@ -208,6 +223,7 @@ class EglContractStatus extends React.Component {
             eventCandidateVoteAdded: eventCandidateVoteAdded,
             eventCandidateVoteRemoved: eventCandidateVoteRemoved,
             eventCandidateVoteEvaluated: eventCandidateVoteEvaluated,
+            eventCandidateVoteWinner: eventCandidateVoteWinner,
             eglBalance,
         })
     }
@@ -235,6 +251,9 @@ class EglContractStatus extends React.Component {
             voterRewardsSums = [],
             timeToLPTokenRelease = "-",
             currentlyReleasedLPToken = 0,
+            previousEpochDaoSum = 0,
+            previousEpochDaoCandidate = '',
+            previousEpochUpgradeCandidate = '',
             eventSeedAccountFunded = [],
             eventVotesTallied = [],
             eventCreatorRewardsClaimed = [],
@@ -253,6 +272,7 @@ class EglContractStatus extends React.Component {
             eventCandidateVoteAdded = [],
             eventCandidateVoteRemoved = [],
             eventCandidateVoteEvaluated = [],
+            eventCandidateVoteWinner = [],
             eglBalance = 0,
         } = this.state
 
@@ -340,14 +360,27 @@ class EglContractStatus extends React.Component {
                                         <b>Time to LP Token Release: </b>
                                         <span style={contractAttributeValue}>{timeToLPTokenRelease}</span>
                                     </td>
-                                    <td></td>
+                                    <td>
+                                        <b>Leading DAO Candidate: </b>
+                                        <span style={contractAttributeValue}>{previousEpochDaoCandidate}</span>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td>
                                         <b>Currently Released EGL Token: </b>
                                         <span style={contractAttributeValue}>{currentlyReleasedLPToken}</span>
                                     </td>
-                                    <td></td>
+                                    <td>
+                                        <b>Leading Candidate Amount: </b>
+                                        <span style={contractAttributeValue}>{previousEpochDaoSum} EGL</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>&nbsp;</td>
+                                    <td>
+                                        <b>Leading Upgrade Candidate: </b>
+                                        <span style={contractAttributeValue}>{previousEpochUpgradeCandidate}</span>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -656,10 +689,10 @@ class EglContractStatus extends React.Component {
                                     <td>Vote Weight</td>
                                     <td>DAO Amount Sum</td>
                                     <td>Idx</td>
-                                    <td>Total Number of Candidates</td>
-                                    <td>Candidate Dropped</td>
-                                    <td>Candidate Dropped Vote Weight</td>
-                                    <td>Candidate Dropped Idx</td>
+                                    <td>Total Candidates</td>
+                                    <td>Dropped</td>
+                                    <td>Dropped Vote Weight</td>
+                                    <td>Dropped Idx</td>
                                 </tr>
                             </thead>
                             <tbody style={contractAttributeValue}>
@@ -689,9 +722,11 @@ class EglContractStatus extends React.Component {
                                             <td>{ event.returnValues.currentEpoch }</td>
                                             <td>{ this.formatBigNumberAttribute(event.returnValues.candidateVoteCount) }</td>
                                             <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues.candidateAmountSum
-                                                )}
+                                                { 
+                                                    this.formatBigNumberAttribute(
+                                                        new BN(event.returnValues.candidateAmountSum).div(new BN(event.returnValues.candidateVoteCount))
+                                                    ) 
+                                                }
                                             </td>
                                             <td>
                                                 { event.returnValues.candidateIdx }
@@ -1197,10 +1232,10 @@ class EglContractStatus extends React.Component {
                                     <td>Date</td>
                                     <td>Time</td>
                                     <td>Type</td>
-                                    <td>Winner Address</td>
+                                    <td>Leading Address</td>
                                     <td>Current Epoch</td>
-                                    <td>Winner Votes</td>
-                                    <td>Winner Amount</td>
+                                    <td>Leading Votes</td>
+                                    <td>Leading Amount</td>
                                     <td>Total Vote Weight</td>
                                     <td>Total Vote Percentage</td>
                                     <td>Threshold Passed</td>
@@ -1228,8 +1263,8 @@ class EglContractStatus extends React.Component {
                                                     .toDate()
                                                     .toLocaleTimeString()}
                                             </td>
-                                            <td>{event.returnValues.winnerAmount == 0 ? 'Upgrade' : 'DAO'}</td>
-                                            <td>{event.returnValues.winner}</td>
+                                            <td>{event.returnValues.leadingCandidateAmount == 0 ? 'Upgrade' : 'DAO'}</td>
+                                            <td>{event.returnValues.leadingCandidate}</td>
                                             <td>
                                                 {
                                                     event.returnValues
@@ -1237,10 +1272,10 @@ class EglContractStatus extends React.Component {
                                                 }
                                             </td>
                                             <td>
-                                                {this.formatBigNumberAttribute(event.returnValues.winnerVotes) }
+                                                {this.formatBigNumberAttribute(event.returnValues.leadingCandidateVotes) }
                                             </td>
                                             <td>
-                                                {this.formatBigNumberAttribute(event.returnValues.winnerAmount)}
+                                                {this.formatBigNumberAttribute(event.returnValues.leadingCandidateAmount)}
                                             </td>
                                             <td>
                                                 {this.formatBigNumberAttribute(event.returnValues.totalVoteWeight)}
@@ -1254,6 +1289,55 @@ class EglContractStatus extends React.Component {
                                             </td>
                                             <td>
                                                 { event.returnValues.thresholdPassed.toString()}                                                
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                    <br />
+
+                    <div>
+                        <b>DAO/Upgrade Candidate Winners:</b>
+                        <table style={tableWidth1000}>
+                            <thead style={thead}>
+                                <tr>
+                                    <td>Date</td>
+                                    <td>Time</td>
+                                    <td>Type</td>
+                                    <td>Winner Address</td>
+                                    <td>Current Epoch</td>
+                                    <td>Winner Amount</td>
+                                </tr>
+                            </thead>
+                            <tbody style={contractAttributeValue}>
+                                {eventCandidateVoteWinner.map((event) => {
+                                    return (
+                                        <tr>
+                                            <td>
+                                                {moment
+                                                    .unix(
+                                                        event.returnValues.date
+                                                    )
+                                                    .local()
+                                                    .toDate()
+                                                    .toLocaleDateString()}
+                                            </td>
+                                            <td>
+                                                {moment
+                                                    .unix(
+                                                        event.returnValues.date
+                                                    )
+                                                    .local()
+                                                    .toDate()
+                                                    .toLocaleTimeString()}
+                                            </td>
+                                            <td>{ event.returnValues.winnerAmount == 0 ? 'Upgrade' : 'DAO' }</td>
+                                            <td>{ event.returnValues.winnerAddress }</td>
+                                            <td>{ event.returnValues.currentEpoch }</td>
+                                            <td>
+                                                {this.formatBigNumberAttribute(event.returnValues.winnerAmount)}
                                             </td>
                                         </tr>
                                     )

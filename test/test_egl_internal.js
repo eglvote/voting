@@ -521,8 +521,8 @@ contract("EglInternalFunctions", (accounts) => {
             let txReceipt = await eglContractInstance.evaluateUpgradeVote();            
             let evalEvent = populateAllEventDataFromLogs(txReceipt, EventType.CANDIDATE_VOTE_EVALUATED)[0];
 
-            assert.equal(evalEvent.winner, accounts[1], "Incorrect winner");
-            assert.equal(evalEvent.winnerVotes.toString(), web3.utils.toWei("10"), "Incorrect winning vote count");
+            assert.equal(evalEvent.leadingCandidate, accounts[1], "Incorrect winner");
+            assert.equal(evalEvent.leadingCandidateVotes.toString(), web3.utils.toWei("10"), "Incorrect winning vote count");
         });
         it("should delete all vote candidates after evaluation", async () => {
             await eglContractInstance.addUpgradeCandidateVote(accounts[1], web3.utils.toWei("6"));            
@@ -553,9 +553,9 @@ contract("EglInternalFunctions", (accounts) => {
             let txReceipt = await eglContractInstance.evaluateUpgradeVote();            
             let evalEvent = populateAllEventDataFromLogs(txReceipt, EventType.CANDIDATE_VOTE_EVALUATED)[0];
 
-            assert.equal(evalEvent.winner, accounts[3], "Incorrect winner");
-            assert.equal(evalEvent.winnerVotes.toString(), web3.utils.toWei("10"), "Incorrect winning vote count");
-            assert.equal(evalEvent.winnerAmount.toString(), "0", "Vote amount should be 0 for upgrades");
+            assert.equal(evalEvent.leadingCandidate, accounts[3], "Incorrect winner");
+            assert.equal(evalEvent.leadingCandidateVotes.toString(), web3.utils.toWei("10"), "Incorrect winning vote count");
+            assert.equal(evalEvent.leadingCandidateAmount.toString(), "0", "Vote amount should be 0 for upgrades");
         });
 
     });
