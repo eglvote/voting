@@ -26,7 +26,12 @@ export default function HatBox({
     title,
 }: ModalProps) {
     return (
-        <div className={`w-72 h-32 ${className ? className : 'bg-black'}`}>
+        <div
+            style={style}
+            className={`w-72 h-32 ${
+                className ? className : 'bg-black'
+            } rounded-xl`}
+        >
             <Hat title={title} />
             <div
                 className={'flex h-full p-4 -mt-2 justify-center items-center'}

@@ -40,11 +40,19 @@ export default function VoteModal({
                 </h1>
                 <Card className={'mt-6 px-4 bg-gray-100'}>
                     <p>
-                        {`The current gas limit is ${displayComma(
-                            baselineEgl
-                        )} gas and you have ${displayComma(
-                            fromWei(eglBalance)
-                        )} EGLs to vote with`}
+                        {`The current gas limit is `}
+                        {
+                            <span className={'font-bold'}>
+                                {displayComma(baselineEgl)}
+                            </span>
+                        }
+                        {` gas and you have `}
+                        {
+                            <span className={'font-bold'}>
+                                {displayComma(fromWei(eglBalance))}
+                            </span>
+                        }
+                        {' EGLs to vote with'}
                     </p>
                 </Card>
                 <VoteModalForm

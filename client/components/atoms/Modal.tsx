@@ -36,13 +36,13 @@ export default function Modal({
         >
             <div
                 ref={ref}
-                style={{ animation: `fadeIn 1.5s` }}
+                style={{ animation: `fadeIn .75s` }}
                 className={`${className} z-50 relative rounded-xl p-2 border shadow bg-white`}
             >
                 {children}
             </div>
             <div
-                style={{ animation: `fadeIn 1.5s` }}
+                style={{ animation: `fadeIn .75s` }}
                 className="fixed inset-0 z-40 blur"
             />
             <div className="opacity-25 fixed inset-0 z-40 bg-black " />

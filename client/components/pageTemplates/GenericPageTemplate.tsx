@@ -39,6 +39,8 @@ export default function GenericPageTemplate({
                     <NavBarLink href={'/vote'} name={'VOTE'} />
                     <NavBarLink href={'/launch'} name={'LAUNCH'} />
                     <NavBarLink href={'/dao'} name={'DAO'} />
+                    <NavBarLink href={'/about'} name={'ABOUT'} />
+                    <NavBarLink href={'/leaderboard'} name={'LEADERBOARD'} />
                     <NavBarLink href={'/status'} name={'STATUS'} />
                 </NavBar>
                 <div className={'mt-20 h-full'}>{children}</div>

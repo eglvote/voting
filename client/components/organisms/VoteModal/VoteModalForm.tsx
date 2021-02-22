@@ -113,28 +113,29 @@ export default function VoteModalForm({
                                         {'week(s).'}
                                     </p>
                                 </div>
-                                <div className={'mt-4'}>
-                                    <p>{`In each of the ${weeksLocked} week(s), I want`}</p>
-                                    <p>
-                                        {'to vote for a desired gas limit of'}
-                                    </p>
-                                    <Field
-                                        id="desiredChange"
-                                        name="desiredChange"
-                                    >
-                                        {({ field }) => (
-                                            <input
-                                                {...field}
-                                                className={
-                                                    'w-32 border-babyBlue border-b text-right'
-                                                }
-                                                // validate={validateDesiredChange}
-                                                type="number"
-                                                placeholder=""
-                                            />
-                                        )}
-                                    </Field>
-                                    {'*'}
+                                <div className={'mt-4   '}>
+                                    <p>{`In each of the ${weeksLocked} week(s), I want to vote for a `}</p>
+
+                                    <div className={'flex'}>
+                                        <p>{'desired gas limit of '}</p>
+                                        <Field
+                                            id="desiredChange"
+                                            name="desiredChange"
+                                        >
+                                            {({ field }) => (
+                                                <input
+                                                    {...field}
+                                                    className={
+                                                        'w-32 border-babyBlue border-b text-right ml-2'
+                                                    }
+                                                    // validate={validateDesiredChange}
+                                                    type="number"
+                                                    placeholder=""
+                                                />
+                                            )}
+                                        </Field>
+                                        {'*'}
+                                    </div>
                                     {errors.desiredChange &&
                                         touched.desiredChange && (
                                             <span
@@ -159,7 +160,7 @@ export default function VoteModalForm({
                                     src={
                                         advanced
                                             ? '/static/chevron-down.svg'
-                                            : '/static/chevron-up.svg'
+                                            : '/static/chevron-right.svg'
                                     }
                                 />
                             </div>
@@ -174,52 +175,69 @@ export default function VoteModalForm({
                                         'flex flex-col justify-items-start'
                                     }
                                 >
-                                    <p>DAO Allocation ETH Address</p>
-                                    <Field id="daoAddress" name="daoAddress">
-                                        {({ field }) => (
-                                            <input
-                                                {...field}
-                                                className={
-                                                    'w-full border border-black'
-                                                }
-                                                placeholder=""
-                                            />
-                                        )}
-                                    </Field>
-                                    <p className={'mt-2'}>DAO Amount</p>
                                     <div className={'flex'}>
+                                        <p>I want to send</p>
+
                                         <Field id="daoAmount" name="daoAmount">
                                             {({ field }) => (
                                                 <input
                                                     {...field}
                                                     className={
-                                                        'w-4/5 border border-black'
+                                                        'w-32 border-babyBlue border-b mr-2 text-right mx-2 px-4'
                                                     }
                                                     placeholder=""
                                                 />
                                             )}
                                         </Field>
-                                        <p className={'ml-2'}>EGLs</p>
+                                        <p>from</p>
+                                    </div>
+                                    <div className={'flex items-end'}>
+                                        <p className={''}>the DAO to</p>
+                                        <Field
+                                            id="daoAddress"
+                                            name="daoAddress"
+                                        >
+                                            {({ field }) => (
+                                                <input
+                                                    {...field}
+                                                    className={
+                                                        'w-32 border-babyBlue border-b mx-2'
+                                                    }
+                                                    placeholder=""
+                                                />
+                                            )}
+                                        </Field>
+                                        <p className={'text-babyBlue'}>
+                                            Ethereum
+                                        </p>
                                     </div>
                                 </div>
+                                <p className={'text-babyBlue'}>
+                                    wallet address.
+                                </p>
                                 <h1 className={'font-bold mt-4 mb-2 text-xl'}>
                                     EGL Contract
                                 </h1>
-                                <p>New Contract Address</p>
-                                <Field
-                                    id="contractAddress"
-                                    name="contractAddress"
-                                >
-                                    {({ field }) => (
-                                        <input
-                                            {...field}
-                                            className={
-                                                'w-full border border-black'
-                                            }
-                                            placeholder=""
-                                        />
-                                    )}
-                                </Field>
+                                <p>The EGL proxy should point to</p>
+                                <div className={'flex items-end'}>
+                                    <Field
+                                        id="contractAddress"
+                                        name="contractAddress"
+                                    >
+                                        {({ field }) => (
+                                            <input
+                                                {...field}
+                                                className={
+                                                    'w-20 border-babyBlue border-b mx-2'
+                                                }
+                                                placeholder=""
+                                            />
+                                        )}
+                                    </Field>
+                                    <p className={'text-babyBlue'}>
+                                        Ethereum contract address.
+                                    </p>
+                                </div>
                             </div>
                         )}
                         <div className={'mt-8'}>

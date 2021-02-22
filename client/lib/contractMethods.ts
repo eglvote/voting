@@ -36,6 +36,19 @@ export const vote = async (
         return
     }
 
+    const allowance = await token.methods
+        .allowance(walletAddress, contract._address)
+        .call()
+
+    if (allowance === '0') {
+        await token.methods
+            .increaseAllowance(
+                contract._address,
+                web3.utils.toWei('500000000000000')
+            )
+            .send({ from: walletAddress })
+    }
+
     const response = await contract.methods
         .vote(
             desiredChange, // desired change enum
@@ -340,4 +353,11 @@ export const calculateCumulativeRewards = async (
     }
 
     return totalIndividualReward.toFixed()
+}
+
+export const getAllEventsForType = async (contract, eventName) => {
+    return await contract.getPastEvents(eventName, {
+        fromBlock: 0,
+        toBlock: 'latest',
+    })
 }

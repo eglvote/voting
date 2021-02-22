@@ -77,36 +77,36 @@ export default function StatusWidget({
                                             ? m
                                                   .unix(lockupDate)
                                                   .format('MM/DD/YY, h:mm:ss')
-                                            : 'N/A'}
+                                            : '-'}
                                     </Td>
                                     <Td>
                                         {lockupDuration > 0
                                             ? lockupDuration
-                                            : 'N/A'}
+                                            : '-'}
                                     </Td>
                                     <Td>
                                         {releaseDate > 0
                                             ? m
                                                   .unix(releaseDate)
                                                   .format('MM/DD/YY, h:mm:ss')
-                                            : 'N/A'}
+                                            : '-'}
                                     </Td>
                                     <Td>
                                         {gasTarget > 0
                                             ? displayComma(gasTarget)
-                                            : 'N/A'}
+                                            : '-'}
                                     </Td>
                                     <Td>
                                         {+tokensLocked > 0
                                             ? displayComma(
                                                   fromWei(tokensLocked)
                                               )
-                                            : 'N/A'}
+                                            : '-'}
                                     </Td>
                                     <Td>
                                         {voterReward > 0
                                             ? displayComma(voterReward)
-                                            : 'N/A'}
+                                            : '-'}
                                     </Td>
                                 </tr>
                             </tbody>

@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React from 'react'
 import Button from '../atoms/Button'
-import { increaseAllowance, withdraw } from '../../lib/contractMethods'
+import { withdraw } from '../../lib/contractMethods'
 
 interface SmartButtonProps {
     style?: object
@@ -29,16 +29,7 @@ export default function SmartButton({
 }: SmartButtonProps) {
     return (
         <>
-            {noAllowance ? (
-                <Button
-                    className={'w-40'}
-                    handleClick={() =>
-                        increaseAllowance(contract, token, walletAddress)
-                    }
-                >
-                    <p>+ALLOWANCE</p>
-                </Button>
-            ) : canWithdraw ? (
+            {canWithdraw ? (
                 <Button
                     className={'w-40'}
                     handleClick={() => withdraw(contract, walletAddress)}

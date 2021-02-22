@@ -120,7 +120,7 @@ export default function RevoteModalForm({
                                     </p>
                                 </div>
                                 <div className={'flex items-baseline mt-4'}>
-                                    <p>I will lock my vote for</p>
+                                    <p>I want to lock my vote for</p>
                                     <Field id="weeksLocked" name="weeksLocked">
                                         {({ field }) => (
                                             <select
@@ -149,7 +149,7 @@ export default function RevoteModalForm({
                                         )}
                                     </Field>
                                     <p className={'text-babyBlue'}>
-                                        {'week(s).'}
+                                        {weeksLocked === 1 ? 'week.' : 'weeks.'}
                                     </p>
                                 </div>
                                 <div className={'mt-4'}>
@@ -157,7 +157,7 @@ export default function RevoteModalForm({
                                         {'In each of the '}
                                         <span
                                             className={'font-bold'}
-                                        >{`${weeksLocked} week(s)`}</span>
+                                        >{`${weeksLocked} weeks`}</span>
                                         {
                                             ', I want to vote for a desired gas limit of'
                                         }
@@ -176,7 +176,6 @@ export default function RevoteModalForm({
                                                 />
                                             )}
                                         </Field>
-                                        {'*'}
                                         {errors.desiredChange &&
                                             touched.desiredChange && (
                                                 <span
@@ -202,7 +201,7 @@ export default function RevoteModalForm({
                                     src={
                                         advanced
                                             ? '/static/chevron-down.svg'
-                                            : '/static/chevron-up.svg'
+                                            : '/static/chevron-right.svg'
                                     }
                                 />
                             </div>
@@ -217,60 +216,70 @@ export default function RevoteModalForm({
                                         'flex flex-col justify-items-start'
                                     }
                                 >
-                                    <p>DAO Allocation ETH Address</p>
-                                    <Field id="daoAddress" name="daoAddress">
-                                        {({ field }) => (
-                                            <input
-                                                {...field}
-                                                className={
-                                                    'w-full border border-black'
-                                                }
-                                                placeholder=""
-                                            />
-                                        )}
-                                    </Field>
-                                    <p className={'mt-2'}>DAO Amount</p>
                                     <div className={'flex'}>
+                                        <p>I want to send</p>
+
                                         <Field id="daoAmount" name="daoAmount">
                                             {({ field }) => (
                                                 <input
                                                     {...field}
                                                     className={
-                                                        'w-4/5 border border-black'
+                                                        'w-32 border-babyBlue border-b mr-2 text-right mx-2 px-4'
                                                     }
                                                     placeholder=""
                                                 />
                                             )}
                                         </Field>
-                                        <p className={'ml-2'}>EGLs</p>
+                                        <p>from the DAO to</p>
+                                    </div>
+                                    <div className={'flex items-end'}>
+                                        <p className={''}></p>
+                                        <Field
+                                            id="daoAddress"
+                                            name="daoAddress"
+                                        >
+                                            {({ field }) => (
+                                                <input
+                                                    {...field}
+                                                    className={
+                                                        'w-32 border-babyBlue border-b mx-2'
+                                                    }
+                                                    placeholder=""
+                                                />
+                                            )}
+                                        </Field>
+                                        <p className={'text-babyBlue'}>
+                                            Ethereum wallet address.
+                                        </p>
                                     </div>
                                 </div>
                                 <h1 className={'font-bold mt-4 mb-2 text-xl'}>
                                     EGL Contract
                                 </h1>
-                                <p>New Contract Address</p>
-                                <Field
-                                    id="contractAddress"
-                                    name="contractAddress"
-                                >
-                                    {({ field }) => (
-                                        <input
-                                            {...field}
-                                            className={
-                                                'w-full border border-black text-right'
-                                            }
-                                            placeholder=""
-                                        />
-                                    )}
-                                </Field>
+                                <div className={'flex items-end'}>
+                                    <p>The EGL proxy should point to</p>
+                                    <Field
+                                        id="contractAddress"
+                                        name="contractAddress"
+                                    >
+                                        {({ field }) => (
+                                            <input
+                                                {...field}
+                                                className={
+                                                    'w-20 border-babyBlue border-b mx-2'
+                                                }
+                                                placeholder=""
+                                            />
+                                        )}
+                                    </Field>
+                                    <p className={'text-babyBlue'}>Ethereum</p>
+                                </div>
+                                <p className={'text-babyBlue'}>
+                                    contract address.
+                                </p>
                             </div>
                         )}
-                        <div className={'mt-8'}>
-                            <p className={'text-xs'}>
-                                * Voters can always use re-vote to change their
-                                vote. See documentation for more information
-                            </p>
-                        </div>
+
                         <div className={'flex mt-4 w-full justify-center'}>
                             <Button type={'submit'}>
                                 <p>Submit</p>

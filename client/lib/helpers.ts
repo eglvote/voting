@@ -17,6 +17,8 @@ export const displayComma = (num) =>
         maximumFractionDigits: 3,
     })
 
+export const formatFromWei = (num) => displayComma(fromWei(num))
+
 export const calculateIndividualReward = (
     tokensLocked,
     lockupDuration,

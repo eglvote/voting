@@ -160,76 +160,86 @@ class Launch extends React.Component<LaunchProps> {
                 walletAddress={walletAddress}
                 eglBalance={String(eglBalance)}
             >
-                <div
-                    style={{ height: '110vh' }}
-                    className={'p-12 bg-hailStorm'}
-                >
-                    <h1 className={'text-salmon text-4xl font-extrabold'}>
-                        LAUNCH<span className={'text-black'}>.</span>
-                    </h1>
-                    <h3 className={'text-2xl font-bold'}>
-                        Participate in the EGL Launch
-                    </h3>
-                    {/* <div className={' flex justify-center'}>
-                        <div className={' flex flex-col w-2/3'}> */}
-                    <div className={'flex justify-center items-start mt-20'}>
-                        <div>
-                            <HatBox
-                                title={'EGLs CLAIMED'}
-                                className={'bg-black mr-20 w-96'}
+                <div style={{ height: '110vh' }} className={'p-12'}>
+                    <div className={'flex justify-center'}>
+                        <div className={'w-2/3'}>
+                            <h1
+                                className={
+                                    'text-salmon text-4xl font-extrabold'
+                                }
                             >
-                                <p
-                                    className={
-                                        'font-extrabold text-4xl text-white text-center'
+                                LAUNCH<span className={'text-black'}>.</span>
+                            </h1>
+                            <h3 className={'text-2xl font-bold'}>
+                                Participate in the EGL Launch
+                            </h3>
+                            <div
+                                className={
+                                    'flex justify-center items-start mt-20'
+                                }
+                            >
+                                <div>
+                                    <HatBox
+                                        title={'EGLs CLAIMED'}
+                                        className={'bg-black mr-20 w-96'}
+                                    >
+                                        <p
+                                            className={
+                                                'font-extrabold text-4xl text-white text-center'
+                                            }
+                                        >
+                                            {!eglsClaimed
+                                                ? '-'
+                                                : displayComma(
+                                                      fromWei(eglsClaimed)
+                                                  )}
+                                        </p>
+                                    </HatBox>
+                                    <p className={'text-sm'}>
+                                        EGL Contract has 750,000,000 EGLs
+                                        available for launch.
+                                    </p>
+                                </div>
+                                <HatBox
+                                    title={'EGLs AVAILABLE'}
+                                    className={'bg-black w-96'}
+                                >
+                                    <p
+                                        className={
+                                            'font-extrabold text-4xl text-white'
+                                        }
+                                    >
+                                        {displayComma(fromWei(eglsAvailable)) ||
+                                            'N/A'}
+                                    </p>
+                                </HatBox>
+                            </div>
+
+                            <div className={'mt-8 flex justify-center'}>
+                                <Button
+                                    className={''}
+                                    handleClick={() =>
+                                        this.setState({ showClaimModal: true })
                                     }
                                 >
-                                    {!eglsClaimed
-                                        ? '-'
-                                        : displayComma(fromWei(eglsClaimed))}
-                                </p>
-                            </HatBox>
-                            <p className={'text-sm'}>
-                                EGL Contract has 750,000,000 EGLs available for
-                                launch.
-                            </p>
+                                    <p>PARTICIPATE</p>
+                                </Button>
+                            </div>
+                            <h3 className={'text-2xl font-bold m-4'}>
+                                Your Pool Tokens
+                            </h3>
+                            <PoolTokenCard
+                                contract={contract}
+                                walletAddress={walletAddress}
+                                totalPoolTokens={totalPoolTokens}
+                                lockedPoolTokens={lockedPoolTokens}
+                                unlockedPoolTokens={unlockedPoolTokens}
+                            />
+                            <ReleaseScheduleCard
+                                eventEglsMatched={eventEglsMatched}
+                            />
                         </div>
-                        <HatBox
-                            title={'EGLs AVAILABLE'}
-                            className={'bg-black w-96'}
-                        >
-                            <p className={'font-extrabold text-4xl text-white'}>
-                                {displayComma(fromWei(eglsAvailable)) || 'N/A'}
-                            </p>
-                        </HatBox>
                     </div>
-
-                    <div className={'mt-8 flex justify-center'}>
-                        <Button
-                            className={''}
-                            handleClick={() =>
-                                this.setState({ showClaimModal: true })
-                            }
-                        >
-                            <p>PARTICIPATE</p>
-                        </Button>
-                    </div>
-                    <h3 className={'text-2xl font-bold m-4'}>
-                        Your Pool Tokens
-                    </h3>
-                    <PoolTokenCard
-                        contract={contract}
-                        walletAddress={walletAddress}
-                        totalPoolTokens={totalPoolTokens}
-                        lockedPoolTokens={lockedPoolTokens}
-                        unlockedPoolTokens={unlockedPoolTokens}
-                    />
-                    <ReleaseScheduleCard eventEglsMatched={eventEglsMatched} />
-                    {/* </div>
-                    </div> */}
-                </div>
-
-                <div style={{ height: '110vh' }} className={'mb-20'}>
-                    <img className={'w-full p-32'} src={'static/6.png'} />
                 </div>
                 {this.state.showClaimModal && (
                     <ClaimModal

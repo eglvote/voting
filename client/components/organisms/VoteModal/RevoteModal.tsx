@@ -53,7 +53,11 @@ export default function RevoteModal({
                 <div>
                     <Card className={'mt-6 px-6 bg-gray-100'}>
                         <p>
-                            {`Re-voting will apply rewarded EGLs to your current vote of EGLs. You must lock your re-vote for at least ${lockupOptions[0]} week(s) - the remaining locked time of your vote.`}
+                            {`Re-voting will apply rewarded EGLs to your current vote of EGLs. You must lock your re-vote for at least ${
+                                lockupOptions[0]
+                            } ${
+                                lockupOptions[0] === 1 ? 'week' : 'week(s)'
+                            } - the remaining locked time of your vote.`}
                         </p>
                     </Card>
                     <RevoteForm

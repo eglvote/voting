@@ -20,6 +20,12 @@ import { displayComma, fromWei } from '../lib/helpers'
 import BigNumber from 'bignumber.js'
 import m from 'moment'
 import { REWARD_MULTIPLIER } from '../lib/constants'
+import HowToVote from '../components/organisms/HowToVote'
+import DaoWidget from '../components/organisms/DaoWidget'
+import YourVoteTable from '../components/organisms/VoteTables/YourVoteTable'
+import DaoTable from '../components/organisms/VoteTables/DaoTable'
+import WithdrawTable from '../components/organisms/VoteTables/WithdrawTable'
+import SmartButton from '../components/molecules/SmartButton'
 
 declare global {
     interface Window {
@@ -53,6 +59,9 @@ class Vote extends React.Component<VoteProps> {
         tokensUnlocked: '0',
         currentAllowance: '0',
         epochLength: '300',
+        daoAmount: '0',
+        daoRecipient: '0x0000000000000000000000000000000000000000',
+        upgradeAddress: '0x0000000000000000000000000000000000000000',
     }
 
     timeout = null
@@ -129,7 +138,7 @@ class Vote extends React.Component<VoteProps> {
                     contract,
                     this.state.walletAddress
                 )
-
+                console.log(voterData)
                 const lockupDate = voterData
                     ? new BigNumber(voterData.releaseDate)
                           .minus(
@@ -158,7 +167,7 @@ class Vote extends React.Component<VoteProps> {
                     voterData.lockupDuration,
                     contract
                 )
-                // console.log(rewards)
+
                 this.setState({
                     tokensLocked: voterData.tokensLocked,
                     releaseDate: voterData.releaseDate,
@@ -169,6 +178,9 @@ class Vote extends React.Component<VoteProps> {
                     eglBalance,
                     tokensUnlocked,
                     currentAllowance,
+                    daoAmount: voterData.daoAmount,
+                    daoRecipient: voterData.daoRecipient,
+                    upgradeAddress: voterData.upgradeAddress,
                 })
             }
         }
@@ -215,7 +227,11 @@ class Vote extends React.Component<VoteProps> {
             tokensUnlocked,
             currentAllowance,
             epochLength,
+            daoAmount,
+            daoRecipient,
+            upgradeAddress,
         } = this.state
+        const { contract, token } = this.props
 
         return (
             <GenericPageTemplate
@@ -223,157 +239,246 @@ class Vote extends React.Component<VoteProps> {
                 walletAddress={walletAddress}
                 eglBalance={eglBalance ? eglBalance : '0'}
             >
-                <div className={''}>
-                    <div
-                        style={{ height: '80vh' }}
-                        className={'bg-hailStorm p-12'}
-                    >
-                        <h1 className={'text-salmon text-4xl font-extrabold'}>
-                            VOTE<span className={'text-black'}>.</span>
-                        </h1>
-                        <h3 className={'text-2xl font-bold'}>
-                            This week's vote
-                        </h3>
-                        <p className={'mt-8 text-center'}>
-                            ⚠ Disclaimer: EGL was{' '}
-                            <span className={'text-babyBlue underline'}>
-                                audited
-                            </span>
-                            . However, it is still experimental software. Please
-                            use at your own risk.
-                        </p>
-                        <div
-                            className={
-                                'flex flex-col justify-center items-center mt-12'
-                            }
-                        >
-                            <HatBox
-                                title={'CURRENT GAS LIMIT'}
-                                className={'bg-babyBlue w-96'}
-                            >
-                                <p
-                                    className={
-                                        'font-extrabold text-4xl text-white'
-                                    }
-                                >
-                                    {baselineEgl
-                                        ? displayComma(baselineEgl)
-                                        : 'N/A'}
-                                </p>
-                            </HatBox>
-                            <div className={'w-96'}>
-                                <p className={'text-xs text-left absolute'}>
-                                    {'Gas limit of last block mined'}
-                                </p>
-                            </div>
-                        </div>
-                        <div
-                            className={'flex justify-center items-center mt-20'}
-                        >
+                <div className={'flex flex-col'}>
+                    <div className={'bg-hailStorm p-12 flex justify-center'}>
+                        <div className={'w-4/5'}>
                             <div>
+                                <div>
+                                    <h1
+                                        className={
+                                            'text-salmon text-4xl font-extrabold'
+                                        }
+                                    >
+                                        VOTE
+                                        <span className={'text-black'}>.</span>
+                                    </h1>
+                                    <h3 className={'text-2xl font-bold'}>
+                                        This week's vote
+                                    </h3>
+                                </div>
+                            </div>
+
+                            <p className={'mt-8 text-left ml-16'}>
+                                ⚠ Disclaimer: EGL was{' '}
+                                <span className={'text-babyBlue underline'}>
+                                    audited
+                                </span>
+                                . However, it is still experimental software.
+                                Please use at your own risk.
+                            </p>
+                            <div className={'flex items-end ml-16 mt-8'}>
+                                <div className={'flex flex-col mr-16'}>
+                                    <h1
+                                        className={
+                                            'font-bold text-xl text-babyBlue m-4'
+                                        }
+                                    >
+                                        REQUIRED
+                                    </h1>
+                                    <HatBox
+                                        title={'CURRENT GAS LIMIT'}
+                                        className={'bg-babyBlue w-96 mt-4'}
+                                    >
+                                        <p
+                                            className={
+                                                'font-extrabold text-4xl text-white'
+                                            }
+                                        >
+                                            {baselineEgl
+                                                ? displayComma(baselineEgl)
+                                                : 'N/A'}
+                                        </p>
+                                    </HatBox>
+                                    <div className={'w-96'}>
+                                        <p className={'text-xs text-left'}>
+                                            {'Gas limit of last block mined'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className={'flex flex-col items-baseline'}>
+                                    <h1
+                                        className={'font-bold text-xl m-1 ml-4'}
+                                    >
+                                        OPTIONAL FIELDS
+                                    </h1>
+                                    <DaoWidget
+                                        daoAmount={daoAmount}
+                                        daoRecipient={daoRecipient}
+                                        upgradeAddress={upgradeAddress}
+                                    />
+                                    <div className={'w-96'}>
+                                        <p className={'text-xs text-left'}>
+                                            <br />
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className={'flex items-center mt-20 ml-16'}>
+                                <div>
+                                    <HatBox
+                                        title={'NEXT VOTE CLOSING'}
+                                        className={'bg-black mr-16 w-96'}
+                                    >
+                                        <p
+                                            className={
+                                                'font-extrabold text-2xl text-white text-center'
+                                            }
+                                        >
+                                            {timeToNextEpoch
+                                                ? timeToNextEpoch
+                                                : 'N/A'}
+                                        </p>
+                                    </HatBox>
+                                    <p className={'absolute w-96 text-xs'}>
+                                        Votes must be locked by Fridays at 2am
+                                        UTC to participate.
+                                    </p>
+                                    <p className={'absolute mt-4 text-xs'}>
+                                        The vote passes 6 hrs later on Fridays
+                                        at 8pm UTC.
+                                    </p>
+                                </div>
+
                                 <HatBox
-                                    title={'NEXT VOTE CLOSING'}
-                                    className={'bg-black mr-20 w-96'}
+                                    title={'EGLs TO BE AWARDED'}
+                                    className={'bg-black w-96'}
                                 >
                                     <p
                                         className={
-                                            'font-extrabold text-2xl text-white text-center'
+                                            'font-extrabold text-4xl text-white'
                                         }
                                     >
-                                        {timeToNextEpoch
-                                            ? timeToNextEpoch
-                                            : 'N/A'}
+                                        {Number(totalEglReward) > 0
+                                            ? displayComma(
+                                                  Math.round(totalEglReward)
+                                              )
+                                            : 'ALL GONE !'}
                                     </p>
                                 </HatBox>
-                                <p className={'absolute w-96 text-xs'}>
-                                    Votes must be locked by Fridays at 2am UTC
-                                    to participate.
-                                </p>
-                                <p className={'absolute mt-4 text-xs'}>
-                                    The vote passes 6 hrs later on Fridays at
-                                    8pm UTC.
-                                </p>
                             </div>
-
-                            <HatBox
-                                title={'EGLs TO BE AWARDED'}
-                                className={'bg-black w-96'}
-                            >
-                                <p
-                                    className={
-                                        'font-extrabold text-4xl text-white'
-                                    }
-                                >
-                                    {Number(totalEglReward) > 0
-                                        ? displayComma(
-                                              Math.round(totalEglReward)
-                                          )
-                                        : 'ALL GONE !'}
-                                </p>
-                            </HatBox>
                         </div>
                     </div>
-                    <div className={''}>
-                        <h1
-                            className={
-                                'm-8 mt-16 text-xl font-extrabold text-left'
-                            }
-                        >
-                            Your Current EGL Vote
-                        </h1>
-                        <div className={'flex justify-center w-full mt-4'}>
-                            <StatusWidget
-                                contract={this.props.contract}
-                                token={this.props.token}
-                                walletAddress={walletAddress}
-                                tokensLocked={tokensLocked}
-                                releaseDate={releaseDate}
-                                gasTarget={gasTarget}
-                                lockupDuration={lockupDuration}
-                                voterReward={voterReward}
-                                lockupDate={lockupDate}
-                                tokensUnlocked={
-                                    tokensUnlocked
-                                        ? fromWei(String(tokensUnlocked))
-                                        : '0'
+                    <div className={'flex justify-center bg-hailStorm'}>
+                        <div className={'w-4/5'}>
+                            <h1
+                                className={
+                                    'm-8 mt-8 text-xl font-extrabold text-left'
                                 }
-                                noAllowance={
-                                    this.state.currentAllowance === '0'
-                                }
-                                hasVoted={this.state.tokensLocked !== '0'}
-                                canWithdraw={this.state.tokensUnlocked !== '0'}
-                                openVoteModal={() =>
-                                    this.setState({ voteClicked: true })
-                                }
-                                openRevoteModal={() =>
-                                    this.setState({ revoteClicked: true })
-                                }
-                            />
-                        </div>
-                        <div className={'w-full'}>
-                            <div className={'w-1/2 text-center'}>
-                                Allowance:{' '}
-                                {displayComma(fromWei(currentAllowance))}
+                            >
+                                Your Vote
+                            </h1>
+                            <div className={'flex w-full'}>
+                                <YourVoteTable
+                                    tokensLocked={tokensLocked}
+                                    releaseDate={releaseDate}
+                                    gasTarget={gasTarget}
+                                    lockupDuration={lockupDuration}
+                                    voterReward={voterReward}
+                                    lockupDate={lockupDate}
+                                />
+                                <div className={'ml-4'}>
+                                    <DaoTable
+                                        daoAmount={daoAmount}
+                                        daoRecipient={daoRecipient}
+                                        upgradeAddress={upgradeAddress}
+                                    />
+                                </div>
                             </div>
-                        </div>
+                            <div className={'flex flex-row'}>
+                                <WithdrawTable
+                                    className={'mt-4'}
+                                    tokensUnlocked={tokensUnlocked}
+                                />
+                                <div className={'flex items-end ml-4'}>
+                                    <SmartButton
+                                        contract={contract}
+                                        token={token}
+                                        walletAddress={walletAddress}
+                                        noAllowance={
+                                            this.state.currentAllowance === '0'
+                                        }
+                                        hasVoted={
+                                            this.state.tokensLocked !== '0'
+                                        }
+                                        canWithdraw={
+                                            this.state.tokensUnlocked !== '0'
+                                        }
+                                        openVoteModal={() =>
+                                            this.setState({ voteClicked: true })
+                                        }
+                                        openRevoteModal={() =>
+                                            this.setState({
+                                                revoteClicked: true,
+                                            })
+                                        }
+                                    />
+                                </div>
+                                <div className={'flex items-end ml-4'}>
+                                    <Button
+                                        className={'w-40'}
+                                        handleClick={() =>
+                                            tallyVotes(
+                                                this.props.contract,
+                                                walletAddress
+                                            )
+                                        }
+                                    >
+                                        <p>TALLY</p>
+                                    </Button>
+                                </div>
+                            </div>
 
-                        <div className={'flex justify-center w-full'}>
-                            <div className={'flex justify-between mt-8'}>
-                                <Button
-                                    className={'w-40 m-4'}
-                                    handleClick={() =>
-                                        tallyVotes(
-                                            this.props.contract,
-                                            walletAddress
-                                        )
+                            {/* <div className={'flex w-full ml-16 mt-4'}>
+                                <StatusWidget
+                                    contract={this.props.contract}
+                                    token={this.props.token}
+                                    walletAddress={walletAddress}
+                                    tokensLocked={tokensLocked}
+                                    releaseDate={releaseDate}
+                                    gasTarget={gasTarget}
+                                    lockupDuration={lockupDuration}
+                                    voterReward={voterReward}
+                                    lockupDate={lockupDate}
+                                    tokensUnlocked={
+                                        tokensUnlocked
+                                            ? fromWei(String(tokensUnlocked))
+                                            : '0'
                                     }
-                                >
-                                    <p>TALLY</p>
-                                </Button>
+                                    noAllowance={
+                                        this.state.currentAllowance === '0'
+                                    }
+                                    hasVoted={this.state.tokensLocked !== '0'}
+                                    canWithdraw={
+                                        this.state.tokensUnlocked !== '0'
+                                    }
+                                    openVoteModal={() =>
+                                        this.setState({ voteClicked: true })
+                                    }
+                                    openRevoteModal={() =>
+                                        this.setState({ revoteClicked: true })
+                                    }
+                                />
+                            </div> */}
+                            <div className={'flex justify-center w-full'}>
+                                <div
+                                    className={'flex justify-between mt-8'}
+                                ></div>
                             </div>
                         </div>
-                        <div className={'p-32'}>
-                            <img className={'w-full'} src={'static/5.png'} />
+                    </div>
+                    <div className={'w-full flex justify-center'}>
+                        <div className={'w-4/5'}>
+                            <h1
+                                className={
+                                    'm-8 text-xl font-extrabold text-left'
+                                }
+                            >
+                                How to Vote
+                            </h1>
+                            <div className={'p-4 mb-8 bg-hailStorm rounded-xl'}>
+                                <HowToVote />
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -18,7 +18,7 @@ export default function ReleaseScheduleCard({
     return (
         <div
             style={{ width: '35em', ...style }}
-            className={`${className} mt-10 border p-5 rounded-xl bg-white`}
+            className={`${className} mt-10 p-5 rounded-xl bg-hailStorm`}
         >
             {eventEglsMatched.length ? (
                 <table className={'w-full'}>

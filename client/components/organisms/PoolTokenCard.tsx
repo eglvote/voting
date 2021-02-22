@@ -27,7 +27,7 @@ export default function PoolTokenCard({
     unlockedPoolTokens,
 }: PoolTokenCardProps) {
     return (
-        <div className={'w-80 border p-5 rounded-xl bg-white'}>
+        <div className={'w-80 p-5 rounded-xl bg-hailStorm'}>
             <table>
                 <tr>
                     <Td>Total Pool Tokens</Td>
