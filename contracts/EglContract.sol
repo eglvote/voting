@@ -1,6 +1,7 @@
 pragma solidity ^0.6.0;
 
 import "./EglToken.sol";
+import "./EglUpgrader.sol";
 import "./libraries/Math.sol";
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -89,6 +90,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
     }
 
     /**************************** PRIVATE STATE VARIABLES ****************************/
+    EglUpgrader private eglUpgrader;
     EglToken private eglToken;
     IUniswapV2Router02 private uniSwapRouter;
     IUniswapV2Factory private uniSwapFactory;
@@ -343,6 +345,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
     /**
      * @dev Initialized contract variables
      *
+     * @param _upgrader Address of the contract responsible for upgrades
      * @param _token Address of the EGL token
      * @param _router Address of the Uniswap Router
      * @param _ethRequiredToLaunchUniSwap Amount of ETH required to launch UniSwap pair
@@ -353,6 +356,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
      * @param _creatorRewardsAccount Address that creator rewards get sent to
      */
     function initialize(
+        address _upgrader,
         address _token,
         address _router,
         uint _ethRequiredToLaunchUniSwap,
@@ -375,6 +379,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         __Ownable_init_unchained();
         __Pausable_init_unchained();
 
+        eglUpgrader = EglUpgrader(_upgrader);
         eglToken = EglToken(_token);
         uniSwapRouter = IUniswapV2Router02(_router);
         uniSwapFactory = IUniswapV2Factory(uniSwapRouter.factory());
@@ -1112,7 +1117,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             delete upgradeCandidateList;
             if (thresholdPassed) {
                 if (previousEpochUpgradeCandidate != address(0) && leadingCandidateAddress == previousEpochUpgradeCandidate) {
-                    // _doUpgrade();
+                    eglUpgrader.upgradeImplementation(address(this), leadingCandidateAddress);
                     emit CandidateVoteWinner(
                         leadingCandidateAddress,
                         currentEpoch,

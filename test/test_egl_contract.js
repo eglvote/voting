@@ -4,6 +4,7 @@ const {
     UniswapV2Router,
     TestableEglContract,
     EglToken,
+    EglUpgrader,
     EventType,
     VoterAttributes,
     ZeroAddress,
@@ -52,10 +53,10 @@ contract("EglTests", (accounts) => {
         );
     }
 
-    beforeEach(async () => {     
+    beforeEach(async () => {             
         UniswapV2Router.setProvider(web3._provider);
-        let routerContract = await UniswapV2Router.deployed();
-        
+        let routerContract = await UniswapV2Router.deployed();                    
+
         let totalTokenSupply = new BN(web3.utils.toWei("4000000000"));
         eglTokenInstance = await EglToken.new();
         await eglTokenInstance.initialize("EthereumGasLimit", "EGL", totalTokenSupply);
@@ -66,6 +67,7 @@ contract("EglTests", (accounts) => {
         }
         let eglsGifted = await giveFreeTokens(giftAccounts, eglTokenInstance);
 
+        let eglUpgraderInstance = await EglUpgrader.deployed();
         eglContractInstance = await TestableEglContract.new();        
         let eglContractDeploymentHash = eglContractInstance.transactionHash;
         let eglContractDeploymentTransaction = await web3.eth.getTransaction(eglContractDeploymentHash);
@@ -75,6 +77,7 @@ contract("EglTests", (accounts) => {
         eglContractDeployGasLimit = eglContractDeploymentBlock.gasLimit;
 
         let txReceipt = await eglContractInstance.initialize(
+            eglUpgraderInstance.address,
             eglTokenInstance.address,
             routerContract.address,
             DefaultEthToLaunch,

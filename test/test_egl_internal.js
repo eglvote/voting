@@ -2,6 +2,7 @@ const { BN } = require("bn.js");
 const {
     TestableEglContract,
     EglToken,
+    EglUpgrader,
     UniswapV2Router,
     EventType,
     DefaultEthToLaunch,
@@ -27,8 +28,10 @@ contract("EglInternalFunctions", (accounts) => {
         eglTokenInstance = await EglToken.new();
         await eglTokenInstance.initialize("EthereumGasLimit", "EGL", totalTokenSupply);
 
+        let eglUpgraderInstance = await EglUpgrader.deployed();
         eglContractInstance = await TestableEglContract.new();        
         let txReceipt = await eglContractInstance.initialize(
+            eglUpgraderInstance.address,
             eglTokenInstance.address,
             routerContract.address,
             DefaultEthToLaunch,

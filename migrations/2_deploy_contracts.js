@@ -1,5 +1,6 @@
 const { 
     deployProxy,
+    admin,
  } = require("@openzeppelin/truffle-upgrades");
 const { 
     BN,
@@ -14,6 +15,7 @@ const {
 
 const EglToken = artifacts.require("./EglToken.sol");
 const EglContract = artifacts.require("./EglContract.sol");
+const EglUpgrader = artifacts.require("./EglUpgrader.sol");
 
 module.exports = async function (deployer, network, accounts) {    
     let totalEglSupply = new BN(web3.utils.toWei("4000000000")); // 4 billion
@@ -94,9 +96,13 @@ module.exports = async function (deployer, network, accounts) {
         creatorRewardAccount = accounts[9];
     }
 
+    let eglUpgrader = await deployer.deploy(EglUpgrader);
+    console.log(`EGL Upgrader deployed to address: ${ConsoleColors.GREEN}`, eglUpgrader.address);
+
     let eglContract = await deployProxy(
         EglContract,
         [
+            eglUpgrader.address,
             eglToken.address,
             routerAddress,
             ethToLaunchUniSwap,
@@ -124,13 +130,19 @@ module.exports = async function (deployer, network, accounts) {
             }
         )
     );
+    console.log("");
+
+    await eglUpgrader.setOwner(eglContract.address);
+    console.log(`Owner of EGL Upgrader set to EGL Contract: ${ConsoleColors.GREEN}`, eglContract.address)
+    console.log("");
+
+    admin.changeProxyAdmin(eglContract.address, eglUpgrader.address);
+    console.log(`EGL Contract admin set to EGL Uploader: ${ConsoleColors.GREEN}`, eglUpgrader.address);
+    console.log("");
 
     // Bootstrap the contract with 1000 wei which is the minimum liquidity for UniSwap 
     web3.eth.sendTransaction({ from: accounts[0], to: eglContract.address, value:1000 });
 
     // Transfer all tokens to EGL contract
     await eglToken.transfer(eglContract.address, totalEglSupply.sub(eglsGifted).toString());
-
-    // Owns itself - and is the only one that can initiate upgrades
-    await eglContract.transferOwnership(eglContract.address);
 };

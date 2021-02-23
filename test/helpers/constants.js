@@ -8,6 +8,7 @@ const UniswapV2Router = Contract(RouterJson);
 const WethToken = artifacts.require("@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol")
 const EglToken = artifacts.require("./EglToken.sol");
 const EglContract = artifacts.require("./EglContract.sol");
+const EglUpgrader = artifacts.require("./EglUpgrader.sol");
 const TestableEglContract = artifacts.require("./helpers/TestableEglContract.sol");
 
 const EventType = {
@@ -78,6 +79,7 @@ module.exports = {
     WethToken,
     EglToken,
     EglContract,
+    EglUpgrader,
     TestableEglContract,
     EventType,
     VoterAttributes,
