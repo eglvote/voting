@@ -28,9 +28,9 @@ export default function VoteModal({
     return (
         <Modal
             handleOutsideClick={handleOutsideClick}
-            className={`${className} w-96 p-6 z-10`}
+            className={`${className} w-1/3 p-6 z-10 fixed`}
         >
-            <div>
+            <div className={'h-full'}>
                 <h1
                     className={
                         'text-xl text-salmon font-bold border-b-2 border-salmon'
@@ -38,23 +38,25 @@ export default function VoteModal({
                 >
                     VOTE
                 </h1>
-                <Card className={'mt-6 px-4 bg-gray-100'}>
-                    <p>
-                        {`The current gas limit is `}
-                        {
-                            <span className={'font-bold'}>
-                                {displayComma(baselineEgl)}
-                            </span>
-                        }
-                        {` gas and you have `}
-                        {
-                            <span className={'font-bold'}>
-                                {displayComma(fromWei(eglBalance))}
-                            </span>
-                        }
-                        {' EGLs to vote with'}
-                    </p>
-                </Card>
+                <div className={'w-full flex justify-center'}>
+                    <Card className={'mt-6 px-4 bg-gray-100 w-3/4'}>
+                        <p>
+                            {`The current gas limit is `}
+                            {
+                                <span className={'font-bold'}>
+                                    {displayComma(baselineEgl)}
+                                </span>
+                            }
+                            {` gas and you have `}
+                            {
+                                <span className={'font-bold'}>
+                                    {displayComma(fromWei(eglBalance))}
+                                </span>
+                            }
+                            {' EGLs to vote with'}
+                        </p>
+                    </Card>
+                </div>
                 <VoteModalForm
                     contract={contract}
                     token={token}

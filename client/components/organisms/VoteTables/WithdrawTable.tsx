@@ -11,7 +11,9 @@ const Td = ({ children }) => (
     <td className={'text-left h-10 p-2'}>{children}</td>
 )
 const Th = ({ children }) => (
-    <th className={'text-left text-white bg-babyBlue p-2'}>{children}</th>
+    <th className={'text-left text-white bg-babyBlue p-2 text-sm font-normal'}>
+        {children}
+    </th>
 )
 
 export default function WithdrawTable({
@@ -21,13 +23,17 @@ export default function WithdrawTable({
     tokensUnlocked,
 }: WithdrawTableProps) {
     return (
-        <div className={`${className} w-72 border rounded-xl`}>
-            <table className={'w-full rounded-xl overflow-hidden p-4'}>
+        <div className={`${className} w-72 border rounded`}>
+            <table className={'w-full rounded overflow-hidden p-4'}>
                 <tr className={'w-full px-2'}>
-                    <Th>EGLs Available for Withdrawal</Th>
+                    <Th>Unlocked EGLs</Th>
                 </tr>
                 <tr className={'w-full bg-white'}>
-                    <Td>{formatFromWei(tokensUnlocked) || '-'}</Td>
+                    <Td>
+                        {tokensUnlocked != '0'
+                            ? formatFromWei(tokensUnlocked)
+                            : '-'}
+                    </Td>
                 </tr>
             </table>
         </div>

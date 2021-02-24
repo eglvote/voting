@@ -109,7 +109,7 @@ class Dao extends React.Component<DaoProps> {
                     className={'p-12 h-screen bg-hailStorm flex justify-center'}
                 >
                     <div className={'w-4/5'}>
-                        <h1 className={'text-salmon text-4xl font-extrabold'}>
+                        <h1 className={'text-salmon text-6xl font-extrabold'}>
                             DAO<span className={'text-black'}>.</span>
                         </h1>
                         <h3 className={'text-2xl font-bold'}>

@@ -18,9 +18,17 @@ export default function InfoColumn({
 }: InfoColumnProps) {
     return (
         <div className={'w-1/5 ml-4'}>
-            <img src={svgPath} />
-            <h1 className={'text-2xl font-bold mt-4'}>{title}</h1>
-            <Line className={'text-babyBlue bg-babyBlue h-1 my-2'} />
+            <div className={'w-full flex justify-center'}>
+                <img className={'w-1/2'} src={svgPath} />
+            </div>
+            <h1
+                className={
+                    'text-2xl text-center text-babyBlue font-bold mt-4 mb-4'
+                }
+            >
+                {title}
+            </h1>
+            {/* <Line className={'text-babyBlue bg-black h-1 my-2'} /> */}
             <div>{children}</div>
         </div>
     )

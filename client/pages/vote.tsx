@@ -9,9 +9,7 @@ import RevoteModal from '../components/organisms/VoteModal/RevoteModal'
 import {
     getVoters,
     getLatestGasLimit,
-    withdraw,
     tallyVotes,
-    increaseAllowance,
     allowance,
     calculateCumulativeRewards,
 } from '../lib/contractMethods'
@@ -138,7 +136,7 @@ class Vote extends React.Component<VoteProps> {
                     contract,
                     this.state.walletAddress
                 )
-                console.log(voterData)
+
                 const lockupDate = voterData
                     ? new BigNumber(voterData.releaseDate)
                           .minus(
@@ -246,7 +244,7 @@ class Vote extends React.Component<VoteProps> {
                                 <div>
                                     <h1
                                         className={
-                                            'text-salmon text-4xl font-extrabold'
+                                            'text-salmon text-6xl font-extrabold'
                                         }
                                     >
                                         VOTE
@@ -268,20 +266,20 @@ class Vote extends React.Component<VoteProps> {
                             </p>
                             <div className={'flex items-end ml-16 mt-8'}>
                                 <div className={'flex flex-col mr-16'}>
-                                    <h1
+                                    {/* <h1
                                         className={
                                             'font-bold text-xl text-babyBlue m-4'
                                         }
                                     >
                                         REQUIRED
-                                    </h1>
+                                    </h1> */}
                                     <HatBox
                                         title={'CURRENT GAS LIMIT'}
                                         className={'bg-babyBlue w-96 mt-4'}
                                     >
                                         <p
                                             className={
-                                                'font-extrabold text-4xl text-white'
+                                                'font-extrabold text-3xl text-white'
                                             }
                                         >
                                             {baselineEgl
@@ -296,11 +294,11 @@ class Vote extends React.Component<VoteProps> {
                                     </div>
                                 </div>
                                 <div className={'flex flex-col items-baseline'}>
-                                    <h1
+                                    {/* <h1
                                         className={'font-bold text-xl m-1 ml-4'}
                                     >
                                         OPTIONAL FIELDS
-                                    </h1>
+                                    </h1> */}
                                     <DaoWidget
                                         daoAmount={daoAmount}
                                         daoRecipient={daoRecipient}
@@ -322,7 +320,7 @@ class Vote extends React.Component<VoteProps> {
                                     >
                                         <p
                                             className={
-                                                'font-extrabold text-2xl text-white text-center'
+                                                'font-extrabold text-3xl text-white text-center'
                                             }
                                         >
                                             {timeToNextEpoch
@@ -346,7 +344,7 @@ class Vote extends React.Component<VoteProps> {
                                 >
                                     <p
                                         className={
-                                            'font-extrabold text-4xl text-white'
+                                            'font-extrabold text-3xl text-white'
                                         }
                                     >
                                         {Number(totalEglReward) > 0
@@ -363,7 +361,7 @@ class Vote extends React.Component<VoteProps> {
                         <div className={'w-4/5'}>
                             <h1
                                 className={
-                                    'm-8 mt-8 text-xl font-extrabold text-left'
+                                    'm-8 mt-8 text-3xl font-extrabold text-left'
                                 }
                             >
                                 Your Vote
@@ -471,12 +469,12 @@ class Vote extends React.Component<VoteProps> {
                         <div className={'w-4/5'}>
                             <h1
                                 className={
-                                    'm-8 text-xl font-extrabold text-left'
+                                    'mt-8 ml-8 text-3xl font-extrabold text-left'
                                 }
                             >
                                 How to Vote
                             </h1>
-                            <div className={'p-4 mb-8 bg-hailStorm rounded-xl'}>
+                            <div className={'mb-2 bg-white rounded-xl'}>
                                 <HowToVote />
                             </div>
                         </div>

@@ -8,12 +8,14 @@ interface handleOutsideClickParameters {
 interface ModalProps {
     className?: string
     children?: JSX.Element | JSX.Element[]
+    style?: any
     handleOutsideClick: handleOutsideClickParameters
 }
 
 export default function Modal({
     className,
     children,
+    style,
     handleOutsideClick,
 }: ModalProps) {
     const ref = useRef()
@@ -22,7 +24,6 @@ export default function Modal({
 
     useEffect(() => {
         document.body.style.overflow = 'hidden'
-
         return function cleanup() {
             document.body.style.overflow = 'auto'
         }
@@ -31,13 +32,13 @@ export default function Modal({
     return (
         <div
             className={
-                'fixed inset-0 flex items-center justify-center h-screen overflow-y-hidden overflow-hidden'
+                'fixed inset-0 flex items-center justify-center h-screen'
             }
         >
             <div
                 ref={ref}
                 style={{ animation: `fadeIn .75s` }}
-                className={`${className} z-50 relative rounded-xl p-2 border shadow bg-white`}
+                className={`${className} maxHeight z-50 relative rounded-xl p-2 border shadow bg-white overflow-auto`}
             >
                 {children}
             </div>

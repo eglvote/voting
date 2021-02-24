@@ -25,13 +25,13 @@ export default function Index() {
             </div>
             <div className={'z-10 -mr-96 p-4 rounded-xl bg-dark w-156'}>
                 <div className={'mb-4'}>
-                    <h1 className={'font-bold text-6xl'}>The Eagle Project</h1>
-                    <h1 className={'font-bold mt-4'}>
+                    <h3 className={'font-bold text-6xl'}>The Eagle Project</h3>
+                    <h3 className={'font-bold mt-4'}>
                         The Eagle Project introduces a coordination utility,
                         EGL, for the Ethereum 1.x ecosystem to express it’s
                         collective desired gas limit, and incentivize pools to
                         follow this preference.
-                    </h1>
+                    </h3>
                 </div>
 
                 <Button handleClick={() => router.push('/vote')}>

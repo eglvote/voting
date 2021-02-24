@@ -36,7 +36,7 @@ export default function VoteModalForm({
     })
 
     return (
-        <div>
+        <div className={'mt-4'}>
             <Formik
                 initialValues={{
                     amount: '0',
@@ -64,10 +64,10 @@ export default function VoteModalForm({
             >
                 {({ errors, touched }) => (
                     <Form>
-                        <div className={'flex justify-center items-center'}>
-                            <div className={'mt-4'}>
-                                <div className={'flex items-baseline'}>
-                                    <p>I want to vote with</p>
+                        <div className={''}>
+                            <div className={'mt-2'}>
+                                <p className={''}>
+                                    <span>I want to vote with</span>
                                     <Field id="amount" name="amount">
                                         {({ field }) => (
                                             <input
@@ -80,17 +80,19 @@ export default function VoteModalForm({
                                             />
                                         )}
                                     </Field>
-                                    <p className={'text-babyBlue'}>EGLs,</p>
-                                </div>
+                                    <span className={'text-babyBlue'}>
+                                        EGLs,
+                                    </span>
+                                    <span>{' locked for'}</span>
+                                </p>
                                 <div className={'flex items-baseline'}>
-                                    <p>locked for</p>
                                     <Field id="weeksLocked" name="weeksLocked">
                                         {({ field }) => (
                                             <select
                                                 name="weeksLocked"
                                                 {...field}
                                                 className={
-                                                    'w-12 border-babyBlue border-b mx-2'
+                                                    'w-12 border-babyBlue border-b mr-2'
                                                 }
                                                 value={weeksLocked}
                                                 onChange={(e) => {
@@ -113,11 +115,19 @@ export default function VoteModalForm({
                                         {'week(s).'}
                                     </p>
                                 </div>
-                                <div className={'mt-4   '}>
-                                    <p>{`In each of the ${weeksLocked} week(s), I want to vote for a `}</p>
+                                <div className={'mt-4'}>
+                                    <p>
+                                        {'In each of the'}
+                                        <span className={'font-bold'}>
+                                            {` ${weeksLocked} week(s)`}
+                                        </span>
+                                        {
+                                            ', I want to vote for a desired gas limit'
+                                        }
+                                    </p>
 
                                     <div className={'flex'}>
-                                        <p>{'desired gas limit of '}</p>
+                                        <p>{' of '}</p>
                                         <Field
                                             id="desiredChange"
                                             name="desiredChange"
@@ -128,7 +138,6 @@ export default function VoteModalForm({
                                                     className={
                                                         'w-32 border-babyBlue border-b text-right ml-2'
                                                     }
-                                                    // validate={validateDesiredChange}
                                                     type="number"
                                                     placeholder=""
                                                 />
@@ -149,7 +158,7 @@ export default function VoteModalForm({
                                 </div>
                             </div>
                         </div>
-                        <div className={'flex justify-end mt-4'}>
+                        <div className={'flex justify-end mt-2'}>
                             <div
                                 onClick={() => setAdvanced(!advanced)}
                                 className={'flex cursor-pointer'}
@@ -166,60 +175,64 @@ export default function VoteModalForm({
                             </div>
                         </div>
                         {advanced && (
-                            <div>
-                                <h1 className={'font-bold mb-4 text-xl'}>
-                                    DAO
-                                </h1>
-                                <div
-                                    className={
-                                        'flex flex-col justify-items-start'
-                                    }
-                                >
-                                    <div className={'flex'}>
-                                        <p>I want to send</p>
+                            <div className={'w-full'}>
+                                <div className={''}>
+                                    <h1 className={'font-bold mb-2 text-xl'}>
+                                        DAO
+                                    </h1>
 
-                                        <Field id="daoAmount" name="daoAmount">
-                                            {({ field }) => (
-                                                <input
-                                                    {...field}
-                                                    className={
-                                                        'w-32 border-babyBlue border-b mr-2 text-right mx-2 px-4'
-                                                    }
-                                                    placeholder=""
-                                                />
-                                            )}
-                                        </Field>
-                                        <p>from</p>
+                                    <div
+                                        className={
+                                            'flex flex-col justify-items-center'
+                                        }
+                                    >
+                                        <div className={'flex'}>
+                                            <p>I want to send</p>
+                                            <Field
+                                                id="daoAmount"
+                                                name="daoAmount"
+                                            >
+                                                {({ field }) => (
+                                                    <input
+                                                        {...field}
+                                                        className={
+                                                            'w-32 border-babyBlue border-b mr-2 text-right mx-2 px-4'
+                                                        }
+                                                        placeholder=""
+                                                    />
+                                                )}
+                                            </Field>
+                                            <p>from the DAO to</p>
+                                            <Field
+                                                id="daoAddress"
+                                                name="daoAddress"
+                                            >
+                                                {({ field }) => (
+                                                    <input
+                                                        {...field}
+                                                        className={
+                                                            'w-32 border-babyBlue border-b mx-2'
+                                                        }
+                                                        placeholder=""
+                                                    />
+                                                )}
+                                            </Field>{' '}
+                                        </div>
+                                        <div className={'flex items-end'}>
+                                            <p className={'text-babyBlue'}>
+                                                Ethereum wallet address.
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className={'flex items-end'}>
-                                        <p className={''}>the DAO to</p>
-                                        <Field
-                                            id="daoAddress"
-                                            name="daoAddress"
-                                        >
-                                            {({ field }) => (
-                                                <input
-                                                    {...field}
-                                                    className={
-                                                        'w-32 border-babyBlue border-b mx-2'
-                                                    }
-                                                    placeholder=""
-                                                />
-                                            )}
-                                        </Field>
-                                        <p className={'text-babyBlue'}>
-                                            Ethereum
-                                        </p>
-                                    </div>
+                                    <p className={'text-babyBlue'}></p>
                                 </div>
-                                <p className={'text-babyBlue'}>
-                                    wallet address.
-                                </p>
+
                                 <h1 className={'font-bold mt-4 mb-2 text-xl'}>
                                     EGL Contract
                                 </h1>
-                                <p>The EGL proxy should point to</p>
-                                <div className={'flex items-end'}>
+                                <p>
+                                    The EGL proxy should point to
+                                    {/* <div className={'flex items-end'}> */}
                                     <Field
                                         id="contractAddress"
                                         name="contractAddress"
@@ -234,13 +247,14 @@ export default function VoteModalForm({
                                             />
                                         )}
                                     </Field>
-                                    <p className={'text-babyBlue'}>
+                                    <span className={'text-babyBlue'}>
                                         Ethereum contract address.
-                                    </p>
-                                </div>
+                                    </span>
+                                </p>
+                                {/* </div> */}
                             </div>
                         )}
-                        <div className={'mt-8'}>
+                        <div className={'mt-4'}>
                             <p className={'text-xs'}>
                                 * Voters can always use re-vote to change their
                                 vote. See documentation for more information

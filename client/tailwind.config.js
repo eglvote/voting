@@ -4,6 +4,21 @@ module.exports = {
     // purge: ['./pages/**/*.js', './components/**/*.js'],
     darkMode: false, // or 'media' or 'class'
     theme: {
+        fontFamily: {
+            sans: [
+                'sans-serif',
+                // 'Inter var',
+                // 'Menlo',
+                // 'sans',
+                // 'Haas Grot Disp R',
+                // 'Consolas',
+                // 'Monaco',
+                // 'Andale Mono',
+                // 'Ubuntu Mono',
+                // 'monospace',
+            ],
+            // font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+        },
         colors: {
             salmon: {
                 DEFAULT: '#f57073',

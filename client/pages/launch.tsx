@@ -162,10 +162,10 @@ class Launch extends React.Component<LaunchProps> {
             >
                 <div style={{ height: '110vh' }} className={'p-12'}>
                     <div className={'flex justify-center'}>
-                        <div className={'w-2/3'}>
+                        <div className={'w-4/5'}>
                             <h1
                                 className={
-                                    'text-salmon text-4xl font-extrabold'
+                                    'text-salmon text-6xl font-extrabold'
                                 }
                             >
                                 LAUNCH<span className={'text-black'}>.</span>
