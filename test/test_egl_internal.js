@@ -41,7 +41,7 @@ contract("EglInternalFunctions", (accounts) => {
             "6700000",
             "7200000",
             SEED_ACCOUNTS,
-            [],
+            "0",
             CREATOR_REWARDS_ACCOUNT
         );
 

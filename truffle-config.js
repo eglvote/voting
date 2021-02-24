@@ -44,5 +44,15 @@ module.exports = {
       },
     },
   },
-  plugins: ["truffle-contract-size"],
+  plugins: [
+    "truffle-contract-size",
+  ],
+  mocha: {
+    reporter: 'eth-gas-reporter',
+    reporterOptions: {
+      excludeContracts: ["Migrations"],
+      currency: "USD",
+      coinmarketcap: process.env.COIN_MARKET_CAP_API_KEY
+    },
+  }
 };

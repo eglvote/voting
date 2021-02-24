@@ -921,7 +921,9 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         uint voterReward;
         uint rewardEpochs = voterEpoch.add(lockupDuration).umin(currentEpoch).umin(WEEKS_IN_YEAR);
         for (uint16 i = voterEpoch; i < rewardEpochs; i++) {
-            uint epochReward = (voteWeight.mul(VOTER_REWARD_MULTIPLIER).mul(WEEKS_IN_YEAR.sub(i))).div(voterRewardSums[i]);
+            uint epochReward = 
+                (voteWeight.mul(VOTER_REWARD_MULTIPLIER).mul(WEEKS_IN_YEAR.sub(i)))
+                .div(voterRewardSums[i]);
             voterReward = voterReward.add(epochReward);
             emit VoterRewardCalculated(
                 _voter,
@@ -1116,7 +1118,10 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             ) = _evaluateCandidateVote(upgradeCandidateList);
             delete upgradeCandidateList;
             if (thresholdPassed) {
-                if (previousEpochUpgradeCandidate != address(0) && leadingCandidateAddress == previousEpochUpgradeCandidate) {
+                if (
+                    previousEpochUpgradeCandidate != address(0) 
+                    && leadingCandidateAddress == previousEpochUpgradeCandidate
+                ) {
                     eglUpgrader.upgradeImplementation(address(this), leadingCandidateAddress);
                     emit CandidateVoteWinner(
                         leadingCandidateAddress,
