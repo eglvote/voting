@@ -28,7 +28,7 @@ export default function VoteModal({
     return (
         <Modal
             handleOutsideClick={handleOutsideClick}
-            className={`${className} w-1/3 p-6 z-10 fixed`}
+            className={`${className} p-6 z-10 fixed w-126`}
         >
             <div className={'h-full'}>
                 <h1

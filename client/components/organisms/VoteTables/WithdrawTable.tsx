@@ -8,10 +8,14 @@ interface WithdrawTableProps {
     tokensUnlocked: string
 }
 const Td = ({ children }) => (
-    <td className={'text-left h-10 p-2'}>{children}</td>
+    <td className={'text-left h-10 p-2 px-4'}>{children}</td>
 )
 const Th = ({ children }) => (
-    <th className={'text-left text-white bg-babyBlue p-2 text-sm font-normal'}>
+    <th
+        className={
+            'text-left text-white bg-babyBlue p-2 px-4 text-sm font-normal'
+        }
+    >
         {children}
     </th>
 )

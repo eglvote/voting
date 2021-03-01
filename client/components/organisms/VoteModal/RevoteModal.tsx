@@ -40,7 +40,7 @@ export default function RevoteModal({
     return (
         <Modal
             handleOutsideClick={handleOutsideClick}
-            className={`${className} py-8 px-12`}
+            className={`${className} py-8 px-12 min-w-132`}
         >
             <div style={{ width: '28em' }}>
                 <h1

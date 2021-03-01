@@ -144,17 +144,17 @@ export default function VoteModalForm({
                                             )}
                                         </Field>
                                         {'*'}
+                                        {errors.desiredChange &&
+                                            touched.desiredChange && (
+                                                <span
+                                                    className={
+                                                        'ml-2 text-salmon-dark'
+                                                    }
+                                                >
+                                                    {errors.desiredChange}
+                                                </span>
+                                            )}
                                     </div>
-                                    {errors.desiredChange &&
-                                        touched.desiredChange && (
-                                            <span
-                                                className={
-                                                    'ml-2 text-salmon-dark'
-                                                }
-                                            >
-                                                {errors.desiredChange}
-                                            </span>
-                                        )}
                                 </div>
                             </div>
                         </div>
@@ -203,6 +203,9 @@ export default function VoteModalForm({
                                                 )}
                                             </Field>
                                             <p>from the DAO to</p>
+                                        </div>
+                                        <div></div>
+                                        <div className={'flex items-end'}>
                                             <Field
                                                 id="daoAddress"
                                                 name="daoAddress"
@@ -216,9 +219,7 @@ export default function VoteModalForm({
                                                         placeholder=""
                                                     />
                                                 )}
-                                            </Field>{' '}
-                                        </div>
-                                        <div className={'flex items-end'}>
+                                            </Field>
                                             <p className={'text-babyBlue'}>
                                                 Ethereum wallet address.
                                             </p>
@@ -232,7 +233,6 @@ export default function VoteModalForm({
                                 </h1>
                                 <p>
                                     The EGL proxy should point to
-                                    {/* <div className={'flex items-end'}> */}
                                     <Field
                                         id="contractAddress"
                                         name="contractAddress"
@@ -251,7 +251,6 @@ export default function VoteModalForm({
                                         Ethereum contract address.
                                     </span>
                                 </p>
-                                {/* </div> */}
                             </div>
                         )}
                         <div className={'mt-4'}>

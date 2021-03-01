@@ -32,13 +32,21 @@ export default function Modal({
     return (
         <div
             className={
-                'fixed inset-0 flex items-center justify-center h-screen'
+                'fixed inset-0 flex flex-col items-center justify-center h-screen'
             }
         >
+            <div className={'w-full z-50'}></div>
+            <img
+                width={'25'}
+                src="/static/x.svg"
+                className={
+                    'z-50 -mr-96 -mt-20 m-6 hover:opacity-50 cursor-pointer'
+                }
+            />
             <div
                 ref={ref}
                 style={{ animation: `fadeIn .75s` }}
-                className={`${className} maxHeight z-50 relative rounded-xl p-2 border shadow bg-white overflow-auto`}
+                className={`${className} maxHeight z-50 relative rounded-xl p-2 border shadow-2xl bg-white overflow-auto`}
             >
                 {children}
             </div>

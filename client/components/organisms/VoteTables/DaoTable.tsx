@@ -10,10 +10,14 @@ interface DaoTableProps {
     upgradeAddress: string
 }
 const Td = ({ children }) => (
-    <td className={'text-left h-10 p-2'}>{children}</td>
+    <td className={'text-left h-10 p-2 px-4'}>{children}</td>
 )
 const Th = ({ children }) => (
-    <th className={'text-left p-2 w-32 font-normal text-sm bg-hailStorm-dark'}>
+    <th
+        className={
+            'text-left p-2 px-4 w-32 font-normal text-sm bg-hailStorm-dark'
+        }
+    >
         {children}
     </th>
 )
@@ -27,7 +31,7 @@ export default function DaoTable({
     upgradeAddress,
 }: DaoTableProps) {
     return (
-        <div className={'w-96 rounded'}>
+        <div className={'w-108 rounded'}>
             <table className={'w-full rounded overflow-hidden p-4'}>
                 <tr className={'w-full px-2'}>
                     <Th>Dao Vote</Th>

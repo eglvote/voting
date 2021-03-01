@@ -31,7 +31,10 @@ export default function NavBar({
     return (
         <header
             style={style}
-            className={`${className} fixed inset-0 flex w-screen h-20 bg-hailStorm shadow`}
+            className={`${className} fixed inset-0 flex w-screen h-20 bg-hailStorm ${
+                // window && window.scrollY && 'shadow'
+                'shadow'
+            }`}
         >
             <Link href={'/'}>
                 <div

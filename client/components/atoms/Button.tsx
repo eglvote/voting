@@ -27,7 +27,6 @@ export default function Button({
             type={type}
             disabled={disabled}
             style={{
-                // boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px',
                 ...style,
             }}
             className={`${className} shadow-lg bg-salmon text-white font-bold text-center rounded-md px-4 py-2 transition duration-500 ease select-none hover:bg-salmon-dark`}

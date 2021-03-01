@@ -17,7 +17,7 @@ export default function Index() {
     return (
         <div
             className={
-                'flex justify-center items-center flex-col h-screen bg-dark text-white'
+                'flex justify-center items-center flex-col h-screen bg-dark text-white overflow-hidden'
             }
         >
             <div className={'absolute z-0 top-.5 left-0 -ml-32'}>
@@ -26,7 +26,7 @@ export default function Index() {
             <div className={'z-10 -mr-96 p-4 rounded-xl bg-dark w-156'}>
                 <div className={'mb-4'}>
                     <h3 className={'font-bold text-6xl'}>The Eagle Project</h3>
-                    <h3 className={'font-bold mt-4'}>
+                    <h3 className={'mt-4'}>
                         The Eagle Project introduces a coordination utility,
                         EGL, for the Ethereum 1.x ecosystem to express it’s
                         collective desired gas limit, and incentivize pools to

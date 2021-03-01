@@ -5,12 +5,8 @@ import HatBox from '../components/molecules/HatBox'
 import { displayComma, fromWei } from '../lib/helpers'
 import connectToWeb3 from '../lib/connectToWeb3'
 import BigNumber from 'bignumber.js'
-import Button from '../components/atoms/Button'
-import ClaimModal from '../components/organisms/ClaimModal'
 import { EGLS_AVAILABLE } from '../lib/constants'
-import { withdrawLiquidityTokens } from '../lib/contractMethods'
-import PoolTokenCard from '../components/organisms/PoolTokenCard'
-import ReleaseScheduleCard from '../components/organisms/ReleaseScheduleCard'
+import ArrowLink from '../components/molecules/ArrowLink'
 
 interface DaoProps {
     accounts: any
@@ -112,6 +108,13 @@ class Dao extends React.Component<DaoProps> {
                         <h1 className={'text-salmon text-6xl font-extrabold'}>
                             DAO<span className={'text-black'}>.</span>
                         </h1>
+                        <div className={'w-32'}>
+                            <ArrowLink
+                                className={'ml-1 my-2'}
+                                title={'LEARN MORE'}
+                                color={true}
+                            />
+                        </div>
                         <h3 className={'text-2xl font-bold'}>
                             Funds available
                         </h3>

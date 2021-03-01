@@ -19,6 +19,10 @@
 .maxHeight {
     max-height: calc(100vh - 60px);
 }
+/* 
+.transitionGrow {
+    transition: all 0.2s ease-in-out;
+} */
 /* h1 {
     font-size: 2.462rem;
     line-height: 3.231rem;

@@ -13,17 +13,15 @@ import {
     allowance,
     calculateCumulativeRewards,
 } from '../lib/contractMethods'
-import StatusWidget from '../components/organisms/StatusWidget'
-import { displayComma, fromWei } from '../lib/helpers'
+import { displayComma, fromWei, truncateEthAddress } from '../lib/helpers'
 import BigNumber from 'bignumber.js'
 import m from 'moment'
 import { REWARD_MULTIPLIER } from '../lib/constants'
 import HowToVote from '../components/organisms/HowToVote'
-import DaoWidget from '../components/organisms/DaoWidget'
 import YourVoteTable from '../components/organisms/VoteTables/YourVoteTable'
-import DaoTable from '../components/organisms/VoteTables/DaoTable'
 import WithdrawTable from '../components/organisms/VoteTables/WithdrawTable'
 import SmartButton from '../components/molecules/SmartButton'
+import ArrowLink from '../components/molecules/ArrowLink'
 
 declare global {
     interface Window {
@@ -60,6 +58,10 @@ class Vote extends React.Component<VoteProps> {
         daoAmount: '0',
         daoRecipient: '0x0000000000000000000000000000000000000000',
         upgradeAddress: '0x0000000000000000000000000000000000000000',
+        previousEpochDaoSum: '0',
+        previousEpochDaoCandidate: '0x0000000000000000000000000000000000000000',
+        previousEpochUpgradeCandidate:
+            '0x0000000000000000000000000000000000000000',
     }
 
     timeout = null
@@ -165,6 +167,15 @@ class Vote extends React.Component<VoteProps> {
                     voterData.lockupDuration,
                     contract
                 )
+                const previousEpochDaoSum = await contract.methods
+                    .previousEpochDaoSum()
+                    .call()
+                const previousEpochDaoCandidate = await contract.methods
+                    .previousEpochDaoCandidate()
+                    .call()
+                const previousEpochUpgradeCandidate = await contract.methods
+                    .previousEpochUpgradeCandidate()
+                    .call()
 
                 this.setState({
                     tokensLocked: voterData.tokensLocked,
@@ -179,6 +190,9 @@ class Vote extends React.Component<VoteProps> {
                     daoAmount: voterData.daoAmount,
                     daoRecipient: voterData.daoRecipient,
                     upgradeAddress: voterData.upgradeAddress,
+                    previousEpochDaoSum,
+                    previousEpochDaoCandidate,
+                    previousEpochUpgradeCandidate,
                 })
             }
         }
@@ -228,6 +242,9 @@ class Vote extends React.Component<VoteProps> {
             daoAmount,
             daoRecipient,
             upgradeAddress,
+            previousEpochDaoSum,
+            previousEpochDaoCandidate,
+            previousEpochUpgradeCandidate,
         } = this.state
         const { contract, token } = this.props
 
@@ -241,21 +258,22 @@ class Vote extends React.Component<VoteProps> {
                     <div className={'bg-hailStorm p-12 flex justify-center'}>
                         <div className={'w-4/5'}>
                             <div>
-                                <div>
-                                    <h1
-                                        className={
-                                            'text-salmon text-6xl font-extrabold'
-                                        }
-                                    >
-                                        VOTE
-                                        <span className={'text-black'}>.</span>
-                                    </h1>
-                                    <h3 className={'text-2xl font-bold'}>
-                                        This week's vote
-                                    </h3>
+                                <h1
+                                    className={
+                                        'text-salmon text-6xl font-black'
+                                    }
+                                >
+                                    VOTE
+                                    <span className={'text-black'}>.</span>
+                                </h1>
+                                <div className={'w-32'}>
+                                    <ArrowLink
+                                        className={'ml-2 my-2'}
+                                        title={'LEARN MORE'}
+                                        color={true}
+                                    />
                                 </div>
                             </div>
-
                             <p className={'mt-8 text-left ml-16'}>
                                 ⚠ Disclaimer: EGL was{' '}
                                 <span className={'text-babyBlue underline'}>
@@ -264,18 +282,86 @@ class Vote extends React.Component<VoteProps> {
                                 . However, it is still experimental software.
                                 Please use at your own risk.
                             </p>
-                            <div className={'flex items-end ml-16 mt-8'}>
-                                <div className={'flex flex-col mr-16'}>
-                                    {/* <h1
-                                        className={
-                                            'font-bold text-xl text-babyBlue m-4'
-                                        }
+                            <h3 className={'text-3xl mt-6 font-bold'}>
+                                This week's vote
+                            </h3>
+
+                            <div
+                                className={
+                                    'flex items-start mt-20 justify-center'
+                                }
+                            >
+                                <div>
+                                    <HatBox
+                                        title={'NEXT VOTE CLOSING'}
+                                        className={'bg-black mr-16 w-80'}
                                     >
-                                        REQUIRED
-                                    </h1> */}
+                                        <div>
+                                            {timeToNextEpoch ? (
+                                                <>
+                                                    <p
+                                                        className={
+                                                            'font-extrabold text-3xl text-white text-center'
+                                                        }
+                                                    >
+                                                        {timeToNextEpoch.split(
+                                                            'hrs'
+                                                        )[0] + 'hrs'}
+                                                    </p>
+                                                    <p
+                                                        className={
+                                                            'font-extrabold text-3xl text-white text-center'
+                                                        }
+                                                    >
+                                                        {
+                                                            timeToNextEpoch.split(
+                                                                'hrs'
+                                                            )[1]
+                                                        }
+                                                    </p>
+                                                </>
+                                            ) : (
+                                                'N/A'
+                                            )}
+                                        </div>
+                                    </HatBox>
+                                    <p className={'w-80 text-xs'}>
+                                        Votes must be locked by Fridays at 2am
+                                        UTC to participate.
+                                    </p>
+                                    <p className={'text-xs'}>
+                                        The vote passes 6 hrs later on Fridays
+                                        at 8pm UTC.
+                                    </p>
+                                </div>
+                                <div>
+                                    <HatBox
+                                        title={'EGLS TO BE AWARDED'}
+                                        className={'bg-black w-80'}
+                                    >
+                                        <p
+                                            className={
+                                                'font-extrabold text-3xl text-white'
+                                            }
+                                        >
+                                            {Number(totalEglReward) > 0
+                                                ? displayComma(
+                                                      Math.round(totalEglReward)
+                                                  )
+                                                : 'ALL GONE !'}
+                                        </p>
+                                    </HatBox>
+                                </div>
+                            </div>
+                            <div
+                                className={
+                                    'flex items-start mt-8 justify-center'
+                                }
+                            >
+                                <div className={'flex flex-col mr-16'}>
                                     <HatBox
                                         title={'CURRENT GAS LIMIT'}
-                                        className={'bg-babyBlue w-96 mt-4'}
+                                        className={'bg-babyBlue w-80 mt-4'}
                                     >
                                         <p
                                             className={
@@ -287,24 +373,76 @@ class Vote extends React.Component<VoteProps> {
                                                 : 'N/A'}
                                         </p>
                                     </HatBox>
-                                    <div className={'w-96'}>
+                                    <div className={'w-80'}>
                                         <p className={'text-xs text-left'}>
                                             {'Gas limit of last block mined'}
                                         </p>
                                     </div>
                                 </div>
-                                <div className={'flex flex-col items-baseline'}>
-                                    {/* <h1
-                                        className={'font-bold text-xl m-1 ml-4'}
+                                <div
+                                    className={
+                                        'flex flex-col items-baseline mr-16'
+                                    }
+                                >
+                                    <HatBox
+                                        title={'DAO'}
+                                        className={'bg-white border w-80 mt-4'}
                                     >
-                                        OPTIONAL FIELDS
-                                    </h1> */}
-                                    <DaoWidget
-                                        daoAmount={daoAmount}
-                                        daoRecipient={daoRecipient}
-                                        upgradeAddress={upgradeAddress}
-                                    />
-                                    <div className={'w-96'}>
+                                        <div
+                                            className={
+                                                'flex flex-col w-full justify-center items-center'
+                                            }
+                                        >
+                                            <p>{`${previousEpochDaoSum} EGLs`}</p>
+                                            <p>to</p>
+                                            <p>
+                                                {truncateEthAddress(
+                                                    previousEpochDaoCandidate
+                                                )}
+                                            </p>
+                                            <div
+                                                className={
+                                                    'w-full flex justify-end'
+                                                }
+                                            >
+                                                <ArrowLink title={'MORE'} />
+                                            </div>
+                                        </div>
+                                    </HatBox>
+                                    <div className={'w-80'}>
+                                        <p className={'text-xs text-left'}>
+                                            <br />
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className={'flex flex-col items-baseline'}>
+                                    <HatBox
+                                        title={'CONTRACT UPGRADE'}
+                                        className={'bg-white border w-80 mt-4'}
+                                    >
+                                        <div
+                                            className={
+                                                'h-full w-full flex flex-col justify-center items-center'
+                                            }
+                                        >
+                                            <p
+                                                style={{ height: '80%' }}
+                                                className={'flex items-center'}
+                                            >
+                                                {truncateEthAddress(
+                                                    previousEpochUpgradeCandidate
+                                                )}
+                                            </p>
+                                            <div
+                                                className={
+                                                    'w-full flex justify-end'
+                                                }
+                                            >
+                                                <ArrowLink title={'MORE'} />
+                                            </div>
+                                        </div>
+                                    </HatBox>
+                                    <div className={'w-80'}>
                                         <p className={'text-xs text-left'}>
                                             <br />
                                         </p>
@@ -312,137 +450,11 @@ class Vote extends React.Component<VoteProps> {
                                 </div>
                             </div>
 
-                            <div className={'flex items-center mt-20 ml-16'}>
-                                <div>
-                                    <HatBox
-                                        title={'NEXT VOTE CLOSING'}
-                                        className={'bg-black mr-16 w-96'}
-                                    >
-                                        <p
-                                            className={
-                                                'font-extrabold text-3xl text-white text-center'
-                                            }
-                                        >
-                                            {timeToNextEpoch
-                                                ? timeToNextEpoch
-                                                : 'N/A'}
-                                        </p>
-                                    </HatBox>
-                                    <p className={'absolute w-96 text-xs'}>
-                                        Votes must be locked by Fridays at 2am
-                                        UTC to participate.
-                                    </p>
-                                    <p className={'absolute mt-4 text-xs'}>
-                                        The vote passes 6 hrs later on Fridays
-                                        at 8pm UTC.
-                                    </p>
-                                </div>
-
-                                <HatBox
-                                    title={'EGLs TO BE AWARDED'}
-                                    className={'bg-black w-96'}
-                                >
-                                    <p
-                                        className={
-                                            'font-extrabold text-3xl text-white'
-                                        }
-                                    >
-                                        {Number(totalEglReward) > 0
-                                            ? displayComma(
-                                                  Math.round(totalEglReward)
-                                              )
-                                            : 'ALL GONE !'}
-                                    </p>
-                                </HatBox>
-                            </div>
-                        </div>
-                    </div>
-                    <div className={'flex justify-center bg-hailStorm'}>
-                        <div className={'w-4/5'}>
-                            <h1
-                                className={
-                                    'm-8 mt-8 text-3xl font-extrabold text-left'
-                                }
-                            >
-                                Your Vote
-                            </h1>
-                            <div className={'flex w-full'}>
-                                <YourVoteTable
-                                    tokensLocked={tokensLocked}
-                                    releaseDate={releaseDate}
-                                    gasTarget={gasTarget}
-                                    lockupDuration={lockupDuration}
-                                    voterReward={voterReward}
-                                    lockupDate={lockupDate}
-                                />
-                                <div className={'ml-4'}>
-                                    <DaoTable
-                                        daoAmount={daoAmount}
-                                        daoRecipient={daoRecipient}
-                                        upgradeAddress={upgradeAddress}
-                                    />
-                                </div>
-                            </div>
-                            <div className={'flex flex-row'}>
-                                <WithdrawTable
-                                    className={'mt-4'}
-                                    tokensUnlocked={tokensUnlocked}
-                                />
-                                <div className={'flex items-end ml-4'}>
-                                    <SmartButton
-                                        contract={contract}
-                                        token={token}
-                                        walletAddress={walletAddress}
-                                        noAllowance={
-                                            this.state.currentAllowance === '0'
-                                        }
-                                        hasVoted={
-                                            this.state.tokensLocked !== '0'
-                                        }
-                                        canWithdraw={
-                                            this.state.tokensUnlocked !== '0'
-                                        }
-                                        openVoteModal={() =>
-                                            this.setState({ voteClicked: true })
-                                        }
-                                        openRevoteModal={() =>
-                                            this.setState({
-                                                revoteClicked: true,
-                                            })
-                                        }
-                                    />
-                                </div>
-                                <div className={'flex items-end ml-4'}>
-                                    <Button
-                                        className={'w-40'}
-                                        handleClick={() =>
-                                            tallyVotes(
-                                                this.props.contract,
-                                                walletAddress
-                                            )
-                                        }
-                                    >
-                                        <p>TALLY</p>
-                                    </Button>
-                                </div>
-                            </div>
-
-                            {/* <div className={'flex w-full ml-16 mt-4'}>
-                                <StatusWidget
-                                    contract={this.props.contract}
-                                    token={this.props.token}
+                            <div className={'flex mt-16 w-full justify-center'}>
+                                <SmartButton
+                                    contract={contract}
+                                    token={token}
                                     walletAddress={walletAddress}
-                                    tokensLocked={tokensLocked}
-                                    releaseDate={releaseDate}
-                                    gasTarget={gasTarget}
-                                    lockupDuration={lockupDuration}
-                                    voterReward={voterReward}
-                                    lockupDate={lockupDate}
-                                    tokensUnlocked={
-                                        tokensUnlocked
-                                            ? fromWei(String(tokensUnlocked))
-                                            : '0'
-                                    }
                                     noAllowance={
                                         this.state.currentAllowance === '0'
                                     }
@@ -454,15 +466,58 @@ class Vote extends React.Component<VoteProps> {
                                         this.setState({ voteClicked: true })
                                     }
                                     openRevoteModal={() =>
-                                        this.setState({ revoteClicked: true })
+                                        this.setState({
+                                            revoteClicked: true,
+                                        })
                                     }
                                 />
-                            </div> */}
-                            <div className={'flex justify-center w-full'}>
-                                <div
-                                    className={'flex justify-between mt-8'}
-                                ></div>
+                                <Button
+                                    className={'ml-8 w-40'}
+                                    handleClick={() =>
+                                        tallyVotes(
+                                            this.props.contract,
+                                            walletAddress
+                                        )
+                                    }
+                                >
+                                    <p>TALLY</p>
+                                </Button>
                             </div>
+                        </div>
+                    </div>
+                    <div className={'flex justify-center bg-hailStorm pb-8'}>
+                        <div className={'w-4/5'}>
+                            <h1
+                                className={
+                                    'mb-8  ml-8 text-3xl font-extrabold text-left'
+                                }
+                            >
+                                Your Vote
+                            </h1>
+                            <div className={'flex w-full ml-8'}>
+                                <YourVoteTable
+                                    tokensLocked={tokensLocked}
+                                    releaseDate={releaseDate}
+                                    gasTarget={gasTarget}
+                                    lockupDuration={lockupDuration}
+                                    voterReward={voterReward}
+                                    lockupDate={lockupDate}
+                                    daoAmount={daoAmount}
+                                    daoRecipient={daoRecipient}
+                                    upgradeAddress={upgradeAddress}
+                                />
+                            </div>
+                            {tokensUnlocked != '0' && (
+                                <div className={'flex flex-row ml-8'}>
+                                    <WithdrawTable
+                                        className={'mt-4'}
+                                        tokensUnlocked={tokensUnlocked}
+                                    />
+                                    <div
+                                        className={'flex items-end ml-4'}
+                                    ></div>
+                                </div>
+                            )}
                         </div>
                     </div>
                     <div className={'w-full flex justify-center'}>
