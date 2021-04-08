@@ -17,13 +17,13 @@ export default function Index() {
     return (
         <div
             className={
-                'flex justify-center items-center flex-col h-screen bg-dark text-white overflow-hidden'
+                'flex justify-center items-center bg-dark text-white h-screen overflow-y-hidden'
             }
         >
-            <div className={'absolute z-0 top-.5 left-0 -ml-32'}>
+            <div className={'z-0 top-.5 left-0 -ml-156'}>
                 <img src={pngImage} width={'1000'} height={'1000'} />
             </div>
-            <div className={'z-10 -mr-96 p-4 rounded-xl bg-dark w-156'}>
+            <div className={'z-10 -ml-32 p-4 rounded-xl bg-dark w-156'}>
                 <div className={'mb-4'}>
                     <h3 className={'font-bold text-6xl'}>The Eagle Project</h3>
                     <h3 className={'mt-4'}>

@@ -1,12 +1,12 @@
 import React from 'react'
-import Line from '../atoms/Line'
 
 interface InfoColumnProps {
     style?: object
     className?: string
     title: string
     svgPath: string
-    children: any
+    children: JSX.Element | JSX.Element[]
+    index?: string
 }
 
 export default function InfoColumn({
@@ -15,9 +15,14 @@ export default function InfoColumn({
     title,
     svgPath,
     children,
+    index,
 }: InfoColumnProps) {
     return (
-        <div className={'w-1/5 ml-4'}>
+        <div
+            style={style}
+            className={`${className} border p-6 pt-8 bg-white rounded-xl shadow-xl w-72`}
+        >
+            {index && <h1 className={'text-gray-500'}>{index}</h1>}
             <div className={'w-full flex justify-center'}>
                 <img className={'w-1/2'} src={svgPath} />
             </div>
@@ -28,7 +33,6 @@ export default function InfoColumn({
             >
                 {title}
             </h1>
-            {/* <Line className={'text-babyBlue bg-black h-1 my-2'} /> */}
             <div>{children}</div>
         </div>
     )

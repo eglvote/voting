@@ -45,6 +45,8 @@ module.exports = async function (deployer, network, accounts) {
       Eleni: "0xB04Ad04A2ac41dBbe8be06EE8938318575bb5E4b",
       // "Eyal": "0x2C596F42d15848b6dD997B255B9c033Ce7240644",
       Greg: "0x8E85bD36Cce941b76D1c668B282D842f867e6F0d",
+      Greg0: "0xca78c111cf45fe0b8d4f3918632ddc33917af882",
+      Greg1: "0x4BbeC2dd6E9AA092D2588e4c9c948ADC0367F966",
     };
 
     ethToLaunchUniSwap = web3.utils.toWei("10");

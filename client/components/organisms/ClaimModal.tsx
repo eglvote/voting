@@ -6,14 +6,17 @@ import { fromWei } from '../../lib/helpers'
 import BigNumber from 'bignumber.js'
 import { supportLaunch } from '../../lib/contractMethods'
 
+interface handleOutsideClickParameters {
+    (): void
+}
+
 interface ClaimModalProps {
     style?: object
     className?: string
     contract: any
-    token: any
-    walletAddress: any
-    ethEglRatio: any
-    handleOutsideClick: any
+    walletAddress: string
+    ethEglRatio: string
+    handleOutsideClick: handleOutsideClickParameters
 }
 
 const safeGetMatch = (amount, ethEglRatio) => {
@@ -38,12 +41,11 @@ export default function ClaimModal({
     style,
     className,
     contract,
-    token,
     walletAddress,
     ethEglRatio,
     handleOutsideClick,
 }: ClaimModalProps) {
-    const [amount, setAmount] = useState('1')
+    const [amount, setAmount] = useState('')
 
     const match = safeGetMatch(amount, ethEglRatio)
 
@@ -51,6 +53,7 @@ export default function ClaimModal({
         <Modal
             handleOutsideClick={handleOutsideClick}
             className={`${className} w-96 p-6 z-10`}
+            style={style}
         >
             <div>
                 <h1
@@ -81,10 +84,10 @@ export default function ClaimModal({
                                                 <input
                                                     {...field}
                                                     className={
-                                                        'w-16 border-babyBlue border-b mx-2 text-right'
+                                                        'w-24 border-babyBlue border-b mx-2 text-right'
                                                     }
                                                     type="number"
-                                                    placeholder="0"
+                                                    placeholder=""
                                                     value={amount}
                                                     onChange={(e) =>
                                                         setAmount(

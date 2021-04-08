@@ -2,17 +2,18 @@ import React from 'react'
 import { formatFromWei, displayComma } from '../../../lib/helpers'
 import m from 'moment'
 import { truncateEthAddress } from '../../../lib/helpers'
+import { ZeroAddress } from '../../../lib/constants'
+import useMediaQuery from '../../hooks/UseMediaQuery'
 
 interface YourVoteTableProps {
     style?: object
     className?: string
-    contract?: any
     tokensLocked: string
-    releaseDate: any
-    gasTarget: any
-    lockupDuration: any
-    voterReward: any
-    lockupDate: any
+    releaseDate: string
+    gasTarget: string
+    lockupDuration: string
+    voterReward: string
+    lockupDate: string
     daoAmount: string
     daoRecipient: string
     upgradeAddress: string
@@ -33,7 +34,6 @@ const Th = ({ children }) => (
 export default function YourVoteTable({
     style,
     className,
-    contract,
     tokensLocked,
     releaseDate,
     gasTarget,
@@ -44,48 +44,156 @@ export default function YourVoteTable({
     daoRecipient,
     upgradeAddress,
 }: YourVoteTableProps) {
+    let isPageWide = useMediaQuery('(min-width: 1100px)')
+
     return (
-        <div className={'w-6/7 border rounded'}>
-            <table className={'w-full rounded overflow-hidden p-4'}>
-                <tr className={'w-full bg-babyBlue px-2'}>
-                    <Th>Vote</Th>
-                    <Th>EGL Locked</Th>
-                    <Th>Lockup</Th>
-                    <Th>Lock Date</Th>
-                    <Th>Unlock Date</Th>
-                    <Th>EGLs Awarded</Th>
-                    <Th>Dao Vote</Th>
-                    <Th>Dao Amount</Th>
-                    <Th>Contract Upgrade</Th>
-                </tr>
-                <tr className={'w-full bg-white'}>
-                    <Td>{gasTarget != '0' ? displayComma(gasTarget) : '-'}</Td>
-                    <Td>
-                        {tokensLocked != '0'
-                            ? formatFromWei(tokensLocked)
-                            : '-'}
-                    </Td>
-                    <Td>{lockupDuration != '0' ? lockupDuration : '-'}</Td>
-                    <Td>
-                        {releaseDate != '0'
-                            ? m.unix(releaseDate).format('MM.DD.YY')
-                            : '-'}
-                    </Td>
-                    <Td>
-                        {lockupDate != '0'
-                            ? m.unix(lockupDate).format('MM.DD.YY')
-                            : '-'}
-                    </Td>
-                    <Td>
-                        {voterReward != '0'
-                            ? displayComma(parseInt(voterReward).toFixed(3))
-                            : '-'}
-                    </Td>
-                    <Td>{daoAmount != '0' ? daoAmount : '-'}</Td>
-                    <Td>{truncateEthAddress(daoRecipient)}</Td>
-                    <Td>{truncateEthAddress(upgradeAddress)}</Td>
-                </tr>
-            </table>
-        </div>
+        <>
+            {isPageWide ? (
+                <div
+                    style={style}
+                    className={`${className} w-6/7 border rounded`}
+                >
+                    <table className={'w-full rounded overflow-hidden p-4'}>
+                        <tr className={'w-full bg-babyBlue px-2'}>
+                            <Th>Vote</Th>
+                            <Th>EGL Locked</Th>
+                            <Th>Lockup</Th>
+                            <Th>Lock Date</Th>
+                            <Th>Unlock Date</Th>
+                            <Th>EGLs Awarded</Th>
+                            <Th>Dao Vote</Th>
+                            <Th>Dao Amount</Th>
+                            <Th>Contract Upgrade</Th>
+                        </tr>
+                        <tr className={'w-full bg-white'}>
+                            <Td>
+                                {gasTarget != '0'
+                                    ? displayComma(gasTarget)
+                                    : '-'}
+                            </Td>
+                            <Td>
+                                {tokensLocked != '0'
+                                    ? formatFromWei(tokensLocked)
+                                    : '-'}
+                            </Td>
+                            <Td>
+                                {lockupDuration != '0' ? lockupDuration : '-'}
+                            </Td>
+                            <Td>
+                                {String(releaseDate) != '0'
+                                    ? m
+                                          .unix(Number(releaseDate))
+                                          .format('MM.DD.YY')
+                                    : '-'}
+                            </Td>
+                            <Td>
+                                {String(lockupDate) != '0'
+                                    ? m
+                                          .unix(Number(lockupDate))
+                                          .format('MM.DD.YY')
+                                    : '-'}
+                            </Td>
+                            <Td>
+                                {voterReward != '0'
+                                    ? displayComma(
+                                          parseInt(voterReward).toFixed(3)
+                                      )
+                                    : '-'}
+                            </Td>
+                            <Td>
+                                {daoRecipient != ZeroAddress
+                                    ? truncateEthAddress(daoRecipient)
+                                    : '-'}
+                            </Td>
+                            <Td>
+                                {daoAmount != '0'
+                                    ? formatFromWei(daoAmount)
+                                    : '-'}
+                            </Td>
+                            <Td>
+                                {daoRecipient != ZeroAddress
+                                    ? truncateEthAddress(upgradeAddress)
+                                    : '-'}
+                            </Td>
+                        </tr>
+                    </table>
+                </div>
+            ) : (
+                <div style={style} className={`${className} w-6/7 rounded`}>
+                    <table className={'w-full rounded overflow-hidden p-4'}>
+                        <tr className={'w-full bg-babyBlue px-2'}>
+                            <Th>Vote</Th>
+                            <Th>EGL Locked</Th>
+                            <Th>Lockup</Th>
+                            <Th>Lock Date</Th>
+                            <Th>Unlock Date</Th>
+                        </tr>
+                        <tr className={'w-full bg-white'}>
+                            <Td>
+                                {gasTarget != '0'
+                                    ? displayComma(gasTarget)
+                                    : '-'}
+                            </Td>
+                            <Td>
+                                {tokensLocked != '0'
+                                    ? formatFromWei(tokensLocked)
+                                    : '-'}
+                            </Td>
+                            <Td>
+                                {lockupDuration != '0' ? lockupDuration : '-'}
+                            </Td>
+                            <Td>
+                                {String(releaseDate) != '0'
+                                    ? m
+                                          .unix(Number(releaseDate))
+                                          .format('MM.DD.YY')
+                                    : '-'}
+                            </Td>
+                            <Td>
+                                {String(lockupDate) != '0'
+                                    ? m
+                                          .unix(Number(lockupDate))
+                                          .format('MM.DD.YY')
+                                    : '-'}
+                            </Td>
+                        </tr>
+                    </table>
+                    <table
+                        className={'w-full rounded overflow-hidden p-4 mt-4'}
+                    >
+                        <tr className={'w-full bg-babyBlue px-2'}>
+                            <Th>EGLs Awarded</Th>
+                            <Th>Dao Vote</Th>
+                            <Th>Dao Amount</Th>
+                            <Th>Contract Upgrade</Th>
+                        </tr>
+                        <tr className={'w-full bg-white'}>
+                            <Td>
+                                {voterReward != '0'
+                                    ? displayComma(
+                                          parseInt(voterReward).toFixed(3)
+                                      )
+                                    : '-'}
+                            </Td>
+                            <Td>
+                                {daoRecipient != ZeroAddress
+                                    ? truncateEthAddress(daoRecipient)
+                                    : '-'}
+                            </Td>
+                            <Td>
+                                {daoAmount != '0'
+                                    ? formatFromWei(daoAmount)
+                                    : '-'}
+                            </Td>
+                            <Td>
+                                {daoRecipient != ZeroAddress
+                                    ? truncateEthAddress(upgradeAddress)
+                                    : '-'}
+                            </Td>
+                        </tr>
+                    </table>
+                </div>
+            )}
+        </>
     )
 }

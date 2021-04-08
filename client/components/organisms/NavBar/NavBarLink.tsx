@@ -5,16 +5,15 @@ import { useRouter } from 'next/router'
 interface NavBarLinkProps {
     style?: object
     className?: string
-    href: string
     name: string
 }
 
-export default function ({ style, className, href, name }: NavBarLinkProps) {
+export default function ({ style, className, name }: NavBarLinkProps) {
     const router = useRouter()
-    const isCurrentPage = router.pathname.includes(href)
+    const isCurrentPage = router.pathname.includes(name)
 
     return (
-        <Link href={href}>
+        <Link href={`/${name}`}>
             <div
                 className={
                     'flex items-start cursor-pointer h-full hover:opacity-50'
@@ -26,7 +25,7 @@ export default function ({ style, className, href, name }: NavBarLinkProps) {
                         isCurrentPage && 'text-salmon border-b-2 border-salmon'
                     } m-4 font-extrabold`}
                 >
-                    {name}
+                    {name.toUpperCase()}
                 </a>
             </div>
         </Link>

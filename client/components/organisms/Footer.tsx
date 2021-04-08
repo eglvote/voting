@@ -7,10 +7,10 @@ interface FooterProps {
     children?: JSX.Element | JSX.Element[]
 }
 
-const discord = '/static/discord.svg'
-const github = '/static/github.svg'
-const medium = '/static/medium.svg'
-const twitter = '/static/twitter.svg'
+const discord = '/static/discordBlack.svg'
+const github = '/static/githubBlack.svg'
+const medium = '/static/mediumBlack.svg'
+const twitter = '/static/twitterBlack.svg'
 const linkStyle = 'cursor-pointer hover:opacity-50 w-20'
 
 export default function Footer({ style, className, children }: FooterProps) {
@@ -54,7 +54,7 @@ export default function Footer({ style, className, children }: FooterProps) {
             >
                 <a target="_blank" rel="noreferrer">
                     <div className={linkStyle}>
-                        <p className={'text-babyBlue'}>Terms</p>
+                        <p className={'text-black'}>Terms</p>
                     </div>
                 </a>
             </Link>

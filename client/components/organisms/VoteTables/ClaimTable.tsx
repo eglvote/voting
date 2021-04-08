@@ -1,11 +1,10 @@
 import React from 'react'
-import { formatFromWei, displayComma } from '../../../lib/helpers'
+import { formatFromWei } from '../../../lib/helpers'
 import m from 'moment'
 
 interface ClaimTableProps {
     style?: object
     className?: string
-    contract?: any
     date: string
     releaseDate: string
     ethSent: string
@@ -30,7 +29,6 @@ const Th = ({ children }) => (
 export default function ClaimTable({
     style,
     className,
-    contract,
     date = '0',
     releaseDate = '0',
     ethSent = '0',
@@ -39,7 +37,7 @@ export default function ClaimTable({
     unlocked = '0',
 }: ClaimTableProps) {
     return (
-        <div className={'border rounded'}>
+        <div style={style} className={`${className} border rounded`}>
             <table className={'w-full rounded overflow-hidden p-4'}>
                 <tr className={'w-full bg-babyBlue px-2'}>
                     <Th>Date</Th>

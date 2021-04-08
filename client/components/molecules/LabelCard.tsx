@@ -14,7 +14,7 @@ export default function LabelCard({
     content,
 }: LabelCardProps) {
     return (
-        <div className={'w-40 ml-4'}>
+        <div style={style} className={`${className} w-40 ml-4`}>
             <div>
                 <h3 className={'text-center font-bold text-babyBlue'}>
                     {label}

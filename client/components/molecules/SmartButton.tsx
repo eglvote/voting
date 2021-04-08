@@ -2,26 +2,30 @@ import React from 'react'
 import Button from '../atoms/Button'
 import { withdraw } from '../../lib/contractMethods'
 
+interface openVoteModal {
+    (): void
+}
+
+interface openRevoteModal {
+    (): void
+}
+
 interface SmartButtonProps {
     style?: object
     className?: string
     contract: any
-    token: any
     walletAddress: string
-    noAllowance: boolean
     hasVoted: boolean
     canWithdraw: boolean
-    openVoteModal: any
-    openRevoteModal: any
+    openVoteModal: openVoteModal
+    openRevoteModal: openRevoteModal
 }
 
 export default function SmartButton({
     style,
     className,
     contract,
-    token,
     walletAddress,
-    noAllowance,
     hasVoted,
     canWithdraw,
     openVoteModal,
@@ -31,7 +35,8 @@ export default function SmartButton({
         <>
             {canWithdraw ? (
                 <Button
-                    className={'w-40'}
+                    style={style}
+                    className={`${className} w-40`}
                     handleClick={() => withdraw(contract, walletAddress)}
                 >
                     <p>WITHDRAW</p>

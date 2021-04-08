@@ -8,6 +8,10 @@ import {
 } from '../../lib/contractMethods'
 import SectionHeader from '../atoms/SectionHeader'
 
+interface SupportLaunchFormProps {
+    contract: any
+    walletAddress: string
+}
 const FormRow = styled(Row)`
     margin: 1em;
     width: 9em;
@@ -24,7 +28,10 @@ const Button = styled.button`
     border-radius: 5px;
     margin-top: 1em;
 `
-export default function SupportLaunchForm({ contract, walletAddress }) {
+export default function SupportLaunchForm({
+    contract,
+    walletAddress,
+}: SupportLaunchFormProps) {
     return (
         <div>
             <SectionHeader>{'Support Launch'}</SectionHeader>

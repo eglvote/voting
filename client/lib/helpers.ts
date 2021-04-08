@@ -1,8 +1,5 @@
 import web3 from 'web3'
-// import BigNumber from 'bn.js'
 import BigNumber from 'bignumber.js'
-import { REWARD_MULTIPLIER } from './constants'
-import vote from '../pages/vote'
 
 export const fromWei = (num) => web3.utils.fromWei(String(num))
 export const toWei = (num) => web3.utils.toWei(String(num))
@@ -47,3 +44,29 @@ export const calculateIndividualReward = (
 
     return result
 }
+
+const pad = (int, digits) =>
+    int.length >= digits
+        ? int
+        : new Array(digits - int.length + 1).join('0') + int
+
+export const zeroPad = (str, digits) => {
+    str = String(str)
+    const nums = str.match(/[0-9]+/g)
+
+    nums.forEach((num) => {
+        str = str.replace(num, pad(num, digits))
+    })
+
+    return str
+}
+
+export const formatBigNumberAttribute = (attribute) => {
+    if (attribute === null || attribute === undefined) return attribute
+    return parseFloat(web3.utils.fromWei(attribute)).toLocaleString('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 18,
+    })
+}
+
+export const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1)

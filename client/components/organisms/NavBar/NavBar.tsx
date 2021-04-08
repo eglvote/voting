@@ -1,20 +1,21 @@
 import React from 'react'
-import Link from 'next/link'
 import ConnectToWeb3Button from '../../molecules/ConnectToWeb3Button'
 import NavBarLinkContainer from './NavBarLinkContainer'
-// import Image from 'next/image'
 import Card from '../../atoms/Card'
 import { fromWei, displayComma } from '../../../lib/helpers'
-
-const logo = '/static/Logomark.svg'
+import HamburgerMenu from '../Hamburger/HamburgerMenu'
+import NavBarLink from './NavBarLink'
+import useMediaQuery from '../../hooks/UseMediaQuery'
+import Link from 'next/link'
+import { NavBarLinks } from '../../../lib/constants'
 
 interface connectWeb3Parameters {
     (): void
 }
+
 interface NavBarProps {
     style?: object
     className?: string
-    children?: JSX.Element | JSX.Element[]
     connectWeb3: connectWeb3Parameters
     walletAddress: string
     eglBalance: string
@@ -23,28 +24,43 @@ interface NavBarProps {
 export default function NavBar({
     style,
     className,
-    children,
     connectWeb3,
     walletAddress,
     eglBalance,
 }: NavBarProps) {
+    let isPageWide = useMediaQuery('(min-width: 1100px)')
+
     return (
         <header
             style={style}
-            className={`${className} fixed inset-0 flex w-screen h-20 bg-hailStorm ${
-                // window && window.scrollY && 'shadow'
-                'shadow'
-            }`}
+            className={`${className} fixed inset-0 flex w-screen h-20 bg-hailStorm shadow`}
         >
-            <Link href={'/'}>
-                <div
-                    className={'cursor-pointer hover:opacity-50 w-28 m-2 ml-4'}
-                >
-                    <img src={logo} width={'65'} height={'65'} />
-                </div>
-            </Link>
-            <NavBarLinkContainer>{children}</NavBarLinkContainer>
-            <div className={'flex m-4 w-2/5 justify-end items-center'}>
+            {isPageWide ? (
+                <>
+                    <Link href={'/'}>
+                        <div
+                            className={
+                                'cursor-pointer hover:opacity-50 m-2 mx-4'
+                            }
+                        >
+                            <img
+                                src={'/static/Logomark.svg'}
+                                style={{
+                                    minWidth: '65px',
+                                }}
+                            />
+                        </div>
+                    </Link>
+                    <NavBarLinkContainer>
+                        {NavBarLinks.map((link) => {
+                            return <NavBarLink name={link} />
+                        })}
+                    </NavBarLinkContainer>
+                </>
+            ) : (
+                <HamburgerMenu links={NavBarLinks} />
+            )}
+            <div className={'flex m-4 w-full justify-end items-center'}>
                 <Card className={'bg-salmon shadow h-12 mr-4 min-w-max'}>
                     <p className={'text-white text-center font-bold'}>{`${
                         eglBalance ? displayComma(fromWei(eglBalance)) : 0

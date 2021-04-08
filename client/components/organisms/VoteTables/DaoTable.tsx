@@ -4,14 +4,15 @@ import { truncateEthAddress } from '../../../lib/helpers'
 interface DaoTableProps {
     style?: object
     className?: string
-    contract?: any
     daoAmount: string
     daoRecipient: string
     upgradeAddress: string
 }
+
 const Td = ({ children }) => (
     <td className={'text-left h-10 p-2 px-4'}>{children}</td>
 )
+
 const Th = ({ children }) => (
     <th
         className={
@@ -25,13 +26,12 @@ const Th = ({ children }) => (
 export default function DaoTable({
     style,
     className,
-    contract,
     daoAmount,
     daoRecipient,
     upgradeAddress,
 }: DaoTableProps) {
     return (
-        <div className={'w-108 rounded'}>
+        <div style={style} className={`${className} w-108 rounded`}>
             <table className={'w-full rounded overflow-hidden p-4'}>
                 <tr className={'w-full px-2'}>
                     <Th>Dao Vote</Th>

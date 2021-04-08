@@ -1,14 +1,28 @@
 import React from 'react'
 import m from 'moment'
-import { fromWei, displayComma } from '../../lib/helpers'
+import { fromWei } from '../../lib/helpers'
+import { JsxElement } from 'typescript'
+
+interface event {
+    returnValues: {
+        date: number
+        ethToBeDeployed: string
+        eglsToBeMatched: string
+    }
+}
 
 interface ReleaseScheduleCardProps {
     style?: object
     className?: string
-    eventEglsMatched: any
+    eventEglsMatched: event[]
 }
-const Td = ({ children }) => <td className={'text-left'}>{children}</td>
-const Th = ({ children }) => <th className={'text-left'}>{children}</th>
+
+interface tProp {
+    children: JsxElement | JsxElement[] | string
+}
+
+const Td = ({ children }: tProp) => <td className={'text-left'}>{children}</td>
+const Th = ({ children }: tProp) => <th className={'text-left'}>{children}</th>
 
 export default function ReleaseScheduleCard({
     style,

@@ -1,12 +1,14 @@
 import React from 'react'
 import Web3Container from '../lib/Web3Container'
 import GenericPageTemplate from '../components/pageTemplates/GenericPageTemplate'
-import HatBox from '../components/molecules/HatBox'
 import { displayComma, fromWei } from '../lib/helpers'
 import connectToWeb3 from '../lib/connectToWeb3'
 import BigNumber from 'bignumber.js'
 import { EGLS_AVAILABLE } from '../lib/constants'
 import ArrowLink from '../components/molecules/ArrowLink'
+import DaoVoteTable from '../components/organisms/VoteTables/DaoVoteTable'
+import PastDaoVoteTable from '../components/organisms/VoteTables/PastDaoVoteTable'
+import NestedBox from '../components/molecules/NestedBox'
 
 interface DaoProps {
     accounts: any
@@ -22,6 +24,9 @@ class Dao extends React.Component<DaoProps> {
         eglBalance: 0,
         eglsAvailable: 0,
         eglsClaimed: 0,
+        candidateAmountSum: null,
+        candidate: null,
+        pastVotes: [],
     }
 
     timeout = null
@@ -35,19 +40,17 @@ class Dao extends React.Component<DaoProps> {
                     walletAddress: null,
                     eglBalance: 0,
                 })
-                clearInterval(this.timeout)
             } else {
                 this.setState({
                     walletAddress: accounts[0],
                 })
-                this.timeout = setInterval(() => {
-                    this.ticker()
-                }, 1000)
             }
         })
-        this.timeout = setInterval(() => {
+        const run = () => {
             this.ticker()
-        }, 1000)
+            this.timeout = setTimeout(run, 1000)
+        }
+        this.timeout = setTimeout(run, 1000)
     }
 
     componentWillUnmount() {
@@ -63,7 +66,8 @@ class Dao extends React.Component<DaoProps> {
     }
 
     ticker = async () => {
-        const { token } = this.props
+        const { contract, token } = this.props
+        console.log('dao', this.timeout)
 
         const eglBalance = this.state.walletAddress
             ? await token.methods.balanceOf(this.state.walletAddress).call()
@@ -79,10 +83,59 @@ class Dao extends React.Component<DaoProps> {
         )
         const eglsAvailable = new BigNumber(EGLS_AVAILABLE).minus(eglsClaimed)
 
+        const eventCandidateVoteAdded = await this.getAllEventsForType(
+            'CandidateVoteAdded'
+        )
+
+        const eventCandidateVoteEvaluated = await this.getAllEventsForType(
+            'CandidateVoteEvaluated'
+        )
+
+        const pastVotes =
+            eventCandidateVoteEvaluated.length != 0
+                ? eventCandidateVoteEvaluated.map((event) => ({
+                      date: event.returnValues.date,
+                      candidateAmountSum:
+                          event.returnValues.leadingCandidateAmount,
+                      candidate: event.returnValues.leadingCandidate,
+                      percentage: event.returnValues.totalVotePercentage,
+                      status: event.returnValues.thresholdPassed,
+                  }))
+                : [
+                      {
+                          date: '0',
+                          candidateAmountSum: '0',
+                          candidate: null,
+                          percentage: '0',
+                          status: null,
+                      },
+                  ]
+
+        const currentCadidateVote =
+            eventCandidateVoteAdded[eventCandidateVoteAdded.length - 1]
+
+        const candidateAmountSum = currentCadidateVote
+            ? new BigNumber(currentCadidateVote.returnValues.candidateAmountSum)
+                  .dividedBy(
+                      new BigNumber(
+                          currentCadidateVote.returnValues.candidateVoteCount
+                      )
+                  )
+                  .toFixed()
+            : '0'
         this.setState({
             eglBalance,
             eglsClaimed: eglsClaimed.toFixed(),
             eglsAvailable: eglsAvailable.toFixed(),
+            candidateAmountSum:
+                eventCandidateVoteAdded.length > 0 ? candidateAmountSum : '0',
+            candidate:
+                eventCandidateVoteAdded.length > 0
+                    ? eventCandidateVoteAdded[
+                          eventCandidateVoteAdded.length - 1
+                      ].returnValues.candidate
+                    : '0',
+            pastVotes,
         })
     }
 
@@ -101,9 +154,7 @@ class Dao extends React.Component<DaoProps> {
                 walletAddress={walletAddress}
                 eglBalance={String(eglBalance)}
             >
-                <div
-                    className={'p-12 h-screen bg-hailStorm flex justify-center'}
-                >
+                <div className={'p-12 bg-hailStorm flex justify-center'}>
                     <div className={'w-4/5'}>
                         <h1 className={'text-salmon text-6xl font-extrabold'}>
                             DAO<span className={'text-black'}>.</span>
@@ -112,19 +163,20 @@ class Dao extends React.Component<DaoProps> {
                             <ArrowLink
                                 className={'ml-1 my-2'}
                                 title={'LEARN MORE'}
-                                color={true}
+                                color={'babyBlue'}
                             />
                         </div>
-                        <h3 className={'text-2xl font-bold'}>
+                        <h3 className={'text-2xl font-bold mt-8'}>
                             Funds available
                         </h3>
                         <div
                             className={'flex justify-center items-start mt-20'}
                         >
                             <div>
-                                <HatBox
+                                <NestedBox
                                     title={'EGLs AVAILABLE'}
-                                    className={'bg-black mr-20 w-120'}
+                                    className={'bg-plum-dark'}
+                                    nestedColor={'bg-plum'}
                                 >
                                     <p
                                         className={
@@ -134,7 +186,7 @@ class Dao extends React.Component<DaoProps> {
                                         {displayComma(fromWei(eglsAvailable)) ||
                                             'N/A'}
                                     </p>
-                                </HatBox>
+                                </NestedBox>
                             </div>
                         </div>
                         <div className={'flex justify-center'}>
@@ -176,6 +228,53 @@ class Dao extends React.Component<DaoProps> {
                                     distributed to the specified address.
                                 </p>
                             </div>
+                        </div>
+                        <h1
+                            className={
+                                'mt-8 mb-4 text-2xl font-extrabold text-left'
+                            }
+                        >
+                            Current Dao Votes
+                        </h1>
+                        <p>
+                            Addresses must receive over 20% of the votes in two
+                            consecutive weeks.
+                        </p>
+                        <div className={'flex w-full justify-start flex-wrap'}>
+                            <div className={'mr-16 py-8 '}>
+                                <h3 className={'text-lg mb-4 font-extrabold'}>
+                                    Second Round DAO Votes
+                                </h3>
+                                <DaoVoteTable
+                                    amount={
+                                        this.state.candidateAmountSum
+                                            ? this.state.candidateAmountSum
+                                            : '0'
+                                    }
+                                    walletAddress={this.state.candidate}
+                                />
+                            </div>
+                            <div className={'py-8 '}>
+                                <h3 className={'text-lg mb-4 font-extrabold'}>
+                                    First Round DAO Votes
+                                </h3>
+                                <DaoVoteTable
+                                    amount={
+                                        this.state.candidateAmountSum
+                                            ? this.state.candidateAmountSum
+                                            : '0'
+                                    }
+                                    walletAddress={this.state.candidate}
+                                />
+                            </div>
+                        </div>
+                        <div className={'py-8'}>
+                            <h3 className={'text-lg mb-4 font-extrabold'}>
+                                Past DAO Votes
+                            </h3>
+                            <PastDaoVoteTable
+                                pastVotes={this.state.pastVotes}
+                            />
                         </div>
                     </div>
                 </div>

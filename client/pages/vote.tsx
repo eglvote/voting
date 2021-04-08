@@ -2,7 +2,6 @@ import React from 'react'
 import GenericPageTemplate from '../components/pageTemplates/GenericPageTemplate'
 import Web3Container from '../lib/Web3Container'
 import connectToWeb3 from '../lib/connectToWeb3'
-import HatBox from '../components/molecules/HatBox'
 import Button from '../components/atoms/Button'
 import VoteModal from '../components/organisms/VoteModal/VoteModal'
 import RevoteModal from '../components/organisms/VoteModal/RevoteModal'
@@ -13,7 +12,7 @@ import {
     allowance,
     calculateCumulativeRewards,
 } from '../lib/contractMethods'
-import { displayComma, fromWei, truncateEthAddress } from '../lib/helpers'
+import { displayComma, truncateEthAddress, toWei } from '../lib/helpers'
 import BigNumber from 'bignumber.js'
 import m from 'moment'
 import { REWARD_MULTIPLIER } from '../lib/constants'
@@ -22,6 +21,8 @@ import YourVoteTable from '../components/organisms/VoteTables/YourVoteTable'
 import WithdrawTable from '../components/organisms/VoteTables/WithdrawTable'
 import SmartButton from '../components/molecules/SmartButton'
 import ArrowLink from '../components/molecules/ArrowLink'
+import Countdown from '../components/organisms/Countdown'
+import NestedBox from '../components/molecules/NestedBox'
 
 declare global {
     interface Window {
@@ -39,15 +40,15 @@ interface VoteProps {
 
 class Vote extends React.Component<VoteProps> {
     state = {
-        timeToNextEpoch: null,
+        timeToNextEpoch: m.duration('0'), //pass time stamp, calc on component
         tokensLocked: '0',
-        releaseDate: null,
-        gasTarget: null,
-        lockupDuration: null,
+        releaseDate: '0',
+        gasTarget: '0',
+        lockupDuration: '0',
         baselineEgl: null,
         totalEglReward: null,
-        voterReward: null,
-        lockupDate: null,
+        voterReward: '0',
+        lockupDate: '0',
         eglBalance: '0',
         walletAddress: this.props.accounts ? this.props.accounts[0] : null,
         voteClicked: false,
@@ -84,23 +85,32 @@ class Vote extends React.Component<VoteProps> {
                     revoteClicked: false,
                     tokensUnlocked: '0',
                     currentAllowance: '0',
+                    epochLength: '300',
+                    daoAmount: '0',
+                    daoRecipient: '0x0000000000000000000000000000000000000000',
+                    upgradeAddress:
+                        '0x0000000000000000000000000000000000000000',
+                    previousEpochDaoSum: '0',
+                    previousEpochDaoCandidate:
+                        '0x0000000000000000000000000000000000000000',
+                    previousEpochUpgradeCandidate:
+                        '0x0000000000000000000000000000000000000000',
                 })
             } else {
                 this.setState({
                     walletAddress: accounts[0],
                 })
-                this.timeout = setInterval(() => {
-                    this.ticker()
-                }, 1000)
             }
         })
-        this.timeout = setInterval(() => {
+        const run = () => {
             this.ticker()
-        }, 1000)
+            this.timeout = setTimeout(run, 1000)
+        }
+        this.timeout = setTimeout(run, 1000)
     }
 
     componentWillUnmount() {
-        clearInterval(this.timeout)
+        clearTimeout(this.timeout)
     }
 
     getAllEventsForType = async (eventName) => {
@@ -113,6 +123,7 @@ class Vote extends React.Component<VoteProps> {
 
     ticker = async () => {
         const { web3, contract, token } = this.props
+        console.log('vote', this.timeout)
 
         const eventInitialized = await this.getAllEventsForType('Initialized')
         const epochLength = eventInitialized.length
@@ -149,11 +160,6 @@ class Vote extends React.Component<VoteProps> {
                           .toFixed()
                     : 0
 
-                const tokensUnlocked =
-                    m().unix() > voterData.releaseDate
-                        ? voterData.tokensLocked
-                        : '0'
-
                 const currentAllowance = await allowance(
                     contract,
                     token,
@@ -167,6 +173,17 @@ class Vote extends React.Component<VoteProps> {
                     voterData.lockupDuration,
                     contract
                 )
+                const tokensUnlocked =
+                    m().unix() > voterData.releaseDate
+                        ? new BigNumber(voterData.tokensLocked)
+                              .plus(
+                                  new BigNumber(
+                                      toWei(Number(rewards).toFixed(18))
+                                  )
+                              )
+                              .toFixed(0)
+                        : '0'
+
                 const previousEpochDaoSum = await contract.methods
                     .previousEpochDaoSum()
                     .call()
@@ -202,19 +219,10 @@ class Vote extends React.Component<VoteProps> {
                 Number(epochLength)
         )
         const countdown = m.duration(+epochEndDate - +m())
-        const nextEpoch =
-            countdown.days() +
-            ' days ' +
-            countdown.hours() +
-            ' hrs ' +
-            countdown.minutes() +
-            ' mins ' +
-            countdown.seconds() +
-            ' secs'
         const baselineEgl = await getLatestGasLimit(web3)
 
         this.setState({
-            timeToNextEpoch: nextEpoch,
+            timeToNextEpoch: countdown,
             baselineEgl,
             epochLength,
             totalEglReward: String(reward),
@@ -254,8 +262,8 @@ class Vote extends React.Component<VoteProps> {
                 walletAddress={walletAddress}
                 eglBalance={eglBalance ? eglBalance : '0'}
             >
-                <div className={'flex flex-col'}>
-                    <div className={'bg-hailStorm p-12 flex justify-center'}>
+                <div className={'flex flex-col bg-hailStorm'}>
+                    <div className={'p-12 flex justify-center'}>
                         <div className={'w-4/5'}>
                             <div>
                                 <h1
@@ -270,7 +278,7 @@ class Vote extends React.Component<VoteProps> {
                                     <ArrowLink
                                         className={'ml-2 my-2'}
                                         title={'LEARN MORE'}
-                                        color={true}
+                                        color={'babyBlue'}
                                     />
                                 </div>
                             </div>
@@ -285,46 +293,16 @@ class Vote extends React.Component<VoteProps> {
                             <h3 className={'text-3xl mt-6 font-bold'}>
                                 This week's vote
                             </h3>
-
                             <div
                                 className={
                                     'flex items-start mt-20 justify-center'
                                 }
                             >
-                                <div>
-                                    <HatBox
-                                        title={'NEXT VOTE CLOSING'}
-                                        className={'bg-black mr-16 w-80'}
-                                    >
-                                        <div>
-                                            {timeToNextEpoch ? (
-                                                <>
-                                                    <p
-                                                        className={
-                                                            'font-extrabold text-3xl text-white text-center'
-                                                        }
-                                                    >
-                                                        {timeToNextEpoch.split(
-                                                            'hrs'
-                                                        )[0] + 'hrs'}
-                                                    </p>
-                                                    <p
-                                                        className={
-                                                            'font-extrabold text-3xl text-white text-center'
-                                                        }
-                                                    >
-                                                        {
-                                                            timeToNextEpoch.split(
-                                                                'hrs'
-                                                            )[1]
-                                                        }
-                                                    </p>
-                                                </>
-                                            ) : (
-                                                'N/A'
-                                            )}
-                                        </div>
-                                    </HatBox>
+                                <div className={'mr-8'}>
+                                    <Countdown
+                                        timeToNextEpoch={timeToNextEpoch}
+                                        epochLength={Number(epochLength)}
+                                    />
                                     <p className={'w-80 text-xs'}>
                                         Votes must be locked by Fridays at 2am
                                         UTC to participate.
@@ -335,9 +313,10 @@ class Vote extends React.Component<VoteProps> {
                                     </p>
                                 </div>
                                 <div>
-                                    <HatBox
-                                        title={'EGLS TO BE AWARDED'}
-                                        className={'bg-black w-80'}
+                                    <NestedBox
+                                        title={'EGLs to be awarded'}
+                                        className={'bg-plum-dark'}
+                                        nestedColor={'bg-plum'}
                                     >
                                         <p
                                             className={
@@ -350,18 +329,18 @@ class Vote extends React.Component<VoteProps> {
                                                   )
                                                 : 'ALL GONE !'}
                                         </p>
-                                    </HatBox>
+                                    </NestedBox>
                                 </div>
                             </div>
                             <div
                                 className={
-                                    'flex items-start mt-8 justify-center'
+                                    'flex items-start mt-8 justify-center flex-wrap'
                                 }
                             >
-                                <div className={'flex flex-col mr-16'}>
-                                    <HatBox
-                                        title={'CURRENT GAS LIMIT'}
-                                        className={'bg-babyBlue w-80 mt-4'}
+                                <div className={'flex flex-col m-4'}>
+                                    <NestedBox
+                                        title={'Current gas limit'}
+                                        className={''}
                                     >
                                         <p
                                             className={
@@ -372,7 +351,7 @@ class Vote extends React.Component<VoteProps> {
                                                 ? displayComma(baselineEgl)
                                                 : 'N/A'}
                                         </p>
-                                    </HatBox>
+                                    </NestedBox>
                                     <div className={'w-80'}>
                                         <p className={'text-xs text-left'}>
                                             {'Gas limit of last block mined'}
@@ -381,67 +360,128 @@ class Vote extends React.Component<VoteProps> {
                                 </div>
                                 <div
                                     className={
-                                        'flex flex-col items-baseline mr-16'
+                                        'flex flex-col items-baseline m-4'
                                     }
                                 >
-                                    <HatBox
+                                    <NestedBox
                                         title={'DAO'}
-                                        className={'bg-white border w-80 mt-4'}
+                                        className={''}
+                                        arrowLink={true}
+                                        href={'/dao'}
                                     >
                                         <div
                                             className={
-                                                'flex flex-col w-full justify-center items-center'
+                                                'flex flex-col w-full h-full justify-center items-center text-white'
                                             }
                                         >
-                                            <p>{`${previousEpochDaoSum} EGLs`}</p>
-                                            <p>to</p>
-                                            <p>
-                                                {truncateEthAddress(
-                                                    previousEpochDaoCandidate
-                                                )}
-                                            </p>
-                                            <div
-                                                className={
-                                                    'w-full flex justify-end'
-                                                }
-                                            >
-                                                <ArrowLink title={'MORE'} />
-                                            </div>
+                                            {
+                                                <div
+                                                    className={
+                                                        'flex justify-center w-full'
+                                                    }
+                                                >
+                                                    <div
+                                                        className={
+                                                            'flex flex-col w-1/2 justify-center'
+                                                        }
+                                                    >
+                                                        <p
+                                                            className={
+                                                                'text-xs text-center my-1'
+                                                            }
+                                                        >
+                                                            AMOUNT
+                                                        </p>
+
+                                                        <p
+                                                            className={
+                                                                'text-center'
+                                                            }
+                                                        >
+                                                            {previousEpochDaoSum >
+                                                            '0'
+                                                                ? previousEpochDaoSum
+                                                                : '-'}
+                                                        </p>
+                                                    </div>
+
+                                                    <div
+                                                        className={
+                                                            'flex flex-col w-1/2 justify-center'
+                                                        }
+                                                    >
+                                                        <p
+                                                            className={
+                                                                'text-xs text-center my-1'
+                                                            }
+                                                        >
+                                                            ADDRESS
+                                                        </p>
+                                                        <p
+                                                            className={
+                                                                'text-center'
+                                                            }
+                                                        >
+                                                            {previousEpochDaoCandidate !==
+                                                            '0x0000000000000000000000000000000000000000'
+                                                                ? truncateEthAddress(
+                                                                      previousEpochDaoCandidate
+                                                                  )
+                                                                : '-'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            }
                                         </div>
-                                    </HatBox>
+                                    </NestedBox>
                                     <div className={'w-80'}>
                                         <p className={'text-xs text-left'}>
                                             <br />
                                         </p>
                                     </div>
                                 </div>
-                                <div className={'flex flex-col items-baseline'}>
-                                    <HatBox
-                                        title={'CONTRACT UPGRADE'}
-                                        className={'bg-white border w-80 mt-4'}
+                                <div
+                                    className={
+                                        'flex flex-col items-baseline m-4'
+                                    }
+                                >
+                                    <NestedBox
+                                        title={'Contract Upgrade'}
+                                        className={''}
+                                        arrowLink={true}
+                                        href={'/about'}
                                     >
                                         <div
                                             className={
-                                                'h-full w-full flex flex-col justify-center items-center'
+                                                'flex flex-col w-full h-full justify-center items-center text-white'
                                             }
                                         >
-                                            <p
-                                                style={{ height: '80%' }}
-                                                className={'flex items-center'}
-                                            >
-                                                {truncateEthAddress(
-                                                    previousEpochUpgradeCandidate
-                                                )}
-                                            </p>
                                             <div
                                                 className={
-                                                    'w-full flex justify-end'
+                                                    'flex flex-col w-full justify-center'
                                                 }
                                             >
-                                                <ArrowLink title={'MORE'} />
+                                                <p
+                                                    className={
+                                                        'text-xs text-center my-1'
+                                                    }
+                                                >
+                                                    ADDRESS
+                                                </p>
+                                                <p
+                                                    style={{ height: '80%' }}
+                                                    className={'text-center '}
+                                                >
+                                                    {previousEpochUpgradeCandidate !==
+                                                    '0x0000000000000000000000000000000000000000'
+                                                        ? truncateEthAddress(
+                                                              previousEpochUpgradeCandidate
+                                                          )
+                                                        : '-'}
+                                                </p>
                                             </div>
                                         </div>
-                                    </HatBox>
+                                    </NestedBox>
                                     <div className={'w-80'}>
                                         <p className={'text-xs text-left'}>
                                             <br />
@@ -453,11 +493,7 @@ class Vote extends React.Component<VoteProps> {
                             <div className={'flex mt-16 w-full justify-center'}>
                                 <SmartButton
                                     contract={contract}
-                                    token={token}
                                     walletAddress={walletAddress}
-                                    noAllowance={
-                                        this.state.currentAllowance === '0'
-                                    }
                                     hasVoted={this.state.tokensLocked !== '0'}
                                     canWithdraw={
                                         this.state.tokensUnlocked !== '0'
@@ -485,14 +521,14 @@ class Vote extends React.Component<VoteProps> {
                             </div>
                         </div>
                     </div>
-                    <div className={'flex justify-center bg-hailStorm pb-8'}>
+                    <div className={'flex justify-center pb-8'}>
                         <div className={'w-4/5'}>
                             <h1
                                 className={
                                     'mb-8  ml-8 text-3xl font-extrabold text-left'
                                 }
                             >
-                                Your Vote
+                                Your vote
                             </h1>
                             <div className={'flex w-full ml-8'}>
                                 <YourVoteTable
@@ -527,9 +563,9 @@ class Vote extends React.Component<VoteProps> {
                                     'mt-8 ml-8 text-3xl font-extrabold text-left'
                                 }
                             >
-                                How to Vote
+                                How to vote
                             </h1>
-                            <div className={'mb-2 bg-white rounded-xl'}>
+                            <div className={'mb-2'}>
                                 <HowToVote />
                             </div>
                         </div>
@@ -574,7 +610,6 @@ export default () => (
                 connectWeb3={null}
                 walletAddress={null}
                 eglBalance={null}
-                // token={null}
             >
                 <div
                     style={{ animation: `fadeIn 1s` }}

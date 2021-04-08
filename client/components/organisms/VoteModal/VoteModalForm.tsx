@@ -8,12 +8,16 @@ import {
 } from '../../../lib/constants'
 import * as Yup from 'yup'
 
+interface handleOutsideClickParameters {
+    (): void
+}
+
 interface VoteFormProps {
     contract: any
     token: any
-    walletAddress: any
-    baselineEgl: any
-    handleOutsideClick: any
+    walletAddress: string
+    baselineEgl: number
+    handleOutsideClick: handleOutsideClickParameters
 }
 
 export default function VoteModalForm({
@@ -48,6 +52,7 @@ export default function VoteModalForm({
                 }}
                 validationSchema={VoteModalSchema}
                 onSubmit={(values) => {
+                    console.log(values)
                     vote(
                         contract,
                         token,
@@ -234,8 +239,8 @@ export default function VoteModalForm({
                                 <p>
                                     The EGL proxy should point to
                                     <Field
-                                        id="contractAddress"
-                                        name="contractAddress"
+                                        id="upgradeAddress"
+                                        name="upgradeAddress"
                                     >
                                         {({ field }) => (
                                             <input

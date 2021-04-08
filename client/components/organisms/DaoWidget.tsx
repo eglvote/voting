@@ -9,14 +9,20 @@ interface DaoWidgetProps {
     daoRecipient?: string
     upgradeAddress?: string
 }
-const Td = ({ children }) => <td className={'text-left h-12'}>{children}</td>
-const TdEnd = ({ children }) => (
-    <td className={'w-1/2 text-right'}>{children}</td>
-)
+
+interface TdProps {
+    children: JsxElement | JsxElement[] | string
+}
+
 interface ThProps {
     children: JsxElement | JsxElement[] | string
     className?: string
 }
+
+const Td = ({ children }: TdProps) => (
+    <td className={'text-left h-12'}>{children}</td>
+)
+
 const Th = ({ children, className }: ThProps) => (
     <th className={`${className} font-medium text-left`}>{children}</th>
 )
@@ -29,7 +35,7 @@ export default function DaoWidget({
     upgradeAddress,
 }: DaoWidgetProps) {
     return (
-        <div className={'w-min'}>
+        <div style={style} className={`${className} w-min`}>
             <div className={'flex justify-between px-8'}>
                 <h1 className={'text-xl'}>DAO Allocation</h1>
                 <h1 className={'text-xl'}>Contract Upgrade</h1>

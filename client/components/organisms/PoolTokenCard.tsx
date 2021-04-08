@@ -8,15 +8,17 @@ interface PoolTokenCardProps {
     className?: string
     contract: any
     walletAddress: string
-    totalPoolTokens: any
-    lockedPoolTokens: any
-    unlockedPoolTokens: any
+    totalPoolTokens: string
+    lockedPoolTokens: string
+    unlockedPoolTokens: string
 }
+
 const Td = ({ children }) => <td className={'w-1/2 font-bold'}>{children}</td>
+
 const TdEnd = ({ children }) => (
     <td className={'w-1/2 text-right'}>{children}</td>
 )
-const Tr = ({ children }) => <tr className={'flex'}>{children}</tr>
+
 export default function PoolTokenCard({
     style,
     className,
@@ -27,7 +29,10 @@ export default function PoolTokenCard({
     unlockedPoolTokens,
 }: PoolTokenCardProps) {
     return (
-        <div className={'w-80 p-5 rounded-xl bg-hailStorm'}>
+        <div
+            style={style}
+            className={`${className} w-80 p-5 rounded-xl bg-hailStorm`}
+        >
             <table>
                 <tr>
                     <Td>Total Pool Tokens</Td>

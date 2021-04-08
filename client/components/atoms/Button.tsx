@@ -8,7 +8,7 @@ interface ButtonProps {
     style?: object
     className?: string
     children?: JSX.Element | JSX.Element[]
-    type?: any
+    type?: 'button' | 'submit' | 'reset'
     disabled?: boolean
     handleClick?: handleClickParameters
 }

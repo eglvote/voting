@@ -4,15 +4,19 @@ import VoteModalForm from './VoteModalForm'
 import Card from '../../atoms/Card'
 import { displayComma, fromWei } from '../../../lib/helpers'
 
+interface handleOutsideClickParameters {
+    (): void
+}
+
 interface VoteModalProps {
     style?: object
     className?: string
     contract: any
     token: any
-    walletAddress: any
-    baselineEgl: any
-    eglBalance: any
-    handleOutsideClick: any
+    walletAddress: string
+    baselineEgl: number
+    eglBalance: string
+    handleOutsideClick: handleOutsideClickParameters
 }
 
 export default function VoteModal({
@@ -29,11 +33,12 @@ export default function VoteModal({
         <Modal
             handleOutsideClick={handleOutsideClick}
             className={`${className} p-6 z-10 fixed w-126`}
+            style={style}
         >
             <div className={'h-full'}>
                 <h1
                     className={
-                        'text-xl text-salmon font-bold border-b-2 border-salmon'
+                        'text-xl text-salmon font-boPld border-b-2 border-salmon'
                     }
                 >
                     VOTE

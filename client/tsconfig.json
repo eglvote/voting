@@ -2,7 +2,6 @@
     "compilerOptions": {
         "target": "es5",
         "downlevelIteration": true,
-
         "lib": ["dom", "dom.iterable", "esnext"],
         "allowJs": true,
         "skipLibCheck": true,
@@ -22,7 +21,7 @@
         "**/*.tsx",
         "lib/getWeb3.spec.js",
         "lib/helpers.js",
-        "test/index.test.js",
+        "tests/index.test.js",
         "lib/Web3Container.js",
         "lib/getWeb3.js"
     ],

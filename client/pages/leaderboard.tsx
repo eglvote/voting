@@ -6,7 +6,7 @@ import BigNumber from 'bignumber.js'
 import { EGLS_AVAILABLE } from '../lib/constants'
 import LeaderboardTable from '../components/organisms/LeaderboardTable'
 import Card from '../components/atoms/Card'
-import { getVoters } from '../lib/contractMethods'
+import ArrowLink from '../components/molecules/ArrowLink'
 
 interface LeaderBoardProps {
     accounts: any
@@ -22,6 +22,7 @@ class LeaderBoard extends React.Component<LeaderBoardProps> {
         eglBalance: 0,
         eglsAvailable: 0,
         eglsClaimed: 0,
+        eventVote: [],
         seedAccounts: [],
     }
 
@@ -36,19 +37,18 @@ class LeaderBoard extends React.Component<LeaderBoardProps> {
                     walletAddress: null,
                     eglBalance: 0,
                 })
-                clearInterval(this.timeout)
             } else {
                 this.setState({
                     walletAddress: accounts[0],
                 })
-                this.timeout = setInterval(() => {
-                    this.ticker()
-                }, 1000)
             }
         })
-        this.timeout = setInterval(() => {
+
+        const run = () => {
             this.ticker()
-        }, 1000)
+            this.timeout = setTimeout(run, 1000)
+        }
+        this.timeout = setTimeout(run, 1000)
     }
 
     componentWillUnmount() {
@@ -65,6 +65,7 @@ class LeaderBoard extends React.Component<LeaderBoardProps> {
 
     ticker = async () => {
         const { contract, token } = this.props
+        console.log('leaderboard', this.timeout)
 
         const eglBalance = this.state.walletAddress
             ? await token.methods.balanceOf(this.state.walletAddress).call()
@@ -73,22 +74,11 @@ class LeaderBoard extends React.Component<LeaderBoardProps> {
         const eventSeedAccountFunded = await this.getAllEventsForType(
             'SeedAccountFunded'
         )
+        const eventVote = await this.getAllEventsForType('Vote')
 
-        const getSeedAccountVoterData = async () => {
-            return Promise.all(
-                eventSeedAccountFunded.map(async (account) => {
-                    const voterData = await getVoters(
-                        contract,
-                        account.returnValues.seedAddress
-                    )
-                    voterData.account = account
-                    return voterData
-                })
-            )
-        }
-
-        const seedAccounts = await getSeedAccountVoterData()
-
+        const seedAccounts = eventSeedAccountFunded.map(
+            (account) => account.returnValues.seedAddress
+        )
         const eglsClaimed = eventEglsMatched.reduce(
             (acc, e) =>
                 new BigNumber(acc).plus(
@@ -102,6 +92,7 @@ class LeaderBoard extends React.Component<LeaderBoardProps> {
             eglBalance,
             eglsClaimed: eglsClaimed.toFixed(),
             eglsAvailable: eglsAvailable.toFixed(),
+            eventVote,
             seedAccounts,
         })
     }
@@ -112,6 +103,7 @@ class LeaderBoard extends React.Component<LeaderBoardProps> {
             eglBalance,
             eglsClaimed,
             eglsAvailable,
+            eventVote,
             seedAccounts,
         } = this.state
         const { contract, token } = this.props
@@ -122,8 +114,28 @@ class LeaderBoard extends React.Component<LeaderBoardProps> {
                 walletAddress={walletAddress}
                 eglBalance={String(eglBalance)}
             >
-                <div className={'flex justify-center bg-hailStorm p-16'}>
+                <div
+                    // style={{ height: '110vh' }}
+                    className={'flex justify-center bg-hailStorm p-16'}
+                >
                     <div className={'flex flex-col w-2/3 items-center'}>
+                        <div className={'w-full justify-start mb-8'}>
+                            <h1
+                                className={
+                                    'text-salmon text-6xl font-extrabold'
+                                }
+                            >
+                                LEADERBOARD
+                                <span className={'text-black'}>.</span>
+                            </h1>
+                            <div className={'w-32'}>
+                                <ArrowLink
+                                    className={'ml-1 my-2'}
+                                    title={'LEARN MORE'}
+                                    color={'babyBlue'}
+                                />
+                            </div>
+                        </div>
                         <Card className={'bg-white border p-8 mb-8'}>
                             <h1
                                 className={
@@ -152,7 +164,7 @@ class LeaderBoard extends React.Component<LeaderBoardProps> {
                             </p>
                         </Card>
                         <LeaderboardTable
-                            contract={contract}
+                            eventVote={eventVote}
                             seedAccounts={seedAccounts}
                         />
                     </div>

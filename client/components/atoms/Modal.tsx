@@ -8,7 +8,7 @@ interface handleOutsideClickParameters {
 interface ModalProps {
     className?: string
     children?: JSX.Element | JSX.Element[]
-    style?: any
+    style?: object
     handleOutsideClick: handleOutsideClickParameters
 }
 
@@ -31,18 +31,11 @@ export default function Modal({
 
     return (
         <div
+            style={style}
             className={
                 'fixed inset-0 flex flex-col items-center justify-center h-screen'
             }
         >
-            <div className={'w-full z-50'}></div>
-            <img
-                width={'25'}
-                src="/static/x.svg"
-                className={
-                    'z-50 -mr-96 -mt-20 m-6 hover:opacity-50 cursor-pointer'
-                }
-            />
             <div
                 ref={ref}
                 style={{ animation: `fadeIn .75s` }}

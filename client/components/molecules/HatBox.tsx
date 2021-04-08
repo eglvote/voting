@@ -14,7 +14,7 @@ const Hat = ({ title }) => (
                 'flex w-2/3 h-8 -mt-4 bg-white border-gray-400 border-4 text-black justify-center items-center font-bold'
             }
         >
-            <p className={''}>{title}</p>
+            <p>{title}</p>
         </div>
     </div>
 )

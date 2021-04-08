@@ -1,23 +1,16 @@
 const colors = require('tailwindcss/colors')
 
 module.exports = {
-    // purge: ['./pages/**/*.js', './components/**/*.js'],
+    purge: [
+        './pages/**/*.js',
+        './components/**/*.js',
+        './pages/**/*.tsx',
+        './components/**/*.tsx',
+    ],
     darkMode: false, // or 'media' or 'class'
     theme: {
         fontFamily: {
-            sans: [
-                'sans-serif',
-                // 'Inter var',
-                // 'Menlo',
-                // 'sans',
-                // 'Haas Grot Disp R',
-                // 'Consolas',
-                // 'Monaco',
-                // 'Andale Mono',
-                // 'Ubuntu Mono',
-                // 'monospace',
-            ],
-            // font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            sans: ['sans-serif'],
         },
         colors: {
             salmon: {
@@ -25,11 +18,21 @@ module.exports = {
                 dark: '#f24043',
             },
             dark: '#171717',
-            babyBlue: '#6775F5',
+            babyBlue: {
+                DEFAULT: '#6775F5',
+                dark: '#343b7b',
+                light: '#959ef8',
+            },
             hailStorm: {
                 DEFAULT: '#F1F1F1',
                 dark: '#D9D9D9',
             },
+            plum: {
+                DEFAULT: '#323343',
+                dark: '#1E2031',
+            },
+            twitterBlue: '#1DA1F2',
+            github: '#F24043',
             transparent: 'transparent',
             current: 'currentColor',
             black: colors.black,

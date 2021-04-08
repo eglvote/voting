@@ -5,21 +5,24 @@ import RevoteForm from './RevoteModalForm'
 import { MAXIMUM_LOCKUP_PERIODS } from '../../../lib/constants'
 import m from 'moment'
 
+interface handleOutsideClickParameters {
+    (): void
+}
+
 interface RevoteModalProps {
     style?: object
     className?: string
     contract: any
     token: any
-    walletAddress: any
-    handleOutsideClick: any
-    releaseDate: any
+    walletAddress: string
+    handleOutsideClick: handleOutsideClickParameters
+    releaseDate: string
     epochLength: string
     tokensLocked: string
     voterReward: string
-    baselineEgl: string
+    baselineEgl: number
 }
 
-// const RP = ({ children }) => <p className={'text-right'}>{children}</p>
 export default function RevoteModal({
     style,
     className,
@@ -35,10 +38,13 @@ export default function RevoteModal({
 }: RevoteModalProps) {
     let lockupOptions = [...Array(MAXIMUM_LOCKUP_PERIODS).keys()]
         .map((x) => x + 1)
-        .filter((x) => releaseDate < m().unix() + Number(epochLength) * x)
+        .filter(
+            (x) => Number(releaseDate) < m().unix() + Number(epochLength) * x
+        )
 
     return (
         <Modal
+            style={style}
             handleOutsideClick={handleOutsideClick}
             className={`${className} py-8 px-12 min-w-132`}
         >

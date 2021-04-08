@@ -10,16 +10,20 @@ import m from 'moment'
 import { fromWei, displayComma } from '../../../lib/helpers'
 import * as Yup from 'yup'
 
+interface callbackParameters {
+    (): void
+}
+
 interface VoteFormProps {
     contract: any
     token: any
-    walletAddress: any
-    releaseDate: any
+    walletAddress: string
+    releaseDate: string | number
     epochLength: string
-    callback: any
-    tokensLocked: any
-    voterReward: any
-    baselineEgl: any
+    callback: callbackParameters
+    tokensLocked: string
+    voterReward: string
+    baselineEgl: number
 }
 
 export default function RevoteModalForm({
@@ -259,8 +263,8 @@ export default function RevoteModalForm({
                                 <div className={'flex items-end'}>
                                     <p>The EGL proxy should point to</p>
                                     <Field
-                                        id="contractAddress"
-                                        name="contractAddress"
+                                        id="upgradeAddress"
+                                        name="upgradeAddress"
                                     >
                                         {({ field }) => (
                                             <input

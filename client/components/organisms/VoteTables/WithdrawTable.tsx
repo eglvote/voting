@@ -4,12 +4,13 @@ import { formatFromWei } from '../../../lib/helpers'
 interface WithdrawTableProps {
     style?: object
     className?: string
-    contract?: any
     tokensUnlocked: string
 }
+
 const Td = ({ children }) => (
     <td className={'text-left h-10 p-2 px-4'}>{children}</td>
 )
+
 const Th = ({ children }) => (
     <th
         className={
@@ -23,11 +24,10 @@ const Th = ({ children }) => (
 export default function WithdrawTable({
     style,
     className,
-    contract,
     tokensUnlocked,
 }: WithdrawTableProps) {
     return (
-        <div className={`${className} w-72 border rounded`}>
+        <div style={style} className={`${className} w-72 border rounded`}>
             <table className={'w-full rounded overflow-hidden p-4'}>
                 <tr className={'w-full px-2'}>
                     <Th>Unlocked EGLs</Th>

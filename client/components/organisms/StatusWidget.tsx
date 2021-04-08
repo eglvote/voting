@@ -124,9 +124,7 @@ export default function StatusWidget({
                 <div className={'ml-4'}>
                     <SmartButton
                         contract={contract}
-                        token={token}
                         walletAddress={walletAddress}
-                        noAllowance={noAllowance}
                         hasVoted={hasVoted}
                         canWithdraw={canWithdraw}
                         openVoteModal={() => openVoteModal()}

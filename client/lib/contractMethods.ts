@@ -2,10 +2,6 @@ import web3 from 'web3'
 import BigNumber from 'bignumber.js'
 import { REWARD_MULTIPLIER } from './constants'
 
-// const daoRecipient = '0x0000000000000000000000000000000000000000'
-// const daoAmount = 0
-// const upgradeAddress = '0x0000000000000000000000000000000000000000'
-
 export const vote = async (
     contract,
     token,
