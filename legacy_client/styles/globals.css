@@ -1,0 +1,21 @@
+/* ./styles/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.blur {
+    backdrop-filter: blur(5px);
+}
+
+.maxHeight {
+    max-height: calc(100vh - 60px);
+}

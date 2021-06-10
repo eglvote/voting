@@ -1,28 +1,14 @@
-import React from 'react'
-import GenericPageTemplate from '../components/pageTemplates/GenericPageTemplate'
-import Web3Container from '../lib/Web3Container'
-import connectToWeb3 from '../lib/connectToWeb3'
-import HatBox from '../components/molecules/HatBox'
-import Button from '../components/atoms/Button'
-import VoteModal from '../components/organisms/VoteModal/VoteModal'
-import RevoteModal from '../components/organisms/VoteModal/RevoteModal'
-import {
-    getVoters,
-    getLatestGasLimit,
-    withdraw,
-    tallyVotes,
-    increaseAllowance,
-    allowance,
-} from '../lib/contractMethods'
-import StatusWidget from '../components/organisms/StatusWidget'
-import {
-    displayComma,
-    calculateIndividualReward,
-    fromWei,
-} from '../lib/helpers'
-import BN from 'bn.js'
-import m from 'moment'
-import { SECONDS_IN_EPOCH } from '../lib/constants'
+import React, { useEffect, useState } from 'react'
+import GenericPage from '../components/pageTemplates/GenericPage'
+import BodyHeader from '../components/molecules/BodyHeader'
+import SideFooter from '../components/organisms/SideFooter'
+import Web3Container from '../components/lib/Web3Container'
+import connectToWeb3 from '../components/lib/connectToWeb3'
+import useMediaQuery from '../components/hooks/UseMediaQuery'
+import Vote from '../components/organisms/Vote'
+import Withdraw from '../components/organisms/Withdraw'
+import clsx from 'clsx'
+import ClaimModal from '../components/organisms/ClaimModal'
 
 declare global {
     interface Window {
@@ -30,334 +16,211 @@ declare global {
     }
 }
 
-interface VoteProps {
+interface IndexProps {
     accounts: any
     web3Reader?: any
     contract: any
     web3: any
-    token: any
 }
 
-class Vote extends React.Component<VoteProps> {
-    state = {
-        timeToNextEpoch: null,
-        tokensLocked: null,
-        releaseDate: null,
-        gasTarget: null,
-        lockupDuration: null,
-        baselineEgl: null,
-        totalEglReward: null,
-        voterReward: null,
-        lockupDate: null,
-        eglBalance: null,
-        walletAddress: this.props.accounts ? this.props.accounts[0] : null,
-        voteClicked: false,
-        revoteClicked: false,
-        tokensUnlocked: 0,
-        currentAllowance: 0,
-    }
+const Index = ({ accounts, web3, contract }: IndexProps) => {
+    const [modal, setModal] = useState(false)
+    const [cumulativeBalance, setCumulativeBalance] = useState('0')
+    const [hasContributed, setHasContributed] = useState(false)
+    const [walletAddress, setWalletAddress] = useState(
+        accounts ? accounts[0] : null
+    )
+    const [ended, setEnded] = useState(false)
+    const [amountContributed, setAmountContributed] = useState('0')
+    const [contractBalance, setContractBalance] = useState('0')
+    const [
+        contributorCumulativeBalance,
+        setContributorCumulativeBalance,
+    ] = useState('0')
+    const [showClaimModal, setShowClaimModal] = useState(false)
 
-    timeout = null
+    let isPageWide = useMediaQuery('(min-width: 800px)')
 
-    componentWillMount() {
-        this.state.walletAddress && this.ticker()
+    const ticker = async () => {
+        let response = await contract.methods
+            .cumulativeBalance()
+            .call({ from: '0x0000000000000000000000000000000000000000' })
+
+        setCumulativeBalance(web3.utils.fromWei(response))
+
+        if (walletAddress) {
+            let contributor = await contract.methods
+                .contributors(walletAddress)
+                .call({ from: walletAddress })
+
+            let positive = contributor.amount > 0
+            setAmountContributed(contributor.amount)
+            setContributorCumulativeBalance(contributor.cumulativeBalance)
+
+            if (positive) {
+                setHasContributed(positive)
+                setModal(false)
+            }
+        } else {
+            setHasContributed(false)
+        }
+
+        let canContribute = await contract.methods
+            .canContribute()
+            .call({ from: '0x0000000000000000000000000000000000000000' })
+
+        let canWithdraw = await contract.methods
+            .canWithdraw()
+            .call({ from: '0x0000000000000000000000000000000000000000' })
+
+        let balance = await contract.methods
+            .cumulativeBalance()
+            .call({ from: '0x0000000000000000000000000000000000000000' })
+
+        setContractBalance(balance)
+        if (!canContribute && !canWithdraw) {
+            setEnded(true)
+        }
 
         window.ethereum.on('accountsChanged', (accounts) => {
-            if (!accounts.length) {
-                this.setState({
-                    timeToNextEpoch: null,
-                    tokensLocked: null,
-                    releaseDate: null,
-                    gasTarget: null,
-                    lockupDuration: null,
-                    baselineEgl: null,
-                    totalEglReward: null,
-                    voterReward: null,
-                    lockupDate: null,
-                    eglBalance: 0,
-                    walletAddress: null,
-                    voteClicked: false,
-                    revoteClicked: false,
-                    tokensUnlocked: 0,
-                    currentAllowance: 0,
-                })
-                clearInterval(this.timeout)
-            } else {
-                this.setState({
-                    walletAddress: accounts[0],
-                })
-                this.timeout = setInterval(() => {
-                    this.state.walletAddress && this.ticker()
-                }, 1000)
-            }
-        })
-        this.timeout = setInterval(() => {
-            this.state.walletAddress && this.ticker()
-        }, 1000)
-    }
-
-    componentWillUnmount() {
-        clearInterval(this.timeout)
-    }
-
-    ticker = async () => {
-        const { web3, accounts, contract, token } = this.props
-        if (!this.state.walletAddress) return
-
-        const eglBalance = await token.methods
-            .balanceOf(this.state.walletAddress)
-            .call()
-        const epochEndDate = m.unix(
-            parseInt(await contract.methods.currentEpochStartDate().call()) +
-                300
-        )
-        const countdown = m.duration(+epochEndDate - +m())
-        const nextEpoch =
-            countdown.days() +
-            ' days ' +
-            countdown.hours() +
-            ' hours ' +
-            countdown.minutes() +
-            ' minutes ' +
-            countdown.seconds() +
-            ' seconds'
-        const voterData = await getVoters(contract, this.state.walletAddress)
-        const baselineEgl = await getLatestGasLimit(web3)
-        const currentEpoch = await contract.methods.currentEpoch().call()
-        const voteWeightsSum = await contract.methods.voteWeightsSum(0).call()
-        const reward = new BN(544267.054)
-            .mul(new BN(52 - currentEpoch))
-            .toString()
-
-        const lockupDate = voterData
-            ? voterData.releaseDate -
-              SECONDS_IN_EPOCH * voterData.lockupDuration
-            : 0
-        // Voter Rewards = (Vote Weight / Epoch Total Votes) * Reward Multiplier * Reward Weeks
-
-        const individualReward = calculateIndividualReward(
-            voterData.tokensLocked,
-            voterData.lockupDuration,
-            voteWeightsSum.toString(),
-            reward.toString()
-        )
-
-        const tokensUnlocked =
-            m().unix() > voterData.releaseDate ? voterData.tokensLocked : 0
-
-        const currentAllowance = await allowance(
-            contract,
-            token,
-            this.state.walletAddress
-        )
-
-        this.setState({
-            timeToNextEpoch: nextEpoch,
-            tokensLocked: voterData.tokensLocked,
-            releaseDate: voterData.releaseDate,
-            gasTarget: voterData.gasTarget,
-            lockupDuration: voterData.lockupDuration,
-            baselineEgl,
-            totalEglReward: String(reward),
-            voterReward: individualReward,
-            lockupDate: String(lockupDate),
-            eglBalance,
-            tokensUnlocked,
-            currentAllowance,
+            setWalletAddress(accounts[0])
+            // ticker()
         })
     }
 
-    handleConnectToWeb3 = () => connectToWeb3(window)
+    if (walletAddress) {
+        window.ethereum.on('accountsChanged', (accounts) => {
+            setWalletAddress(accounts[0])
+            ticker()
+        })
+    }
 
-    render() {
-        const {
-            timeToNextEpoch,
-            tokensLocked,
-            releaseDate,
-            gasTarget,
-            lockupDuration,
-            baselineEgl,
-            totalEglReward,
-            voterReward,
-            lockupDate,
-            eglBalance,
-            walletAddress,
-            tokensUnlocked,
-            currentAllowance,
-        } = this.state
-        return (
-            <GenericPageTemplate
-                connectWeb3={this.handleConnectToWeb3}
-                walletAddress={walletAddress}
-                eglBalance={eglBalance ? eglBalance : 0}
+    // console.log('!!', walletAddress)
+    useEffect(() => {
+        ticker()
+        const interval = setInterval(ticker, 1000)
+
+        // let apocalypse = contract.methods
+        //     .endGenesis()
+        //     .send({ from: walletAddress })
+        // console.log(apocalypse)
+        return () => {
+            clearInterval(interval)
+        }
+    }, [])
+
+    console.log(contract)
+    return (
+        <GenericPage
+            connectWeb3={() => connectToWeb3(window)}
+            walletAddress={walletAddress}
+        >
+            <main
+                style={{
+                    height: isPageWide ? '100vh' : '105vh',
+                    width: isPageWide ? '100%' : '115vw',
+                    zIndex: -2,
+                    position: 'fixed',
+                    // backgroundImage: `url(${grey})`,
+                }}
+                className='flex flex-row bg-dark'
             >
-                <div className={'p-12 h-screen'}>
-                    <h1 className={'text-salmon text-4xl font-extrabold'}>
-                        VOTE<span className={'text-black'}>.</span>
-                    </h1>
-                    <h3 className={'text-2xl font-bold'}>This weeks vote</h3>
-                    <p className={'mt-8 text-center'}>
-                        ⚠ Disclaimer: EGL was{' '}
-                        <span className={'text-babyBlue underline'}>
-                            audited
-                        </span>
-                        . However, it is still experimental software. Please use
-                        at your own risk.
-                    </p>
-                    <div className={'flex justify-center items-center mt-12'}>
-                        <HatBox
-                            title={'CURRENT GAS LIMIT'}
-                            className={'bg-babyBlue'}
-                        >
-                            <p className={'font-extrabold text-4xl text-white'}>
-                                {baselineEgl
-                                    ? displayComma(baselineEgl)
-                                    : 'N/A'}
-                            </p>
-                        </HatBox>
-                    </div>
-                    <div className={'flex justify-center items-center mt-20'}>
-                        <HatBox
-                            title={'NEXT VOTE CLOSING'}
-                            className={'bg-black mr-20'}
-                        >
-                            <p
+                <div
+                    style={{ width: '100%' }}
+                    className={'w-full flex flex-row justify-center'}
+                >
+                    <div style={{ width: isPageWide ? '15%' : '0' }} />
+                    <div
+                        style={{ width: isPageWide ? '40%' : '80%' }}
+                        className={'flex'}
+                    >
+                        <div>
+                            <h1
                                 className={
-                                    'font-extrabold text-2xl text-white text-center'
+                                    'text-white text-5xl font-bold mt-16'
                                 }
                             >
-                                {timeToNextEpoch ? timeToNextEpoch : 'N/A'}
-                            </p>
-                        </HatBox>
-                        <HatBox
-                            title={'EGLs TO BE REWARDED'}
-                            className={'bg-black'}
+                                $EGL Genesis.
+                            </h1>
+                            <BodyHeader className={'ml-4'} />
+                            <div className={'mt-16'}>
+                                <Vote
+                                    amountContributed={web3.utils.fromWei(
+                                        amountContributed
+                                    )}
+                                    contractBalance={contractBalance}
+                                    contract={contract}
+                                    web3={web3}
+                                    contributorCumulativeBalance={
+                                        contributorCumulativeBalance
+                                    }
+                                />
+                                <Withdraw className={'ml-4 mt-8'} />
+                                <div className={'text-white ml-4 mt-8'}>
+                                    <p>
+                                        Tokens must be claimed before they can
+                                        be withdrawn, even if they are unlocked.
+                                    </p>
+                                    <p>
+                                        Bonus EGLs must be used to vote at least
+                                        once to be withdrawn.
+                                    </p>
+                                    <p>
+                                        These numbers are estimates and may be
+                                        slightly off due to rounding.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {isPageWide && (
+                        <div
+                            style={{ width: '40%' }}
+                            className={'flex justify-end items-center h-full'}
                         >
-                            <p className={'font-extrabold text-4xl text-white'}>
-                                {Number(totalEglReward) > 0
-                                    ? displayComma(totalEglReward)
-                                    : 'ALL GONE !'}
-                            </p>
-                        </HatBox>
-                    </div>
-                    <div className={'flex justify-center w-full mt-4'}>
-                        <StatusWidget
-                            tokensLocked={tokensLocked}
-                            releaseDate={releaseDate}
-                            gasTarget={gasTarget}
-                            lockupDuration={lockupDuration}
-                            voterReward={voterReward}
-                            lockupDate={lockupDate}
-                            tokensUnlocked={fromWei(String(tokensUnlocked))}
-                        />
-                    </div>
-                    <div className={'w-full'}>
-                        <div className={'w-1/2 text-center'}>
-                            Allowance: {displayComma(fromWei(currentAllowance))}
-                        </div>
-                    </div>
+                            <div
+                                style={{ zIndex: -1, right: '-10em' }}
+                                className={
+                                    'z-10 top-.5 right-.5 mr-156 absolute'
+                                }
+                            >
+                                <img
+                                    src={'grey.png'}
+                                    width={'1000'}
+                                    height={'1000'}
+                                />
+                            </div>
 
-                    <div className={'flex justify-center w-full'}>
-                        <div className={'flex justify-between mt-8'}>
-                            <Button
-                                className={'w-40 m-4'}
-                                handleClick={() =>
-                                    increaseAllowance(
-                                        this.props.contract,
-                                        this.props.token,
-                                        walletAddress
-                                    )
-                                }
-                            >
-                                <p>+ALLOWANCE</p>
-                            </Button>
-                            <Button
-                                className={'w-40 m-4'}
-                                handleClick={() =>
-                                    this.setState({ voteClicked: true })
-                                }
-                            >
-                                <p>VOTE</p>
-                            </Button>
-                            <Button
-                                className={'w-40 m-4'}
-                                handleClick={() =>
-                                    this.setState({ revoteClicked: true })
-                                }
-                            >
-                                <p>RE-VOTE</p>
-                            </Button>
-                            <Button
-                                className={'w-40 m-4'}
-                                handleClick={() =>
-                                    withdraw(this.props.contract, walletAddress)
-                                }
-                            >
-                                <p>WITHDRAW</p>
-                            </Button>
-                            <Button
-                                className={'w-40 m-4'}
-                                handleClick={() =>
-                                    tallyVotes(
-                                        this.props.contract,
-                                        walletAddress
-                                    )
-                                }
-                            >
-                                <p>TALLY</p>
-                            </Button>
+                            <SideFooter />
                         </div>
-                    </div>
+                    )}
+                    <div style={{ width: '15%' }} className={'flex'} />
                 </div>
-                {this.state.voteClicked && (
-                    <VoteModal
-                        // web3Reader={web3Reader}
-                        contract={this.props.contract}
-                        token={this.props.token}
-                        walletAddress={walletAddress}
-                        handleOutsideClick={() =>
-                            this.setState({ voteClicked: false })
-                        }
-                    />
-                )}
-                {this.state.revoteClicked && (
-                    <RevoteModal
-                        contract={this.props.contract}
-                        token={this.props.token}
-                        walletAddress={walletAddress}
-                        handleOutsideClick={() =>
-                            this.setState({ revoteClicked: false })
-                        }
-                        releaseDate={releaseDate}
-                    />
-                )}
-            </GenericPageTemplate>
-        )
-    }
+            </main>
+            {showClaimModal && (
+                <ClaimModal
+                    web3={web3}
+                    walletAddress={walletAddress}
+                    contract={contract}
+                    handleOutsideClick={() => setModal(false)}
+                />
+            )}
+        </GenericPage>
+    )
 }
 
 export default () => (
     <Web3Container
         renderLoading={() => (
-            <GenericPageTemplate
-                connectWeb3={null}
-                walletAddress={null}
-                eglBalance={null}
-                // token={null}
-            >
+            <GenericPage connectWeb3={null} walletAddress={null}>
                 <div
                     style={{ animation: `fadeIn 1s` }}
-                    className="opacity-25 fixed inset-0 z-30 bg-black"
+                    className='fixed inset-0 z-30 bg-black opacity-25'
                 />
-            </GenericPageTemplate>
+            </GenericPage>
         )}
-        render={({ web3, accounts, contract, token }) => (
-            <Vote
-                accounts={accounts}
-                contract={contract}
-                web3={web3}
-                token={token}
-            />
+        render={({ web3, accounts, contract }) => (
+            <Index accounts={accounts} web3={web3} contract={contract} />
         )}
     />
 )

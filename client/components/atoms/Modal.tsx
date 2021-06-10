@@ -1,4 +1,5 @@
-import React, { useRef } from 'react'
+import clsx from 'clsx'
+import React, { useRef, useEffect } from 'react'
 import useOutsideClick from '../hooks/UseOutsideClick'
 
 interface handleOutsideClickParameters {
@@ -8,33 +9,50 @@ interface handleOutsideClickParameters {
 interface ModalProps {
     className?: string
     children?: JSX.Element | JSX.Element[]
+    style?: object
     handleOutsideClick: handleOutsideClickParameters
 }
 
-export default function ({
+export default function Modal({
     className,
     children,
+    style,
     handleOutsideClick,
 }: ModalProps) {
     const ref = useRef()
 
     useOutsideClick(ref, handleOutsideClick)
 
+    useEffect(() => {
+        document.body.style.overflow = 'hidden'
+        return function cleanup() {
+            document.body.style.overflow = 'auto'
+        }
+    })
+
     return (
         <div
+            style={style}
             className={
-                'fixed inset-0 flex items-center justify-center h-screen overflow-auto'
+                'fixed inset-0 flex flex-col items-center justify-center h-screen'
             }
         >
             <div
                 ref={ref}
-                style={{ animation: `fadeIn 1s` }}
-                className={`${className} z-40 relative rounded-xl p-2 border shadow bg-white`}
+                style={{ animation: `fadeIn .75s` }}
+                className={clsx(
+                    className,
+                    'maxHeight z-10 relative rounded-xl p-2',
+                    'border shadow-2xl bg-white overflow-auto'
+                )}
             >
                 {children}
             </div>
-
-            <div className="opacity-25 fixed inset-0 z-30 bg-black" />
+            <div
+                style={{ animation: `fadeIn .75s` }}
+                className='fixed inset-0 blur'
+            />
+            <div className='fixed inset-0 bg-black opacity-25 ' />
         </div>
     )
 }

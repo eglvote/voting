@@ -1,5 +1,7 @@
-const BN = require("bn.js");
-const EglToken = artifacts.require("./EglToken.sol");
+const { 
+    BN,
+    EglToken,
+ } = require("./helpers/constants")
 
 contract("EglTokenTests", (accounts) => {
     let totalTokenSupply;

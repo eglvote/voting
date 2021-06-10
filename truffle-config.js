@@ -39,10 +39,20 @@ module.exports = {
       settings: {
         optimizer: {
           enabled: true,
-          runs: 2000   // Optimize for how many times you intend to run the code
+          runs: 1000   // Optimize for how many times you intend to run the code
         }
       },
     },
   },
-  plugins: ["truffle-contract-size"],
+  plugins: [
+    "truffle-contract-size",
+  ],
+  mocha: {
+    reporter: 'eth-gas-reporter',
+    reporterOptions: {
+      excludeContracts: ["Migrations"],
+      currency: "USD",
+      coinmarketcap: process.env.COIN_MARKET_CAP_API_KEY
+    },
+  }
 };

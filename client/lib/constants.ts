@@ -1,5 +1,0 @@
-export const SECONDS_IN_EPOCH = 300
-// one week is 604800
-export const MAXIMUM_LOCKUP_PERIODS = 8
-
-export const EGLS_AVAILABLE = '750000000000000000000000000'

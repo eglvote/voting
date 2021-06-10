@@ -1,0 +1,77 @@
+const { BN } = require("bn.js");
+
+const Contract = require("@truffle/contract");
+const EglToken = artifacts.require("./EglToken.sol");
+const EglContract = artifacts.require("./EglContract.sol");
+const TestableEglContract = artifacts.require("./helpers/TestableEglContract.sol");
+const MockEglGenesis = artifacts.require("./helpers/MockEglGenesis.sol");
+const MockBalancerPoolToken = artifacts.require("./helpers/MockBalancerPoolToken.sol");
+
+const EventType = {
+    INITIALIZED: "Initialized",
+    VOTE: "Vote",
+    REVOTE: "ReVote",
+    WITHDRAW: "Withdraw",
+    VOTES_TALLIED: "VotesTallied",
+    CREATOR_REWARDS_CLAIMED: "CreatorRewardsClaimed",
+    VOTE_THRESHOLD_MET: "VoteThresholdMet",
+    VOTE_THRESHOLD_FAILED: "VoteThresholdFailed",
+    POOL_REWARDS_SWEPT: "PoolRewardsSwept",
+    BLOCK_REWARD_CALCULATED: "BlockRewardCalculated",
+    SEED_ACCOUNT_FUNDED: "SeedAccountFunded",
+    VOTER_REWARD_CALCULATED: "VoterRewardCalculated",
+    ETH_RECEIVED: "EthReceived",
+    POOL_TOKENS_WITHDRAWN: "PoolTokensWithdrawn",
+};
+
+const VoterAttributes = {
+    LOCKUP_DURATION: 0,
+    VOTE_EPOCH: 1,
+    RELEASE_DATE: 2,
+    TOKENS_LOCKED: 3,
+    GAS_TARGET: 4,
+};
+
+const ConsoleColors = {
+    BLACK: "\x1b[30m \x1b[0m",
+    RED: "\x1b[31m%s\x1b[0m",
+    GREEN: "\x1b[32m%s\x1b[0m",
+    YELLOW: "\x1b[33m%s\x1b[0m",
+    BLUE: "\x1b[34m%s\x1b[0m",
+    MAGENTA: "\x1b[35m%s\x1b[0m",
+    CYAN: "\x1b[36m%s\x1b[0m",
+    WHITE: "\x1b[37m%s\x1b[0m",
+}
+
+const ZeroAddress = "0x0000000000000000000000000000000000000000";
+const DefaultVotePauseSeconds = 300;
+const DefaultEpochLengthSeconds = 1800; 
+
+/***************************************************************/
+/**** Assumes default block gas limit in ganache of 6721975 ****/
+/***************************************************************/
+const ValidGasTarget = 7000000;
+const InvalidGasTargetHigh = 13000000;
+const InvalidGasTargetLow = 1000000;
+
+const InitialCreatorReward = new BN("500000000000000000000000000").div(new BN("43"));   
+
+
+module.exports = {
+    BN,
+    EglToken,
+    EglContract,
+    TestableEglContract,
+    MockEglGenesis,
+    MockBalancerPoolToken,
+    EventType,
+    VoterAttributes,
+    ZeroAddress,
+    DefaultVotePauseSeconds,
+    DefaultEpochLengthSeconds,
+    ValidGasTarget,
+    InvalidGasTargetHigh,
+    InvalidGasTargetLow,
+    InitialCreatorReward,
+    ConsoleColors,
+}

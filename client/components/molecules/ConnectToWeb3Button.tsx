@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
-import { truncateEthAddress } from '../../lib/helpers'
+import { truncateEthAddress } from '../lib/helpers'
 import copy from 'copy-to-clipboard'
 import Jazzicon, { jsNumberForAddress } from 'react-jazzicon'
+import clsx from 'clsx'
 
 interface ConnectWeb3Parameters {
     (): void
@@ -22,7 +23,11 @@ interface ButtonProps {
 const Button = ({ className, handleClicked, children }: ButtonProps) => {
     return (
         <button
-            className={`${className} rounded-md w-52 h-12 bg-white border shadow hover:bg-gray-100 font-bold text-center px-4 py-2 transition duration-500 ease select-none focus:outline-none focus:shadow-outline`}
+            className={clsx(
+                className,
+                'rounded-xl mr-10 h-12 font-semibold  w-96',
+                'text-center px-4 py-2 transition duration-500'
+            )}
             onClick={handleClicked}
         >
             {children}
@@ -47,30 +52,32 @@ export default function ConnectToWeb3Button({
         if (walletAddress) {
             return (
                 <Button handleClicked={handleSetClicked}>
-                    <div
-                        className={'flex items-center justify-center'}
-                        style={{ animation: `fadeIn 1s` }}
-                    >
-                        <p className={'mr-2 font-semibold text-black'}>
-                            {truncateEthAddress(walletAddress)}
-                        </p>
+                    <div className={'flex items-center justify-center'}>
                         <Jazzicon
                             diameter={20}
                             seed={jsNumberForAddress(walletAddress)}
                         />
+                        <p className={'ml-2 font-semibold text-white'}>
+                            {truncateEthAddress(walletAddress)}
+                        </p>
                     </div>
                 </Button>
             )
         } else {
             return (
-                <Button handleClicked={connectWeb3}>
-                    <p>Connect Wallet</p>
+                <Button
+                    className={
+                        'border-2 border-salmon text-salmon hover:bg-salmon hover:border-white hover:text-white w-32'
+                    }
+                    handleClicked={connectWeb3}
+                >
+                    <p className={'font-semibold'}>Wallet</p>
                 </Button>
             )
         }
     } else {
         return (
-            <Button className={'shadow-none'}>
+            <Button className={'text-white'}>
                 <p className={'mt-1'}>Copied!</p>
             </Button>
         )
