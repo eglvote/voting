@@ -21,33 +21,29 @@ contract("EglInternalFunctions", (accounts) => {
     const CREATOR_REWARDS_ACCOUNT = accounts[5];
 
     beforeEach(async () => {
-        UniswapV2Router.setProvider(web3._provider);
-        let routerContract = await UniswapV2Router.deployed();
-
         let totalTokenSupply = new BN(web3.utils.toWei("4000000000"));
         eglTokenInstance = await EglToken.new();
         await eglTokenInstance.initialize("EthereumGasLimit", "EGL", totalTokenSupply);
 
-        let eglUpgraderInstance = await EglUpgrader.deployed();
-        eglContractInstance = await TestableEglContract.new();        
-        let txReceipt = await eglContractInstance.initialize(
-            eglUpgraderInstance.address,
-            eglTokenInstance.address,
-            routerContract.address,
-            DefaultEthToLaunch,
-            Math.round(new Date().getTime() / 1000),
-            DefaultVotePauseSeconds,
-            DefaultEpochLengthSeconds,
-            "6700000",
-            "7200000",
-            SEED_ACCOUNTS,
-            "0",
-            CREATOR_REWARDS_ACCOUNT
-        );
+        // eglContractInstance = await TestableEglContract.new();        
+        // let txReceipt = await eglContractInstance.initialize(
+        //     eglUpgraderInstance.address,
+        //     eglTokenInstance.address,
+        //     routerContract.address,
+        //     DefaultEthToLaunch,
+        //     Math.round(new Date().getTime() / 1000),
+        //     DefaultVotePauseSeconds,
+        //     DefaultEpochLengthSeconds,
+        //     "6700000",
+        //     "7200000",
+        //     SEED_ACCOUNTS,
+        //     "0",
+        //     CREATOR_REWARDS_ACCOUNT
+        // );
 
-        await eglTokenInstance.transfer(eglContractInstance.address, totalTokenSupply, { from: deployer });
+        // await eglTokenInstance.transfer(eglContractInstance.address, totalTokenSupply, { from: deployer });
 
-        initEvent = populateAllEventDataFromLogs(txReceipt, EventType.INITIALIZED);
+        // initEvent = populateAllEventDataFromLogs(txReceipt, EventType.INITIALIZED);
     });    
 
     describe("Fund Seed Accounts", function () {

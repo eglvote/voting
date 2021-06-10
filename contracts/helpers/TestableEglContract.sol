@@ -4,15 +4,15 @@ import "../EglContract.sol";
 
 contract TestableEglContract is EglContract {
     event PercentageCalculated(uint percentage);
+    event CurrentEglCalculated(uint currentEgl);
+    event PoolTokensDueCalculated(uint poolTokensDue);
+    event BonusEglsDueCalculated(uint bonusEglsDue);
 
     function internalVote(
         address _voter,
         uint _gasTarget,
         uint _eglAmount,
         uint8 _lockupDuration,
-        address _daoRecipient,
-        uint _daoAmount,
-        address _upgradeAddress,
         uint _releaseTime
     ) external {
         _internalVote(
@@ -20,9 +20,6 @@ contract TestableEglContract is EglContract {
             _gasTarget,
             _eglAmount,
             _lockupDuration,
-            _daoRecipient,
-            _daoAmount,
-            _upgradeAddress,
             _releaseTime
         );
     }
@@ -31,8 +28,11 @@ contract TestableEglContract is EglContract {
         _internalWithdraw(_voter);
     }
 
-    function fundSeedAccounts(address[] calldata _seedAccounts) external  {
-        _fundSeedAccounts(_seedAccounts);
+    function fundSeedAccounts(
+        address[] calldata _seedAccounts, 
+        uint[] calldata _seedAmounts
+    ) external  {
+        _fundSeedAccounts(_seedAccounts, _seedAmounts);
     }
 
     function issueCreatorRewards() external {
@@ -49,53 +49,28 @@ contract TestableEglContract is EglContract {
         emit PercentageCalculated(percentage);
     }
 
-    function tallyDaoVotes() external {
-        _tallyDaoVotes();
+    function calculateCurrentEgl(uint _timePassedSinceStart) external {
+        uint currentEgl = _calculateCurrentEgl(_timePassedSinceStart);
+        emit CurrentEglCalculated(currentEgl);
     }
-
-    function tallyUpgradeVotes() external {
-        _tallyUpgradeVotes();
-    }
-
-    function addUpgradeCandidateVote(
-        address _candidateAddress, 
-        uint _eglAmount
+    
+    function calculateCurrentPoolTokensDue(
+        uint _currentEgl, 
+        uint _firstEgl, 
+        uint _lastEgl, 
+        uint _totalPoolTokens
     ) external {
-        _addCandidateVote(_candidateAddress, upgradeCandidateList, _eglAmount, 0);
+        uint poolTokensDue = _calculateCurrentPoolTokensDue(
+            _currentEgl, 
+            _firstEgl, 
+            _lastEgl, 
+            _totalPoolTokens
+        );
+        emit PoolTokensDueCalculated(poolTokensDue);
     }
 
-    function removeUpgradeCandidateVote(
-        address _candidateAddress, 
-        uint _eglAmount
-    ) external {
-        _removeCandidateVote(_candidateAddress, upgradeCandidateList, _eglAmount, 0);
-    }
-
-    function addDaoCandidateVote(
-        address _candidateAddress, 
-        uint _eglAmount,
-        uint _amountSum
-    ) external {
-        _addCandidateVote(_candidateAddress, daoCandidateList, _eglAmount, _amountSum);
-    }
-
-    function removeDaoCandidateVote(
-        address _candidateAddress, 
-        uint _eglAmount, 
-        uint _amountSum
-    ) external {
-        _removeCandidateVote(_candidateAddress, daoCandidateList, _eglAmount, _amountSum);
-    }
-
-    function evaluateUpgradeVote() external {
-        _evaluateCandidateVote(upgradeCandidateList);
-    }
-
-    function evaluateDaoVote() external {
-        _evaluateCandidateVote(daoCandidateList);
-    }
-
-    function addPairLiquidity(uint _ethAmount, uint _desiredTokenAmount) external {
-        _addPairLiquidity(_ethAmount, _desiredTokenAmount);
+    function calculateBonusEglsDue(uint _firstEgl, uint _lastEgl) external {
+        uint bonusEglsDue = _calculateBonusEglsDue(_firstEgl, _lastEgl);
+        emit BonusEglsDueCalculated(bonusEglsDue);
     }
 }

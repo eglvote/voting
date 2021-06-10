@@ -1,136 +1,145 @@
 import React, { useState } from 'react'
 import Modal from '../atoms/Modal'
-import { Formik, Field, Form } from 'formik'
 import Button from '../atoms/Button'
-import { fromWei } from '../../lib/helpers'
-import BigNumber from 'bignumber.js'
-import { supportLaunch } from '../../lib/contractMethods'
+import clsx from 'clsx'
+import { useForm } from 'react-hook-form'
+import { sendEth } from '../lib/contractMethods'
+import Spin from '../molecules/Spin'
+import Line from '../atoms/Line'
 
 interface handleOutsideClickParameters {
     (): void
 }
 
-interface ClaimModalProps {
+interface ParticipateModalProps {
     style?: object
     className?: string
-    contract: any
+    web3: any
     walletAddress: string
-    ethEglRatio: string
+    contract: any
     handleOutsideClick: handleOutsideClickParameters
 }
 
-const safeGetMatch = (amount, ethEglRatio) => {
-    if (
-        amount < 0.000001 ||
-        isNaN(amount) ||
-        amount === '' ||
-        amount <= 0 ||
-        !amount ||
-        ethEglRatio <= 0 ||
-        !ethEglRatio
-    ) {
-        return 0
-    }
-    const result = fromWei(
-        new BigNumber(ethEglRatio).multipliedBy(new BigNumber(amount)).toFixed()
-    )
-
-    return result
-}
-export default function ClaimModal({
+export default function ParticipateModal({
     style,
     className,
-    contract,
+    web3,
     walletAddress,
-    ethEglRatio,
+    contract,
     handleOutsideClick,
-}: ClaimModalProps) {
-    const [amount, setAmount] = useState('')
-
-    const match = safeGetMatch(amount, ethEglRatio)
+}: ParticipateModalProps) {
+    const [terms, setTerms] = useState(false)
+    const [pending, setPending] = useState(false)
+    const [error, setError] = useState(null)
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm()
+    const onSubmit = (data) => {
+        sendEth(
+            web3,
+            contract,
+            walletAddress,
+            data.amount,
+            () => setPending(true),
+            (e) => setError(e)
+        )
+    }
 
     return (
         <Modal
             handleOutsideClick={handleOutsideClick}
-            className={`${className} w-96 p-6 z-10`}
-            style={style}
+            className={`${className} w-108 min-h-108 p-10 z-10 ${pending &&
+                'overflow-hidden'}`}
+            style={{ ...style }}
         >
-            <div>
-                <h1
-                    className={
-                        'text-xl text-salmon font-bold border-b-2 border-salmon'
-                    }
+            {pending ? (
+                <div
+                    style={{ minHeight: '40vh' }}
+                    className={'flex justify-center items-center flex-col'}
                 >
-                    CLAIM
-                </h1>
-                <div>
-                    <Formik
-                        initialValues={{
-                            amount: '0',
-                        }}
-                        onSubmit={(values, actions) => {
-                            supportLaunch(contract, walletAddress, amount, () =>
-                                handleOutsideClick()
-                            )
-                        }}
-                    >
-                        <Form>
-                            <div className={'flex justify-center items-center'}>
-                                <div className={'mt-4'}>
-                                    <div className={'flex items-baseline'}>
-                                        <p>I want to send</p>
-                                        <Field id="amount" name="amount">
-                                            {({ field }) => (
-                                                <input
-                                                    {...field}
-                                                    className={
-                                                        'w-24 border-babyBlue border-b mx-2 text-right'
-                                                    }
-                                                    type="number"
-                                                    placeholder=""
-                                                    value={amount}
-                                                    onChange={(e) =>
-                                                        setAmount(
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                />
-                                            )}
-                                        </Field>
-                                        <span className={'text-babyBlue'}>
-                                            {'ETH'}
-                                        </span>
-                                        <p className={'ml-1'}>{'to the'}</p>
-                                    </div>
-                                    <p>{'EGL contract'}</p>
-                                    <p className={'mt-4'}>
-                                        {
-                                            'This ETH will be matched by an estimated ~'
-                                        }
-                                    </p>
-                                    <p>
-                                        <span
-                                            className={
-                                                'border-babyBlue border-b'
-                                            }
-                                        >
-                                            {match}
-                                        </span>
-                                        {
-                                            ' EGL and sent to the ETH-EGL Uniswap Pool.'
-                                        }
-                                    </p>
-                                </div>
-                            </div>
-                            <div className={'flex mt-4 w-full justify-center'}>
-                                <Button type={'submit'}>
-                                    <p>Submit</p>
-                                </Button>
-                            </div>
-                        </Form>
-                    </Formik>
+                    {error ? (
+                        <>
+                            <h1
+                                className={clsx(
+                                    'w-full text-xl text-center text-semibold mt-4',
+                                    'inline-block font-bold bg-clip-text'
+                                )}
+                            >
+                                {'Transaction Failed'}
+                            </h1>
+                            <p>{'Check Metamask for details'}</p>
+                        </>
+                    ) : (
+                        <>
+                            <Spin />
+                            <h1
+                                className={clsx(
+                                    'w-full text-xl text-center text-semibold mt-4',
+                                    'inline-block font-bold bg-clip-text text-[#8A8A8A]'
+                                )}
+                            >
+                                {'Transaction Pending...'}
+                            </h1>
+                        </>
+                    )}
                 </div>
-            </div>
+            ) : (
+                <form
+                    style={{ minHeight: '40vh' }}
+                    onSubmit={handleSubmit(onSubmit)}
+                    className={'flex flex-col justify-center items-center'}
+                >
+                    <h1
+                        className={clsx(
+                            'w-full text-3xl text-center text-semibold',
+                            'inline-block font-semibold bg-clip-text'
+                            // 'bg-gradient-to-r from-pink to-pink-dark'
+                        )}
+                    >
+                        {'CLAIM & VOTE'}
+                    </h1>
+                    <Line />
+                    <div
+                        className={clsx(
+                            'flex my-8 pl-2 flex-row bg-[#EAEAEA]',
+                            'rounded-xl border h-12 w-full items-center'
+                        )}
+                    >
+                        <p className={'text-xl ml-2'}>ETH｜</p>
+                        <input
+                            {...register('amount')}
+                            type='number'
+                            step={0.001}
+                            min={0.001}
+                            // value={formValue}
+                            // onChange={(e) =>
+                            //     setFormValue(displayComma(e.target.value))
+                            // }
+                            placeholder='###'
+                            className={'bg-[#EAEAEA] text-xl'}
+                        />
+                    </div>
+                    <Button
+                        className={clsx(
+                            'my-8 py-2 px-12 bg-gradient-to-r',
+                            terms && 'hover:from-pink-dark hover:to-pink',
+                            'from-pink to-pink-dark rounded-3xl'
+                        )}
+                        disabled={!terms}
+                        handleClick={() => {}}
+                    >
+                        <p className={'text-white text-xl text-semibold'}>
+                            SUBMIT
+                        </p>
+                    </Button>
+                    <p className={'text-[#8A8A8A] text-xs mb-3 mx-4'}>
+                        {'Note: Each address can only participate once in the Genesis. ' +
+                            'If you’d like to participate again, you will have to use a different address.'}
+                    </p>
+                </form>
+            )}
         </Modal>
     )
 }

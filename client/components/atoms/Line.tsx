@@ -1,11 +1,23 @@
 import React from 'react'
+import clsx from 'clsx'
 
 interface LineProps {
-    style?: object
     className?: string
-    children?: JSX.Element | JSX.Element[]
+    style?: object
 }
 
-export default function Line({ style, className, children }: LineProps) {
-    return <hr className={className} style={style} />
+const Line = ({ className, style }: LineProps) => {
+    return (
+        // <hr class="border-0 bg-gray-500 text-gray-500 h-px">
+
+        <hr
+            className={clsx(
+                className,
+                'border-0 bg-gray-500 text-gray-500 h-px w-400 max-w-full'
+            )}
+            style={{ ...style, border: '1px solid red' }}
+        />
+    )
 }
+
+export default Line

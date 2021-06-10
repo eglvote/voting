@@ -1,107 +1,59 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import { zeroPad } from '../lib/helpers'
+import m from 'moment'
+import { endTime } from '../lib/constants'
 
 interface CountdownProps {
     style?: object
     className?: string
-    timeToNextEpoch: any
-    epochLength: number
+    children?: JSX.Element[] | JSX.Element
 }
 
-const Label = ({ children }) => (
-    <p className={'text-xs text-white text-center my-1'}>{children}</p>
-)
+interface DigitProps {
+    num: number
+    label: string
+    className?: string
+}
 
-const Digit = ({ children, className }: any) => (
-    <div className={`${className} text-white text-2xl text-center`}>
-        {children}
+const Digit = ({ num, label, className }: DigitProps) => (
+    <div className={`${className} w-20 mr-4 ml-2`}>
+        <div className={'text-white text-4xl mb-4'}>
+            {zeroPad(String(num), 2)}
+        </div>
+        <div className={'text-[#C0C0C0] text-xl'}>{label}</div>
     </div>
 )
-
-const Flex = ({ children }) => (
-    <div className={'flex flex-col w-1/4 justify-center'}>{children}</div>
-)
-
-const Colon = () => (
-    <div className={'h-full flex items-end text-white pb-1'}>:</div>
-)
-
-const formatDigit = (digit) => {
-    const length = Math.abs(digit).toString().length
-    return (
-        <p>
-            {length < 2 && <span className={'opacity-50'}>0</span>}
-            {Math.abs(digit)}
-        </p>
-    )
-}
 
 export default function Countdown({
     style,
     className,
-    timeToNextEpoch,
-    epochLength,
+    children,
 }: CountdownProps) {
-    const days = formatDigit(timeToNextEpoch.days())
-    const hours = formatDigit(timeToNextEpoch.hours())
-    const minutes = formatDigit(timeToNextEpoch.minutes())
-    const seconds = formatDigit(timeToNextEpoch.seconds())
+    const [days, setDays] = useState(0)
+    const [hours, setHours] = useState(0)
+    const [minutes, setMinutes] = useState(0)
+    const [seconds, setSeconds] = useState(0)
 
-    const totalSeconds = timeToNextEpoch._milliseconds / 1000
-    const totalEpochsBehind = Math.abs(Math.floor(totalSeconds / epochLength))
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const end = endTime
+            const now = m().unix()
+            const timeLeft = m.unix(end - now)
+
+            setDays(m.unix(end).diff(m.unix(now), 'days'))
+            setHours(timeLeft.hours())
+            setMinutes(timeLeft.minutes())
+            setSeconds(timeLeft.seconds())
+        }, 1000)
+        return () => clearInterval(interval)
+    }, [])
 
     return (
-        <div
-            style={style}
-            className={`${className} w-80 h-32 bg-plum-dark rounded-xl p-2 px-4 flex items-end flex-col`}
-        >
-            {timeToNextEpoch._milliseconds > 0 ? (
-                <>
-                    <div className={'w-full mb-4'}>
-                        <h1 className={'text-white font-sm text-center'}>
-                            {'Next EGL epoch starts in'}
-                        </h1>
-                    </div>
-                    <div
-                        className={
-                            'flex flex-col w-full p-2 -mt-2 justify-center items-center bg-plum rounded'
-                        }
-                    >
-                        <div className={'flex justify-center w-full'}>
-                            <Flex>
-                                <Label>DAYS</Label>
-                                <Digit>{days}</Digit>
-                            </Flex>
-                            <Colon />
-                            <Flex>
-                                <Label>HOURS</Label>
-                                <Digit>{hours}</Digit>
-                            </Flex>
-                            <Colon />
-                            <Flex>
-                                <Label>MINUTES</Label>
-                                <Digit>{minutes}</Digit>
-                            </Flex>
-                            <Colon />
-                            <Flex>
-                                <Label>SECONDS</Label>
-                                <Digit>{seconds}</Digit>
-                            </Flex>
-                        </div>
-                    </div>
-                </>
-            ) : (
-                <div
-                    className={
-                        'w-full h-32 flex items-center justify-center mt-5  '
-                    }
-                >
-                    <p
-                        className={'font-extrabold text-2xl text-white'}
-                    >{`Epoch is ${totalEpochsBehind} ${
-                        totalEpochsBehind > 1 ? 'tallies' : 'tally'
-                    } behind`}</p>
-                </div>
-            )}
+        <div style={style} className={`${className} w-96 flex flex-row`}>
+            <Digit className={'ml-0'} num={days} label={'days'} />
+            <Digit num={hours} label={'hours'} />
+            <Digit num={minutes} label={'minutes'} />
+            <Digit num={seconds} label={'seconds'} />
         </div>
     )
 }

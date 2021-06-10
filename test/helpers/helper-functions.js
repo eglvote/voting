@@ -48,7 +48,7 @@ function getNewWalletAddress(web3) {
     return web3.eth.accounts.create()
 }
 
-async function giveFreeTokens(giftAccounts, eglToken) {
+async function airDropTokens(giftAccounts, eglToken) {
     let giftEgls = new BN("0");
     for (let [, address] of Object.entries(giftAccounts)) {
         await eglToken.transfer(address, "50000000000000000000000000");
@@ -62,7 +62,7 @@ module.exports = {
     populateEventDataFromLogs,
     populateAllEventDataFromLogs,
     getBlockTimestamp,
-    giveFreeTokens,
+    airDropTokens,
     getAllEventsForType,
     getBlockGasLimit,
     getNewWalletAddress

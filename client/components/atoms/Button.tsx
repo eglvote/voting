@@ -1,35 +1,30 @@
 import React from 'react'
-
-interface handleClickParameters {
-    (): void
-}
+import clsx from 'clsx'
 
 interface ButtonProps {
     style?: object
     className?: string
-    children?: JSX.Element | JSX.Element[]
-    type?: 'button' | 'submit' | 'reset'
+    children?: JSX.Element[] | JSX.Element
     disabled?: boolean
-    handleClick?: handleClickParameters
+    handleClick: Function
 }
 
 export default function Button({
     style,
     className,
     children,
-    type,
     disabled,
     handleClick,
 }: ButtonProps) {
     return (
         <button
-            onClick={handleClick}
-            type={type}
+            onClick={() => handleClick()}
+            style={style}
             disabled={disabled}
-            style={{
-                ...style,
-            }}
-            className={`${className} shadow-lg bg-salmon text-white font-bold text-center rounded-md px-4 py-2 transition duration-500 ease select-none hover:bg-salmon-dark`}
+            className={clsx(
+                className,
+                disabled ? 'opacity-50 cursor-default' : 'cursor-pointer'
+            )}
         >
             {children}
         </button>

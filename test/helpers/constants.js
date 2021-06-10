@@ -1,15 +1,11 @@
 const { BN } = require("bn.js");
 
 const Contract = require("@truffle/contract");
-const FactoryJson = require("@uniswap/v2-core/build/UniswapV2Factory.json")
-const RouterJson = require("@uniswap/v2-periphery/build/UniswapV2Router02.json");
-const UniswapV2Factory = Contract(FactoryJson);
-const UniswapV2Router = Contract(RouterJson);
-const WethToken = artifacts.require("@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol")
 const EglToken = artifacts.require("./EglToken.sol");
 const EglContract = artifacts.require("./EglContract.sol");
-const EglUpgrader = artifacts.require("./EglUpgrader.sol");
 const TestableEglContract = artifacts.require("./helpers/TestableEglContract.sol");
+const MockEglGenesis = artifacts.require("./helpers/MockEglGenesis.sol");
+const MockBalancerPoolToken = artifacts.require("./helpers/MockBalancerPoolToken.sol");
 
 const EventType = {
     INITIALIZED: "Initialized",
@@ -23,16 +19,9 @@ const EventType = {
     POOL_REWARDS_SWEPT: "PoolRewardsSwept",
     BLOCK_REWARD_CALCULATED: "BlockRewardCalculated",
     SEED_ACCOUNT_FUNDED: "SeedAccountFunded",
-    GIFT_ACCOUNT_FUNDED: "GiftAccountFunded",
     VOTER_REWARD_CALCULATED: "VoterRewardCalculated",
     ETH_RECEIVED: "EthReceived",
-    UNISWAP_LAUNCH: "UniSwapLaunch",
-    EGLS_MATCHED: "EglsMatched",
-    LIQUIDITY_ADDED: "LiquidityAdded",
-    LIQUIDITY_TOKENS_WITHDRAWN: "LiquidityTokensWithdrawn",
-    CANDIDATE_VOTE_ADDED: "CandidateVoteAdded",
-    CANDIDATE_VOTE_REMOVED: "CandidateVoteRemoved",
-    CANDIDATE_VOTE_EVALUATED: "CandidateVoteEvaluated"
+    POOL_TOKENS_WITHDRAWN: "PoolTokensWithdrawn",
 };
 
 const VoterAttributes = {
@@ -41,9 +30,6 @@ const VoterAttributes = {
     RELEASE_DATE: 2,
     TOKENS_LOCKED: 3,
     GAS_TARGET: 4,
-    DAO_RECIPIENT: 5,
-    DAO_AMOUNT: 6,
-    UPGRADE_ADDRESS: 7,
 };
 
 const ConsoleColors = {
@@ -58,7 +44,6 @@ const ConsoleColors = {
 }
 
 const ZeroAddress = "0x0000000000000000000000000000000000000000";
-const DefaultEthToLaunch = new BN("5000000000000000000").toString();
 const DefaultVotePauseSeconds = 300;
 const DefaultEpochLengthSeconds = 1800; 
 
@@ -74,17 +59,14 @@ const InitialCreatorReward = new BN("500000000000000000000000000").div(new BN("4
 
 module.exports = {
     BN,
-    UniswapV2Factory,
-    UniswapV2Router,
-    WethToken,
     EglToken,
     EglContract,
-    EglUpgrader,
     TestableEglContract,
+    MockEglGenesis,
+    MockBalancerPoolToken,
     EventType,
     VoterAttributes,
     ZeroAddress,
-    DefaultEthToLaunch,
     DefaultVotePauseSeconds,
     DefaultEpochLengthSeconds,
     ValidGasTarget,

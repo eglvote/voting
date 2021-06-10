@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import React, { useRef, useEffect } from 'react'
 import useOutsideClick from '../hooks/UseOutsideClick'
 
@@ -39,15 +40,19 @@ export default function Modal({
             <div
                 ref={ref}
                 style={{ animation: `fadeIn .75s` }}
-                className={`${className} maxHeight z-50 relative rounded-xl p-2 border shadow-2xl bg-white overflow-auto`}
+                className={clsx(
+                    className,
+                    'maxHeight z-10 relative rounded-xl p-2',
+                    'border shadow-2xl bg-white overflow-auto'
+                )}
             >
                 {children}
             </div>
             <div
                 style={{ animation: `fadeIn .75s` }}
-                className="fixed inset-0 z-40 blur"
+                className='fixed inset-0 blur'
             />
-            <div className="opacity-25 fixed inset-0 z-40 bg-black " />
+            <div className='fixed inset-0 bg-black opacity-25 ' />
         </div>
     )
 }
