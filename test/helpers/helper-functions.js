@@ -37,7 +37,11 @@ async function getAllEventsForType(eventName, eglContract) {
 }
 
 async function getBlockTimestamp(web3, txReceipt) {
-    return (await web3.eth.getBlock(txReceipt.receipt.blockNumber)).timestamp;
+    if (txReceipt !== undefined)
+        return (await web3.eth.getBlock(txReceipt.receipt.blockNumber)).timestamp;
+
+    let blockNumber = await web3.eth.getBlockNumber()
+    return (await web3.eth.getBlock(blockNumber)).timestamp;
 }
 
 async function getBlockGasLimit(web3, txReceipt) {
@@ -48,20 +52,20 @@ function getNewWalletAddress(web3) {
     return web3.eth.accounts.create()
 }
 
-async function airDropTokens(giftAccounts, eglToken) {
-    let giftEgls = new BN("0");
-    for (let [, address] of Object.entries(giftAccounts)) {
+async function airDropTokens(airdropAccounts, eglToken) {
+    let airdroppedEgls = new BN("0");
+    for (let [, address] of Object.entries(airdropAccounts)) {
         await eglToken.transfer(address, "50000000000000000000000000");
-        giftEgls = giftEgls.add(new BN("50000000000000000000000000"));
+        airdroppedEgls = airdroppedEgls.add(new BN("50000000000000000000000000"));
     }
-    return giftEgls;
+    return airdroppedEgls;
 }
 
 module.exports = {
     sleep,
     populateEventDataFromLogs,
     populateAllEventDataFromLogs,
-    getBlockTimestamp,
+    getBlockTimestamp,    
     airDropTokens,
     getAllEventsForType,
     getBlockGasLimit,

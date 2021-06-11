@@ -21,6 +21,7 @@ const EventType = {
     SEED_ACCOUNT_FUNDED: "SeedAccountFunded",
     VOTER_REWARD_CALCULATED: "VoterRewardCalculated",
     ETH_RECEIVED: "EthReceived",
+    SUPPORTER_TOKENS_CLAIMED: "SupporterTokensClaimed",
     POOL_TOKENS_WITHDRAWN: "PoolTokensWithdrawn",
 };
 
@@ -54,7 +55,7 @@ const ValidGasTarget = 7000000;
 const InvalidGasTargetHigh = 13000000;
 const InvalidGasTargetLow = 1000000;
 
-const InitialCreatorReward = new BN("500000000000000000000000000").div(new BN("43"));   
+const InitialCreatorReward = new BN("750000000000000000000000000").div(new BN("43"));   
 
 
 module.exports = {

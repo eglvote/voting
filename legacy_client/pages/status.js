@@ -55,52 +55,20 @@ class EglContractStatus extends React.Component {
     refreshContractData = async () => {
         const { eglContract, web3, tokenContract } = this.props
 
-        const eventInitialized = await this.getAllEventsForType("Initialized")
-        const eventVotesTallied = await this.getAllEventsForType('VotesTallied')
-        const eventCreatorRewardsClaimed = await this.getAllEventsForType(
-            'CreatorRewardsClaimed'
-        )
+        const eventInitialized = await this.getAllEventsForType('Initialized')
         const eventVote = await this.getAllEventsForType('Vote')
         const eventWithdraw = await this.getAllEventsForType('Withdraw')
-        const eventSeedAccountFunded = await this.getAllEventsForType(
-            'SeedAccountFunded'
-        )
-        const eventVoteThresholdMet = await this.getAllEventsForType(
-            'VoteThresholdMet'
-        )
-        const eventVoteThresholdFailed = await this.getAllEventsForType(
-            'VoteThresholdFailed'
-        )
-        const eventVoterRewardCalculated = await this.getAllEventsForType(
-            'VoterRewardCalculated'
-        )
-        const eventEglsMatched = await this.getAllEventsForType('EglsMatched')
-        const eventUniSwapLaunch = await this.getAllEventsForType(
-            'UniSwapLaunch'
-        )
+        const eventVotesTallied = await this.getAllEventsForType('VotesTallied')
+        const eventCreatorRewardsClaimed = await this.getAllEventsForType('CreatorRewardsClaimed')        
+        const eventVoteThresholdMet = await this.getAllEventsForType('VoteThresholdMet')
+        const eventVoteThresholdFailed = await this.getAllEventsForType('VoteThresholdFailed')
+        const eventPoolRewardsSwept = await this.getAllEventsForType('PoolRewardsSwept')
+        const eventSeedAccountClaimed = await this.getAllEventsForType('SeedAccountClaimed')
+        const eventVoterRewardCalculated = await this.getAllEventsForType('VoterRewardCalculated')
         const eventEthReceived = await this.getAllEventsForType('EthReceived')
-        const eventLiquidityTokensWithdrawn = await this.getAllEventsForType(
-            'LiquidityTokensWithdrawn'
-        )
-        const eventPoolRewardsSwept = await this.getAllEventsForType(
-            'PoolRewardsSwept'
-        )
-        const eventLiquidityAdded = await this.getAllEventsForType(
-            'LiquidityAdded'
-        )
-        const eventCandidateVoteAdded = await this.getAllEventsForType(
-            'CandidateVoteAdded'
-        )
-        const eventCandidateVoteRemoved = await this.getAllEventsForType(
-            'CandidateVoteRemoved'
-        )
-        const eventCandidateVoteEvaluated = await this.getAllEventsForType(
-            'CandidateVoteEvaluated'
-        )
-
-        const eventCandidateVoteWinner = await this.getAllEventsForType(
-            'CandidateVoteWinner'
-        )
+        const eventSupporterTokensClaimed = await this.getAllEventsForType('SupporterTokensClaimed')
+        const eventPoolTokensWithdrawn = await this.getAllEventsForType('PoolTokensWithdrawn')
+        const eventBlockRewardCalculated = await this.getAllEventsForType('BlockRewardCalculated')
 
         const eglContractTokenBalance = await tokenContract.methods
             .balanceOf(eglContract._address)
@@ -112,6 +80,9 @@ class EglContractStatus extends React.Component {
             .call()
         const currentEpochStartDate = moment.unix(
             await eglContract.methods.currentEpochStartDate().call()
+        )
+        const firstEpochStartDate = moment.unix(
+            eventInitialized[0].returnValues.firstEpochStartDate
         )
         const desiredEgl = await eglContract.methods.desiredEgl().call()
 
@@ -155,14 +126,13 @@ class EglContractStatus extends React.Component {
                 lpTokenCountdown.hours() + " hours " +
                 lpTokenCountdown.minutes() + " minutes " +
                 lpTokenCountdown.seconds() + " seconds";
-            
+
         let currentlyReleasedLPToken = lpTokenCountdown > 0 
             ? 0 
-            : ((new Date().getTime() / 1000) - 
-                parseInt(eventInitialized[0].returnValues.firstEpochStartDate) - 
-                parseInt(eventInitialized[0].returnValues.minLiquidityTokensLockup)) * 
-                750000000 /
-                ((parseInt(eventInitialized[0].returnValues.epochLength) * 52) - parseInt(eventInitialized[0].returnValues.minLiquidityTokensLockup));
+            : (
+                ((new Date().getTime() / 1000) - parseInt(eventInitialized[0].returnValues.firstEpochStartDate) - parseInt(eventInitialized[0].returnValues.minLiquidityTokensLockup))
+                / ((parseInt(eventInitialized[0].returnValues.epochLength) * 52) - parseInt(eventInitialized[0].returnValues.minLiquidityTokensLockup))
+            )**4 * 750000000;
 
         const upcomingVotes = []
         for (let i = 1; i < 8; i++) {
@@ -175,14 +145,6 @@ class EglContractStatus extends React.Component {
             })
         }
 
-        const previousEpochDaoSum = await eglContract.methods.previousEpochDaoSum().call();
-        const previousEpochDaoCandidate = await eglContract.methods.previousEpochDaoCandidate().call();
-        const previousEpochUpgradeCandidate = await eglContract.methods.previousEpochUpgradeCandidate().call();
-
-        console.log("Dao Amount: ", previousEpochDaoSum)
-        console.log("Dao Candidate: ", previousEpochDaoCandidate)
-        console.log("Upgrade Candidate: ", previousEpochUpgradeCandidate)
-
         const eglBalance = await getEglBalance(
             tokenContract,
             this.props.accounts[0]
@@ -193,6 +155,7 @@ class EglContractStatus extends React.Component {
             eglContractTokenBalance: eglContractTokenBalance,
             currentEpoch: parseInt(currentEpoch),
             currentEpochStartDate: currentEpochStartDate,
+            firstEpochStartDate: firstEpochStartDate,
             timeToNextEpoch: timeToNextEpoch,
             tokensInCirculation: tokensInCirculation,
             currentVoteWeightSum: currentVoteWeightSum,
@@ -202,10 +165,7 @@ class EglContractStatus extends React.Component {
             voterRewardsSums: voterRewardsSums,
             currentlyReleasedLPToken: currentlyReleasedLPToken,
             timeToLPTokenRelease: timeToLPTokenRelease,
-            previousEpochDaoSum: previousEpochDaoSum,
-            previousEpochDaoCandidate: previousEpochDaoCandidate,
-            previousEpochUpgradeCandidate: previousEpochUpgradeCandidate,
-            eventSeedAccountFunded: eventSeedAccountFunded,
+            eventSeedAccountClaimed: eventSeedAccountClaimed,
             eventVotesTallied: eventVotesTallied,
             eventCreatorRewardsClaimed: eventCreatorRewardsClaimed,
             eventVote: eventVote,
@@ -213,17 +173,12 @@ class EglContractStatus extends React.Component {
             eventVoteThresholdMet: eventVoteThresholdMet,
             eventVoteThresholdFailed: eventVoteThresholdFailed,
             eventVoterRewardCalculated: eventVoterRewardCalculated,
-            eventEglsMatched: eventEglsMatched,
-            eventUniSwapLaunch: eventUniSwapLaunch,
             eventEthReceived: eventEthReceived,
-            eventLiquidityTokensWithdrawn: eventLiquidityTokensWithdrawn,
+            eventPoolTokensWithdrawn: eventPoolTokensWithdrawn,
             eventInitialized: eventInitialized[0].returnValues,
             eventPoolRewardsSwept: eventPoolRewardsSwept,
-            eventLiquidityAdded: eventLiquidityAdded,
-            eventCandidateVoteAdded: eventCandidateVoteAdded,
-            eventCandidateVoteRemoved: eventCandidateVoteRemoved,
-            eventCandidateVoteEvaluated: eventCandidateVoteEvaluated,
-            eventCandidateVoteWinner: eventCandidateVoteWinner,
+            eventSupporterTokensClaimed: eventSupporterTokensClaimed,
+            eventBlockRewardCalculated: eventBlockRewardCalculated,
             eglBalance,
         })
     }
@@ -242,6 +197,7 @@ class EglContractStatus extends React.Component {
             eglContractTokenBalance = '-',
             currentEpoch = '-',
             currentEpochStartDate = moment(),
+            firstEpochStartDate = moment(),
             timeToNextEpoch = '-',
             desiredEgl = '-',
             tokensInCirculation = '-',
@@ -254,7 +210,7 @@ class EglContractStatus extends React.Component {
             previousEpochDaoSum = 0,
             previousEpochDaoCandidate = '',
             previousEpochUpgradeCandidate = '',
-            eventSeedAccountFunded = [],
+            eventSeedAccountClaimed = [],
             eventVotesTallied = [],
             eventCreatorRewardsClaimed = [],
             eventVote = [],
@@ -265,7 +221,7 @@ class EglContractStatus extends React.Component {
             eventEglsMatched = [],
             eventUniSwapLaunch = [],
             eventEthReceived = [],
-            eventLiquidityTokensWithdrawn = [],
+            eventPoolTokensWithdrawn = [],
             eventInitialized = {},
             eventPoolRewardsSwept = [],
             eventLiquidityAdded = [],
@@ -273,6 +229,8 @@ class EglContractStatus extends React.Component {
             eventCandidateVoteRemoved = [],
             eventCandidateVoteEvaluated = [],
             eventCandidateVoteWinner = [],
+            eventSupporterTokensClaimed = [],
+            eventBlockRewardCalculated = [],
             eglBalance = 0,
         } = this.state
 
@@ -283,8 +241,6 @@ class EglContractStatus extends React.Component {
                 eglBalance={eglBalance}
             >
                 <div>
-                    <h1>EGL Contract Status</h1>
-                    <hr />
 
                     <div>
                         <div>
@@ -300,6 +256,32 @@ class EglContractStatus extends React.Component {
                                     .toLocaleTimeString()}
                             </span>
                         </div>
+                        <br />
+                        <table  style={tableWidth1000}>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <b>First Epoch Start Date: </b>
+                                        <span style={contractAttributeValue}>
+                                            {firstEpochStartDate
+                                                .local()
+                                                .toDate()
+                                                .toString()}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <b>Current EGL: </b>
+                                        <span style={contractAttributeValue}>
+                                            {desiredEgl}
+                                        </span>
+                                    </td>
+                                </tr>                                
+                            </tbody>
+                        </table>
+
+
                         <br />
                         <table style={tableWidth1000}>
                             <tbody>
@@ -322,7 +304,7 @@ class EglContractStatus extends React.Component {
                                 </tr>
                                 <tr>
                                     <td>
-                                        <b>Epoch Start Date: </b>
+                                        <b>Current Epoch Start Date: </b>
                                         <span style={contractAttributeValue}>
                                             {currentEpochStartDate
                                                 .local()
@@ -348,39 +330,25 @@ class EglContractStatus extends React.Component {
                                         </span>
                                     </td>
                                     <td>
-                                        <b>Current EGL: </b>
-                                        <span style={contractAttributeValue}>
-                                            {desiredEgl}
-                                        </span>
+                                        &nbsp;
                                     </td>
                                 </tr>
                                 <tr><td>&nbsp;</td></tr>
                                 <tr>
                                     <td>
-                                        <b>Time to LP Token Release: </b>
+                                        <b>Time to Pool Token Release: </b>
                                         <span style={contractAttributeValue}>{timeToLPTokenRelease}</span>
                                     </td>
-                                    <td>
-                                        <b>Leading DAO Candidate: </b>
-                                        <span style={contractAttributeValue}>{previousEpochDaoCandidate}</span>
-                                    </td>
+                                    <td>&nbsp;</td>
                                 </tr>
                                 <tr>
                                     <td>
                                         <b>Currently Released EGL Token: </b>
-                                        <span style={contractAttributeValue}>{currentlyReleasedLPToken}</span>
+                                        <span style={contractAttributeValue}>
+                                            {currentlyReleasedLPToken.toLocaleString('en-US',{minimumFractionDigits: 0,maximumFractionDigits: 18,})}
+                                        </span>
                                     </td>
-                                    <td>
-                                        <b>Leading Candidate Amount: </b>
-                                        <span style={contractAttributeValue}>{previousEpochDaoSum} EGL</span>
-                                    </td>
-                                </tr>
-                                <tr>
                                     <td>&nbsp;</td>
-                                    <td>
-                                        <b>Leading Upgrade Candidate: </b>
-                                        <span style={contractAttributeValue}>{previousEpochUpgradeCandidate}</span>
-                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -392,32 +360,26 @@ class EglContractStatus extends React.Component {
                         <table  style={tableWidth1000}>
                             <tbody>
                                 <tr>
-                                    <td colSpan="2"><h3>Addresses:</h3></td>
-                                    <td colSpan="2"><h3>Deployment Params:</h3></td>
+                                    <td colSpan="2"><b>Addresses:</b></td>
+                                    <td colSpan="2"><b>Deployment Params:</b></td>
                                 </tr>
                                 <tr>
                                     <td><b>EGL Contract: </b></td>
                                     <td><span style={contractAttributeValue}>{eventInitialized.eglContract}</span></td>
-                                    <td><b>Required ETH to Launch UniSwap: </b></td>
-                                    <td><span style={contractAttributeValue}>{this.formatBigNumberAttribute(eventInitialized.ethRequiredToLaunchUniSwap)} ETH</span></td>
-                                </tr>
-                                <tr>
-                                    <td><b>EGL Token: </b></td>
-                                    <td><span style={contractAttributeValue}>{eventInitialized.eglToken}</span></td>
                                     <td><b>Liquidity Pool Lockup: </b></td>
                                     <td><span style={contractAttributeValue}>{eventInitialized.minLiquidityTokensLockup} seconds</span></td>
                                 </tr>
                                 <tr>
-                                    <td><b>UniSwap Router: </b></td>
-                                    <td><span style={contractAttributeValue}>{eventInitialized.uniSwapRouter}</span></td>
-                                    <td><b>Voting Pause: </b></td>
-                                    <td><span style={contractAttributeValue}>{eventInitialized.votingPauseSeconds} seconds before next epoch</span></td>
-                                </tr>
-                                <tr>
-                                    <td><b>UniSwap Pair: </b></td>
-                                    <td><span style={contractAttributeValue}>{eventInitialized.uniSwapPair}</span></td>
+                                    <td><b>EGL Token: </b></td>
+                                    <td><span style={contractAttributeValue}>{eventInitialized.eglToken}</span></td>
                                     <td><b>Epoch Length: </b></td>
                                     <td><span style={contractAttributeValue}>{eventInitialized.epochLength} seconds</span></td>
+                                </tr>
+                                <tr>
+                                    <td><b>EGL Genesis</b></td>
+                                    <td><span style={contractAttributeValue}>{eventInitialized.genesisContract}</span></td>
+                                    <td><b>Voting Pause: </b></td>
+                                    <td><span style={contractAttributeValue}>{eventInitialized.votingPauseSeconds} seconds before next epoch</span></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -426,29 +388,26 @@ class EglContractStatus extends React.Component {
 
                     <hr />
                     <div>
-                        <h3>Seed Accounts:</h3>
-                        <table style={tableWidth1000}>
-                            <thead style={thead}>
+                        <table  style={tableWidth1000}>
+                            <tbody>
                                 <tr>
-                                <td>Date</td>
-                                <td>Time</td>
-                                <td>Seed Account</td>
-                                <td>Total Seed Amount</td>
-                                <td>Seed Amount per Account</td>
+                                    <td>
+                                        <b>Total Genesis ETH: </b>
+                                        <span style={contractAttributeValue}>{this.formatBigNumberAttribute(eventInitialized.totalGenesisEth)} ETH</span>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody style={contractAttributeValue}>
-                                {eventSeedAccountFunded.map((event) => {
-                                return (
-                                    <tr>
-                                    <td>{moment.unix(event.returnValues.date).local().toDate().toLocaleDateString()}</td>
-                                    <td>{moment.unix(event.returnValues.date).local().toDate().toLocaleTimeString()}</td>
-                                    <td>{event.returnValues.seedAddress}</td>
-                                    <td>{this.formatBigNumberAttribute(event.returnValues.initialSeedAmount)}</td>
-                                    <td>{this.formatBigNumberAttribute(event.returnValues.individualSeedAmount)}</td>
-                                    </tr>
-                                )
-                                })}
+                                <tr>
+                                    <td>
+                                        <b>Genesis ETH:EGL Ratio: </b>
+                                        <span style={contractAttributeValue}>1:{this.formatBigNumberAttribute(eventInitialized.ethEglRatio)}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <b>Genesis ETH:BPT Ratio: </b>
+                                        <span style={contractAttributeValue}>1:{this.formatBigNumberAttribute(eventInitialized.ethBptRatio)}</span>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -677,150 +636,6 @@ class EglContractStatus extends React.Component {
 
                     <br />
                     <div>
-                        <b>DAO/Upgrade Candidate Vote Added:</b>
-                        <table style={tableWidth1000}>
-                            <thead style={thead}>
-                                <tr>
-                                    <td>Date</td>
-                                    <td>Time</td>
-                                    <td>Type</td>
-                                    <td>Candidate Address</td>
-                                    <td>Current Epoch</td>
-                                    <td>Vote Weight</td>
-                                    <td>DAO Amount Sum</td>
-                                    <td>Idx</td>
-                                    <td>Total Candidates</td>
-                                    <td>Dropped</td>
-                                    <td>Dropped Vote Weight</td>
-                                    <td>Dropped Idx</td>
-                                </tr>
-                            </thead>
-                            <tbody style={contractAttributeValue}>
-                                {eventCandidateVoteAdded.map((event) => {
-                                    return (
-                                        <tr>
-                                            <td>
-                                                {moment
-                                                    .unix(
-                                                        event.returnValues.date
-                                                    )
-                                                    .local()
-                                                    .toDate()
-                                                    .toLocaleDateString()}
-                                            </td>
-                                            <td>
-                                                {moment
-                                                    .unix(
-                                                        event.returnValues.date
-                                                    )
-                                                    .local()
-                                                    .toDate()
-                                                    .toLocaleTimeString()}
-                                            </td>
-                                            <td>{ event.returnValues.candidateAmountSum == 0 ? 'Upgrade' : 'DAO' }</td>                                            
-                                            <td>{ event.returnValues.candidate }</td>
-                                            <td>{ event.returnValues.currentEpoch }</td>
-                                            <td>{ this.formatBigNumberAttribute(event.returnValues.candidateVoteCount) }</td>
-                                            <td>
-                                                { 
-                                                    this.formatBigNumberAttribute(
-                                                        new BN(event.returnValues.candidateAmountSum).div(new BN(event.returnValues.candidateVoteCount))
-                                                    ) 
-                                                }
-                                            </td>
-                                            <td>
-                                                { event.returnValues.candidateIdx }
-                                            </td>
-                                            <td>
-                                                { event.returnValues.numberOfCandidates }
-                                            </td>
-                                            <td>
-                                                {event.returnValues.losingCandidate}
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .losingCandidateEgls
-                                                )}
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .losingCandidateIdx
-                                                )}
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <br />
-                    <div>
-                        <b>DAO/Upgrade Candidate Vote Removed:</b>
-                        <table style={tableWidth1000}>
-                            <thead style={thead}>
-                                <tr>
-                                    <td>Date</td>
-                                    <td>Time</td>
-                                    <td>Type</td>
-                                    <td>Candidate Address</td>
-                                    <td>Current Epoch</td>
-                                    <td>Vote Weight</td>
-                                    <td>DAO Amount Sum</td>
-                                    <td>Idx</td>
-                                    <td>Total Number of Candidates</td>
-                                </tr>
-                            </thead>
-                            <tbody style={contractAttributeValue}>
-                                {eventCandidateVoteRemoved.map((event) => {
-                                    return (
-                                        <tr>
-                                            <td>
-                                                {moment
-                                                    .unix(
-                                                        event.returnValues.date
-                                                    )
-                                                    .local()
-                                                    .toDate()
-                                                    .toLocaleDateString()}
-                                            </td>
-                                            <td>
-                                                {moment
-                                                    .unix(
-                                                        event.returnValues.date
-                                                    )
-                                                    .local()
-                                                    .toDate()
-                                                    .toLocaleTimeString()}
-                                            </td>
-                                            <td>{ event.returnValues.candidateAmountSum == 0 ? 'Upgrade' : 'DAO' }</td>
-                                            <td>{ event.returnValues.candidate }</td>
-                                            <td>{ event.returnValues.currentEpoch }</td>
-                                            <td>{ this.formatBigNumberAttribute(event.returnValues.candidateVoteCount) }</td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues.candidateAmountSum
-                                                )}
-                                            </td>
-                                            <td>
-                                                { event.returnValues.candidateIdx }
-                                            </td>
-                                            <td>
-                                                { event.returnValues.numberOfCandidates }
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <br />
-
-                    <br />
-                    <div>
                         <b>Withdraw:</b>
                         <table style={tableWidth1000}>
                             <thead style={thead}>
@@ -995,9 +810,7 @@ class EglContractStatus extends React.Component {
                                     <td>Caller</td>
                                     <td>Current Epoch</td>
                                     <td>Desired EGL</td>
-                                    <td>EGL Vote %</td>
-                                    <td>DAO Vote %</td>
-                                    <td>Upgrade Vote %</td>
+                                    <td>Vote %</td>
                                     <td>Average Gas Target</td>
                                 </tr>
                             </thead>
@@ -1037,20 +850,6 @@ class EglContractStatus extends React.Component {
                                                 {this.formatBigNumberAttribute(
                                                     event.returnValues
                                                         .actualVotePercentage
-                                                )}
-                                                %
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .daoVotePercentage
-                                                )}
-                                                %
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .upgradeVotePercentage
                                                 )}
                                                 %
                                             </td>
@@ -1223,130 +1022,6 @@ class EglContractStatus extends React.Component {
                         </table>
                     </div>
 
-                    <br />
-                    <div>
-                        <b>DAO/Upgrade Candidate Vote Evaluated:</b>
-                        <table style={tableWidth1000}>
-                            <thead style={thead}>
-                                <tr>
-                                    <td>Date</td>
-                                    <td>Time</td>
-                                    <td>Type</td>
-                                    <td>Leading Address</td>
-                                    <td>Current Epoch</td>
-                                    <td>Leading Votes</td>
-                                    <td>Leading Amount</td>
-                                    <td>Total Vote Weight</td>
-                                    <td>Total Vote Percentage</td>
-                                    <td>Threshold Passed</td>
-                                </tr>
-                            </thead>
-                            <tbody style={contractAttributeValue}>
-                                {eventCandidateVoteEvaluated.map((event) => {
-                                    return (
-                                        <tr>
-                                            <td>
-                                                {moment
-                                                    .unix(
-                                                        event.returnValues.date
-                                                    )
-                                                    .local()
-                                                    .toDate()
-                                                    .toLocaleDateString()}
-                                            </td>
-                                            <td>
-                                                {moment
-                                                    .unix(
-                                                        event.returnValues.date
-                                                    )
-                                                    .local()
-                                                    .toDate()
-                                                    .toLocaleTimeString()}
-                                            </td>
-                                            <td>{event.returnValues.leadingCandidateAmount == 0 ? 'Upgrade' : 'DAO'}</td>
-                                            <td>{event.returnValues.leadingCandidate}</td>
-                                            <td>
-                                                {
-                                                    event.returnValues
-                                                        .currentEpoch
-                                                }
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(event.returnValues.leadingCandidateVotes) }
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(event.returnValues.leadingCandidateAmount)}
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(event.returnValues.totalVoteWeight)}
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .totalVotePercentage
-                                                )}
-                                                %
-                                            </td>
-                                            <td>
-                                                { event.returnValues.thresholdPassed.toString()}                                                
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                    <br />
-
-                    <div>
-                        <b>DAO/Upgrade Candidate Winners:</b>
-                        <table style={tableWidth1000}>
-                            <thead style={thead}>
-                                <tr>
-                                    <td>Date</td>
-                                    <td>Time</td>
-                                    <td>Type</td>
-                                    <td>Winner Address</td>
-                                    <td>Current Epoch</td>
-                                    <td>Winner Amount</td>
-                                </tr>
-                            </thead>
-                            <tbody style={contractAttributeValue}>
-                                {eventCandidateVoteWinner.map((event) => {
-                                    return (
-                                        <tr>
-                                            <td>
-                                                {moment
-                                                    .unix(
-                                                        event.returnValues.date
-                                                    )
-                                                    .local()
-                                                    .toDate()
-                                                    .toLocaleDateString()}
-                                            </td>
-                                            <td>
-                                                {moment
-                                                    .unix(
-                                                        event.returnValues.date
-                                                    )
-                                                    .local()
-                                                    .toDate()
-                                                    .toLocaleTimeString()}
-                                            </td>
-                                            <td>{ event.returnValues.winnerAmount == 0 ? 'Upgrade' : 'DAO' }</td>
-                                            <td>{ event.returnValues.winnerAddress }</td>
-                                            <td>{ event.returnValues.currentEpoch }</td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(event.returnValues.winnerAmount)}
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                    <br />
-
                     <hr />
                     <br />
                     <div>
@@ -1360,6 +1035,7 @@ class EglContractStatus extends React.Component {
                                     <td>Creator Address</td>
                                     <td>Current Epoch</td>
                                     <td>Reward Amount</td>
+                                    <td>Last Epoch Reward Amount</td>
                                     <td>Remaining Reward Amount</td>
                                 </tr>
                             </thead>
@@ -1407,6 +1083,12 @@ class EglContractStatus extends React.Component {
                                             <td>
                                                 {this.formatBigNumberAttribute(
                                                     event.returnValues
+                                                        .lastEpochReward
+                                                )}
+                                            </td>
+                                            <td>
+                                                {this.formatBigNumberAttribute(
+                                                    event.returnValues
                                                         .remainingCreatorReward
                                                 )}
                                             </td>
@@ -1426,11 +1108,9 @@ class EglContractStatus extends React.Component {
                                 <tr>
                                     <td>Block Number</td>
                                     <td>Caller</td>
+                                    <td>CoinBase Address</td>
                                     <td>Block Gas Limit</td>
-                                    <td>Difference From EGL</td>
-                                    <td>Reward Percentage</td>
                                     <td>Calculated Reward Amount</td>
-                                    <td>Reward Amount Transferred</td>
                                 </tr>
                             </thead>
                             <tbody style={contractAttributeValue}>
@@ -1439,34 +1119,11 @@ class EglContractStatus extends React.Component {
                                         <tr>
                                             <td>{event.returnValues.blockNumber}</td>
                                             <td>{event.returnValues.caller}</td>
-                                            <td>
-                                                {
-                                                    event.returnValues
-                                                        .blockGasLimit
-                                                }
-                                            </td>
-                                            <td>
-                                                {
-                                                    event.returnValues
-                                                        .difference
-                                                }
-                                            </td>
+                                            <td>{event.returnValues.coinbaseAddress}</td>
+                                            <td>{event.returnValues.blockGasLimit}</td>
                                             <td>
                                                 {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .rewardPercentage
-                                                )}
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .blockReward
-                                                )}
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .actualAmountTransferred
+                                                    event.returnValues.blockReward
                                                 )}
                                             </td>
                                         </tr>
@@ -1477,256 +1134,155 @@ class EglContractStatus extends React.Component {
                     </div>
                     <br />
 
+                    <div>
+                        <b>Block Reward Calculated:</b>
+                        <table style={tableWidth1000}>
+                            <thead style={thead}>
+                                <tr>
+                                    <td>Block Number</td>
+                                    <td>Remaining Pool Reward</td>
+                                    <td>Block Gas Limit</td>
+                                    <td>Desired EGL</td>
+                                    <td>Difference From EGL</td>
+                                    <td>Reward Percentage</td>
+                                    <td>Calculated Block Amount</td>
+                                </tr>
+                            </thead>
+                            <tbody style={contractAttributeValue}>
+                                {eventBlockRewardCalculated.map((event) => {
+                                    return (
+                                        <tr>
+                                            <td>{event.returnValues.blockNumber}</td>
+                                            <td>{event.returnValues.remainingPoolReward}</td>
+                                            <td>{event.returnValues.blockGasLimit}</td>
+                                            <td>{event.returnValues.desiredEgl}</td>
+                                            <td>{event.returnValues.delta}</td>
+                                            <td>
+                                                {this.formatBigNumberAttribute(
+                                                    event.returnValues.rewardPercent
+                                                )}
+                                            </td>
+                                            <td>
+                                                {this.formatBigNumberAttribute(
+                                                    event.returnValues.blockReward
+                                                )}
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                    <br />
+
+                    <div>
+                        <b>Seeder EGLs Claimed:</b>
+                        <table style={tableWidth1000}>
+                            <thead style={thead}>
+                                <tr>
+                                    <td>Date</td>
+                                    <td>Time</td>
+                                    <td>Seed Account</td>
+                                    <td>Seed Amount</td>
+                                    <td>Release Date</td>
+                                    <td>Release Time</td>
+                                </tr>
+                            </thead>
+                            <tbody style={contractAttributeValue}>
+                                {eventSeedAccountClaimed.map((event) => {
+                                return (
+                                    <tr>
+                                        <td>{moment.unix(event.returnValues.date).local().toDate().toLocaleDateString()}</td>
+                                        <td>{moment.unix(event.returnValues.date).local().toDate().toLocaleTimeString()}</td>
+                                        <td>{event.returnValues.seedAddress}</td>
+                                        <td>{this.formatBigNumberAttribute(event.returnValues.individualSeedAmount)}</td>
+                                        <td>{moment.unix(event.returnValues.releaseDate).local().toDate().toLocaleDateString()}</td>
+                                        <td>{moment.unix(event.returnValues.releaseDate).local().toDate().toLocaleTimeString()}</td>
+                                    </tr>
+                                )
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <hr />
+                    <br />
+                    <div>
+                        <b>Bonus EGLs Claimed:</b>
+                        <table style={tableWidth1000}>
+                            <thead style={thead}>
+                                <tr>
+                                    <td>Date</td>
+                                    <td>Time</td>
+                                    <td>Caller</td>
+                                    <td>Genesis Amount Contr.</td>
+                                    <td>ETH:EGL</td>
+                                    <td>ETH:BPT</td>
+                                    <td>EGL's Received</td>
+                                    <td>BPT's Received</td>
+                                </tr>
+                            </thead>
+                            <tbody style={contractAttributeValue}>
+                                {eventSupporterTokensClaimed.map((event) => {
+                                    return (
+                                        <tr>
+                                            <td>
+                                                {moment
+                                                    .unix(
+                                                        event.returnValues.date
+                                                    )
+                                                    .local()
+                                                    .toDate()
+                                                    .toLocaleDateString()}
+                                            </td>
+                                            <td>
+                                                {moment
+                                                    .unix(
+                                                        event.returnValues.date
+                                                    )
+                                                    .local()
+                                                    .toDate()
+                                                    .toLocaleTimeString()}
+                                            </td>
+                                            <td>{event.returnValues.caller}</td>
+                                            <td>
+                                                {this.formatBigNumberAttribute(
+                                                    event.returnValues
+                                                        .amountContributed
+                                                )}
+                                            </td>
+                                            <td>
+                                                {this.formatBigNumberAttribute(
+                                                    event.returnValues
+                                                        .ethEglRatio
+                                                )}
+                                            </td>
+                                            <td>
+                                                {this.formatBigNumberAttribute(
+                                                    event.returnValues
+                                                        .ethBptRatio
+                                                )}
+                                            </td>
+                                            <td>
+                                                {this.formatBigNumberAttribute(
+                                                    event.returnValues.bonusEglsReceived
+                                                )}
+                                            </td>
+                                            <td>
+                                                {this.formatBigNumberAttribute(
+                                                    event.returnValues.poolTokensReceived
+                                                )}
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                     <hr />
-                    <div>
-                        <b>Uniswap - EGL's Matched:</b>
-                        <table style={tableWidth1000}>
-                            <thead style={thead}>
-                                <tr>
-                                    <td>Date</td>
-                                    <td>Time</td>
-                                    <td>Caller</td>
-                                    <td>UniSwap Launched</td>
-                                    <td>ETH:EGL Ratio</td>
-                                    <td>Eth Received</td>
-                                    <td>Total ETH Received</td>
-                                    <td>EGLs Matched</td>
-                                    <td>Total EGL's Matched</td>
-                                    <td>Pool Tokens Received</td>
-                                    <td>Total Pool Tokens</td>
-                                </tr>
-                            </thead>
-                            <tbody style={contractAttributeValue}>
-                                {eventEglsMatched.map((event) => {
-                                    return (
-                                        <tr>
-                                            <td>
-                                                {moment
-                                                    .unix(
-                                                        event.returnValues.date
-                                                    )
-                                                    .local()
-                                                    .toDate()
-                                                    .toLocaleDateString()}
-                                            </td>
-                                            <td>
-                                                {moment
-                                                    .unix(
-                                                        event.returnValues.date
-                                                    )
-                                                    .local()
-                                                    .toDate()
-                                                    .toLocaleTimeString()}
-                                            </td>
-                                            <td>{event.returnValues.caller}</td>
-                                            <td>
-                                                {event.returnValues.uniSwapLaunched.toString()}
-                                            </td>
-                                            <td>
-                                                1:
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .ethEglRatio
-                                                )}
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .amountReceived
-                                                )}
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .ethToBeDeployed
-                                                )}
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .eglsToBeMatched
-                                                )}
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .eglsMatched
-                                                )}
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .poolTokensReceived
-                                                )}
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .poolTokensHeld
-                                                )}
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
                     <br />
                     <div>
-                        <b>Uniswap - Added Liquidity:</b>
-                        <table style={tableWidth1000}>
-                            <thead style={thead}>
-                                <tr>
-                                    <td>Date</td>
-                                    <td>Time</td>
-                                    <td>Caller</td>
-                                    <td>Desired EGL's</td>
-                                    <td>ETH Amount</td>
-                                    <td>Minimum EGL's</td>
-                                    <td>Minimum ETH amount</td>
-                                    <td>Pool Tokens Received</td>
-                                </tr>
-                            </thead>
-                            <tbody style={contractAttributeValue}>
-                                {eventLiquidityAdded.map((event) => {
-                                    return (
-                                        <tr>
-                                            <td>
-                                                {moment
-                                                    .unix(
-                                                        event.returnValues.date
-                                                    )
-                                                    .local()
-                                                    .toDate()
-                                                    .toLocaleDateString()}
-                                            </td>
-                                            <td>
-                                                {moment
-                                                    .unix(
-                                                        event.returnValues.date
-                                                    )
-                                                    .local()
-                                                    .toDate()
-                                                    .toLocaleTimeString()}
-                                            </td>
-                                            <td>{event.returnValues.caller}</td>
-                                            <td>
-                                                1:
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .desiredTokenAmount
-                                                )}
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .ethAmount
-                                                )}
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .minTokenAmount
-                                                )}
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .minEthAmount
-                                                )}
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .poolTokensReceived
-                                                )}
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                    <br />
-                    <div>
-                        <b>Uniswap - Launched:</b>
-                        <table style={tableWidth1000}>
-                            <thead style={thead}>
-                                <tr>
-                                    <td>Date</td>
-                                    <td>Time</td>
-                                    <td>Caller</td>
-                                    <td>ETH:EGL Ratio</td>
-                                    <td>Deployed Using (ETH)</td>
-                                    <td>EGLs Matched</td>
-                                    <td>Expected Liquidity Tokens</td>
-                                    <td>Actual Liquidity Tokens</td>
-                                </tr>
-                            </thead>
-                            <tbody style={contractAttributeValue}>
-                                {eventUniSwapLaunch.map((event) => {
-                                    return (
-                                        <tr>
-                                            <td>
-                                                {moment
-                                                    .unix(
-                                                        event.returnValues.date
-                                                    )
-                                                    .local()
-                                                    .toDate()
-                                                    .toLocaleDateString()}
-                                            </td>
-                                            <td>
-                                                {moment
-                                                    .unix(
-                                                        event.returnValues.date
-                                                    )
-                                                    .local()
-                                                    .toDate()
-                                                    .toLocaleTimeString()}
-                                            </td>
-                                            <td>{event.returnValues.caller}</td>
-                                            <td>
-                                                1:
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .ethEglRatio
-                                                )}
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .ethToBeDeployed
-                                                )}
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .eglsMatched
-                                                )}
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .poolTokensHeld
-                                                )}
-                                            </td>
-                                            <td>
-                                                {this.formatBigNumberAttribute(
-                                                    event.returnValues
-                                                        .poolTokensReceived
-                                                )}
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <br />
-                    <div>
-                        <b>Uniswap - Liquidity Tokens Withdrawn:</b>
+                        <b>Pool Tokens Withdrawn:</b>
                         <table style={tableWidth1000}>
                             <thead style={thead}>
                                 <tr>
@@ -1734,14 +1290,14 @@ class EglContractStatus extends React.Component {
                                     <td>Time</td>
                                     <td>Caller</td>
                                     <td>Current Egl Released</td>
-                                    <td>Liquidity Tokens Due</td>
-                                    <td>Remaining Liquidity Tokens</td>
+                                    <td>Pool Tokens Due</td>
+                                    <td>Remaining Pool Tokens</td>
                                     <td>First EGL</td>
                                     <td>Last EGL</td>
                                 </tr>
                             </thead>
                             <tbody style={contractAttributeValue}>
-                                {eventLiquidityTokensWithdrawn.map((event) => {
+                                {eventPoolTokensWithdrawn.map((event) => {
                                     return (
                                         <tr>
                                             <td>

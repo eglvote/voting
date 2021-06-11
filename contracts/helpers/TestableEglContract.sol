@@ -1,10 +1,10 @@
-pragma solidity ^0.6.0;
+pragma solidity 0.6.6;
 
 import "../EglContract.sol";
 
 contract TestableEglContract is EglContract {
     event PercentageCalculated(uint percentage);
-    event CurrentEglCalculated(uint currentEgl);
+    event ReleasedEglCalculated(uint currentEgl);
     event PoolTokensDueCalculated(uint poolTokensDue);
     event BonusEglsDueCalculated(uint bonusEglsDue);
 
@@ -28,30 +28,17 @@ contract TestableEglContract is EglContract {
         _internalWithdraw(_voter);
     }
 
-    function fundSeedAccounts(
-        address[] calldata _seedAccounts, 
-        uint[] calldata _seedAmounts
-    ) external  {
-        _fundSeedAccounts(_seedAccounts, _seedAmounts);
+    function issueCreatorRewards(uint _timePassedSinceOrigin) external {
+        _issueCreatorRewards(_timePassedSinceOrigin);
     }
 
-    function issueCreatorRewards() external {
-        _issueCreatorRewards();
+    function calculateBlockReward(int _blockGasLimit, int _desiredEgl) external {
+        _calculateBlockReward(_blockGasLimit, _desiredEgl);
     }
 
-    function calculateBlockReward(int _blockGasLimit) external {
-        _calculateBlockReward(_blockGasLimit);
-    }
-
-    function calculatePercentageOfTokensInCirculation(uint _itemTotal, uint _tokensInCirculation) external {
-        tokensInCirculation = _tokensInCirculation;
-        uint percentage = _calculatePercentageOfTokensInCirculation(_itemTotal);
-        emit PercentageCalculated(percentage);
-    }
-
-    function calculateCurrentEgl(uint _timePassedSinceStart) external {
-        uint currentEgl = _calculateCurrentEgl(_timePassedSinceStart);
-        emit CurrentEglCalculated(currentEgl);
+    function calculateReleasedEgl(uint _timePassedSinceOrigin, uint _maxSupply, uint _timeLocked) external {
+        uint releasedEgl = _calculateReleasedEgl(_timePassedSinceOrigin, _maxSupply, _timeLocked);
+        emit ReleasedEglCalculated(releasedEgl);
     }
     
     function calculateCurrentPoolTokensDue(
@@ -60,17 +47,28 @@ contract TestableEglContract is EglContract {
         uint _lastEgl, 
         uint _totalPoolTokens
     ) external {
-        uint poolTokensDue = _calculateCurrentPoolTokensDue(
-            _currentEgl, 
-            _firstEgl, 
-            _lastEgl, 
-            _totalPoolTokens
-        );
+        uint poolTokensDue = _calculateCurrentPoolTokensDue(_currentEgl, _firstEgl, _lastEgl, _totalPoolTokens);
         emit PoolTokensDueCalculated(poolTokensDue);
     }
 
     function calculateBonusEglsDue(uint _firstEgl, uint _lastEgl) external {
         uint bonusEglsDue = _calculateBonusEglsDue(_firstEgl, _lastEgl);
         emit BonusEglsDueCalculated(bonusEglsDue);
+    }
+
+    function calculateVoterReward(
+        address _voter,
+        uint16 _currentEpoch,
+        uint16 _voterEpoch,
+        uint8 _lockupDuration,
+        uint _voteWeight
+    ) external {
+        _calculateVoterReward(_voter, _currentEpoch, _voterEpoch, _lockupDuration, _voteWeight);
+    }
+
+    function calculatePercentageOfTokensInCirculation(uint _itemTotal, uint _tokensInCirculation) external {
+        tokensInCirculation = _tokensInCirculation;
+        uint percentage = _calculatePercentageOfTokensInCirculation(_itemTotal);
+        emit PercentageCalculated(percentage);
     }
 }
