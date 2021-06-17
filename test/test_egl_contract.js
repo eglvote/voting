@@ -1,11 +1,11 @@
 const { expectRevert, time } = require("@openzeppelin/test-helpers");
-const { web3 } = require("@openzeppelin/test-helpers/src/setup");
+const EglToken = artifacts.require("./EglToken.sol");
+const EglContract = artifacts.require("./EglContract.sol");
+const MockEglGenesis = artifacts.require("./helpers/MockEglGenesis.sol");
+const MockBalancerPoolToken = artifacts.require("./helpers/MockBalancerPoolToken.sol");
+
 const {
     BN,
-    TestableEglContract,
-    MockEglGenesis,
-    MockBalancerPoolToken,
-    EglToken,
     EventType,
     VoterAttributes,
     ZeroAddress,
@@ -21,7 +21,6 @@ const {
     sleep, 
     populateEventDataFromLogs,
     getBlockTimestamp,
-    airDropTokens,
     populateAllEventDataFromLogs,
     getAllEventsForType,
 } = require("./helpers/helper-functions")
@@ -78,27 +77,25 @@ contract("EglTests", (accounts) => {
         eglTokenInstance = await EglToken.new();
         await eglTokenInstance.initialize("EthereumGasLimit", "EGL", totalTokenSupply);
 
-        let airDropAccounts = {
-            "Account 1": _voter1,
-            "Account 2": _voter2,
-        }
-        let eglsAirDropped = await airDropTokens(airDropAccounts, eglTokenInstance);
-
-        mockEglGenesisInstance = await MockEglGenesis.new();
+        mockEglGenesisInstance = await MockEglGenesis.new(accounts[1]);
         await mockEglGenesisInstance.sendTransaction({from: _supporter1, value: web3.utils.toWei("0.1")});
         await mockEglGenesisInstance.sendTransaction({from: _supporter2, value: web3.utils.toWei("1.65")});
+        await eglTokenInstance.transfer(
+            accounts[1],
+            web3.utils.toWei("750000000"),
+            { from: _deployer }
+        )
 
         mockBalancerPoolTokenInstance = await MockBalancerPoolToken.new();
         await mockBalancerPoolTokenInstance.initialize("BalancerPoolToken", "BPT", web3.utils.toWei("10000"));        
         
-        eglContractInstance = await TestableEglContract.new();        
+        eglContractInstance = await EglContract.new();        
         
         let eglContractDeploymentHash = eglContractInstance.transactionHash;
         let eglContractDeploymentTransaction = await web3.eth.getTransaction(eglContractDeploymentHash);
         eglContractDeployBlockNumber = eglContractDeploymentTransaction.blockNumber;
         let eglContractDeploymentBlock = await web3.eth.getBlock(eglContractDeployBlockNumber);
-        let eglContractDeploymentTimestamp = eglContractDeploymentBlock.timestamp;
-        
+        let eglContractDeploymentTimestamp = eglContractDeploymentBlock.timestamp;        
         eglContractDeployGasLimit = eglContractDeploymentBlock.gasLimit;
 
         let txReceipt = await eglContractInstance.initialize(
@@ -108,19 +105,16 @@ contract("EglTests", (accounts) => {
             eglContractDeploymentTimestamp,
             DefaultVotePauseSeconds,
             DefaultEpochLengthSeconds,
-            "6700000",
-            "7200000",
             SEED_ACCOUNTS,
             SEED_AMOUNTS,
-            eglsAirDropped,
             CREATOR_REWARDS_ACCOUNT
         );
-        await eglTokenInstance.transfer(eglContractInstance.address, totalTokenSupply.sub(eglsAirDropped), { from: _deployer });
+
+        let remainingTokenBalance = await eglTokenInstance.balanceOf(_deployer);
+        await eglTokenInstance.transfer(eglContractInstance.address, remainingTokenBalance.toString(), { from: _deployer });
         await mockBalancerPoolTokenInstance.transfer(eglContractInstance.address, web3.utils.toWei("10000"), { from: _deployer });
       
         initEvent = populateAllEventDataFromLogs(txReceipt, EventType.INITIALIZED)[0];        
-        eglContractDeployBlockNumber = txReceipt.receipt.blockNumber;
-        eglContractDeployGasLimit = (await web3.eth.getBlock(eglContractDeployBlockNumber)).gasLimit
     });
 
     describe.skip("Debug", function () {

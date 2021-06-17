@@ -1,15 +1,17 @@
 const expectRevert = require("@openzeppelin/test-helpers/src/expectRevert");
-const { BN } = require("bn.js");
+
+const EglToken = artifacts.require("./EglToken.sol");
+const TestableEglContract = artifacts.require("./helpers/TestableEglContract.sol");
+const MockEglGenesis = artifacts.require("./helpers/MockEglGenesis.sol");
+const MockBalancerPoolToken = artifacts.require("./helpers/MockBalancerPoolToken.sol");
 const {
-    TestableEglContract,
-    EglToken,
-    MockEglGenesis,
-    MockBalancerPoolToken,
+    BN,
     EventType,
     DefaultVotePauseSeconds,
     DefaultEpochLengthSeconds,
     ConsoleColors,
 } = require("./helpers/constants");
+
 const {
     populateAllEventDataFromLogs,
     getAllEventsForType,
@@ -17,7 +19,7 @@ const {
 } = require("./helpers/helper-functions");
 
 contract("EglInternalFunctions", (accounts) => {
-    const [deployer, supporter1, supporter2] = accounts;
+    const [_deployer, _supporter1, _supporter2] = accounts;
     const SEED_ACCOUNTS = [accounts[6], accounts[7]];
     const SEED_AMOUNTS = [web3.utils.toWei("2500000"), web3.utils.toWei("2500000")];
 
@@ -28,9 +30,14 @@ contract("EglInternalFunctions", (accounts) => {
         eglTokenInstance = await EglToken.new();
         await eglTokenInstance.initialize("EthereumGasLimit", "EGL", totalTokenSupply);
 
-        mockEglGenesisInstance = await MockEglGenesis.new();
-        await mockEglGenesisInstance.sendTransaction({from: supporter1, value: web3.utils.toWei("0.1")});
-        await mockEglGenesisInstance.sendTransaction({from: supporter2, value: web3.utils.toWei("0.2")});
+        mockEglGenesisInstance = await MockEglGenesis.new(accounts[1]);
+        await mockEglGenesisInstance.sendTransaction({from: _supporter1, value: web3.utils.toWei("0.1")});
+        await mockEglGenesisInstance.sendTransaction({from: _supporter2, value: web3.utils.toWei("0.2")});
+        await eglTokenInstance.transfer(
+            accounts[1],
+            web3.utils.toWei("750000000"),
+            { from: _deployer }
+        )
 
         mockBalancerPoolTokenInstance = await MockBalancerPoolToken.new();
         await mockBalancerPoolTokenInstance.initialize("BalancerPoolToken", "BPT", web3.utils.toWei("10000"));        
@@ -42,6 +49,7 @@ contract("EglInternalFunctions", (accounts) => {
         eglContractDeployBlockNumber = eglContractDeploymentTransaction.blockNumber;
         let eglContractDeploymentBlock = await web3.eth.getBlock(eglContractDeployBlockNumber);
         let eglContractDeploymentTimestamp = eglContractDeploymentBlock.timestamp;
+        eglContractDeployGasLimit = eglContractDeploymentBlock.gasLimit;
 
         let txReceipt = await eglContractInstance.initialize(
             eglTokenInstance.address,
@@ -50,18 +58,16 @@ contract("EglInternalFunctions", (accounts) => {
             eglContractDeploymentTimestamp,
             DefaultVotePauseSeconds,
             "604800",
-            "6700000",
-            "7200000",
             SEED_ACCOUNTS,
             SEED_AMOUNTS,
-            "0",
             CREATOR_REWARDS_ACCOUNT
-        );
+        );        
 
-        await eglTokenInstance.transfer(eglContractInstance.address, totalTokenSupply, { from: deployer });
-        await mockBalancerPoolTokenInstance.transfer(eglContractInstance.address, web3.utils.toWei("10000"), { from: deployer });
+        let remainingTokenBalance = await eglTokenInstance.balanceOf(_deployer);
+        await eglTokenInstance.transfer(eglContractInstance.address, remainingTokenBalance.toString(), { from: _deployer });
+        await mockBalancerPoolTokenInstance.transfer(eglContractInstance.address, web3.utils.toWei("10000"), { from: _deployer });
 
-        initEvent = populateAllEventDataFromLogs(txReceipt, EventType.INITIALIZED);
+        initEvent = populateAllEventDataFromLogs(txReceipt, EventType.INITIALIZED)[0];
     });    
 
     describe("Fund Seed Accounts", function () {
@@ -94,7 +100,7 @@ contract("EglInternalFunctions", (accounts) => {
 
             let seedEvents = populateAllEventDataFromLogs(txReceipt, EventType.SEED_ACCOUNT_FUNDED);
             let voteEvents = populateAllEventDataFromLogs(txReceipt, EventType.VOTE);
-            let expectedReleaseDate = parseInt(initEvent[0].firstEpochStartDate) + (parseInt(initEvent[0].epochLength) * 52)
+            let expectedReleaseDate = parseInt(initEvent.firstEpochStartDate) + (parseInt(initEvent.epochLength) * 52)
             for (let i = 0; i < seedEvents.length; i++) {
                 assert.equal(voteEvents[i].releaseDate.toString(), expectedReleaseDate.toString(), "Incorrect release date for seed account " + i + " vote");
             }
@@ -189,6 +195,85 @@ contract("EglInternalFunctions", (accounts) => {
         });
     });
     describe("Calculate Block Reward", function () {
+        it.only("DEBUG", async () => {
+            let tallyVoteGasLimit = 15000000;           
+            let desiredEgl = 15100000;            
+            let blockGasLimit = 15100000;
+
+            let txReceipt = await eglContractInstance.calculateBlockReward(blockGasLimit, desiredEgl, tallyVoteGasLimit);
+
+            let debugEvent = populateAllEventDataFromLogs(txReceipt, "BlockRewardCalculated");
+            console.log("Event: ", debugEvent)
+            // uint blockNumber, 
+            // uint remainingPoolReward,
+            // int blockGasLimit, 
+            // int desiredEgl,
+            // int tallyVotesGasLimit,
+            // int buffer,
+            // int proximityRewardPercent,
+            // uint totalRewardPercent,
+            // uint blockReward
+            console.log("blockGasLimit: ", debugEvent[0].blockGasLimit.toString());
+            console.log("desiredEgl: ", debugEvent[0].desiredEgl.toString());
+            console.log("tallyVotesGasLimit: ", debugEvent[0].tallyVotesGasLimit.toString());
+            console.log("proximityRewardPercent: ", web3.utils.fromWei(debugEvent[0].proximityRewardPercent.toString()));
+            console.log("totalRewardPercent: ", web3.utils.fromWei(debugEvent[0].totalRewardPercent.toString()));
+            console.log("blockReward: ", web3.utils.fromWei(debugEvent[0].blockReward.toString()));
+            // assert.equal(web3.utils.fromWei(blockRewardEvents[0].rewardPercent.toString()), "100", "Incorrect reward percentage calculated");
+            console.log("********************************************************************************")
+
+            tallyVoteGasLimit = 15000000;           
+            desiredEgl = 15100000;            
+            blockGasLimit = 15101000;
+
+            txReceipt = await eglContractInstance.calculateBlockReward(blockGasLimit, desiredEgl, tallyVoteGasLimit);
+
+            debugEvent = populateAllEventDataFromLogs(txReceipt, "BlockRewardCalculated");
+            console.log("Event: ", debugEvent)
+            // uint blockNumber, 
+            // uint remainingPoolReward,
+            // int blockGasLimit, 
+            // int desiredEgl,
+            // int tallyVotesGasLimit,
+            // int buffer,
+            // int proximityRewardPercent,
+            // uint totalRewardPercent,
+            // uint blockReward
+            console.log("blockGasLimit: ", debugEvent[0].blockGasLimit.toString());
+            console.log("desiredEgl: ", debugEvent[0].desiredEgl.toString());
+            console.log("tallyVotesGasLimit: ", debugEvent[0].tallyVotesGasLimit.toString());
+            console.log("proximityRewardPercent: ", web3.utils.fromWei(debugEvent[0].proximityRewardPercent.toString()));
+            console.log("totalRewardPercent: ", web3.utils.fromWei(debugEvent[0].totalRewardPercent.toString()));
+            console.log("blockReward: ", web3.utils.fromWei(debugEvent[0].blockReward.toString()));
+            // assert.equal(web3.utils.fromWei(blockRewardEvents[0].rewardPercent.toString()), "100", "Incorrect reward percentage calculated");
+            console.log("********************************************************************************")
+
+            tallyVoteGasLimit = 15000000;           
+            desiredEgl = 15100000;            
+            blockGasLimit = 15100000;
+
+            txReceipt = await eglContractInstance.calculateBlockReward(blockGasLimit, desiredEgl, tallyVoteGasLimit);
+
+            debugEvent = populateAllEventDataFromLogs(txReceipt, "BlockRewardCalculated");
+            console.log("Event: ", debugEvent)
+            // uint blockNumber, 
+            // uint remainingPoolReward,
+            // int blockGasLimit, 
+            // int desiredEgl,
+            // int tallyVotesGasLimit,
+            // int buffer,
+            // int proximityRewardPercent,
+            // uint totalRewardPercent,
+            // uint blockReward
+            console.log("blockGasLimit: ", debugEvent[0].blockGasLimit.toString());
+            console.log("desiredEgl: ", debugEvent[0].desiredEgl.toString());
+            console.log("tallyVotesGasLimit: ", debugEvent[0].tallyVotesGasLimit.toString());
+            console.log("proximityRewardPercent: ", web3.utils.fromWei(debugEvent[0].proximityRewardPercent.toString()));
+            console.log("totalRewardPercent: ", web3.utils.fromWei(debugEvent[0].totalRewardPercent.toString()));
+            console.log("blockReward: ", web3.utils.fromWei(debugEvent[0].blockReward.toString()));
+            // assert.equal(web3.utils.fromWei(blockRewardEvents[0].rewardPercent.toString()), "100", "Incorrect reward percentage calculated");
+            console.log("********************************************************************************")
+        });
         it("should give pool 100% of the block reward ", async () => {
             let gasLimit = 7200000;
             let desiredEgl = 7200000;
@@ -322,8 +407,8 @@ contract("EglInternalFunctions", (accounts) => {
     });
 
     function getExpectedEgl(secondsPassed) {
-        let lockUpPeriod = parseInt(initEvent[0].minLiquidityTokensLockup);
-        let epochLength = parseInt(initEvent[0].epochLength);
+        let lockUpPeriod = parseInt(initEvent.minLiquidityTokensLockup);
+        let epochLength = parseInt(initEvent.epochLength);
         // let secondsPassed = lockUpPeriod + _secondsPassed;
         return ((secondsPassed - lockUpPeriod) / ((epochLength * 52) - lockUpPeriod))**4 * 750000000;
 
@@ -401,7 +486,7 @@ contract("EglInternalFunctions", (accounts) => {
             }
         });
         it("should revert if time passed still within lockup period", async () => {
-            let beforeLockupEnds = initEvent[0].minLiquidityTokensLockup - 10;
+            let beforeLockupEnds = initEvent.minLiquidityTokensLockup - 10;
             await expectRevert(
                 eglContractInstance.calculateCurrentEgl(beforeLockupEnds),
                 "SafeMath: subtraction overflow"

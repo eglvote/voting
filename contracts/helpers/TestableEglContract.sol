@@ -32,8 +32,8 @@ contract TestableEglContract is EglContract {
         _issueCreatorRewards(_timePassedSinceOrigin);
     }
 
-    function calculateBlockReward(int _blockGasLimit, int _desiredEgl) external {
-        _calculateBlockReward(_blockGasLimit, _desiredEgl);
+    function calculateBlockReward(int _blockGasLimit, int _desiredEgl, int _tallyVoteGasLimit) external {
+        _calculateBlockReward(_blockGasLimit, _desiredEgl, _tallyVoteGasLimit);
     }
 
     function calculateReleasedEgl(uint _timePassedSinceOrigin, uint _maxSupply, uint _timeLocked) external {

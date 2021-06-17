@@ -10,10 +10,16 @@
     "test": "truffle test --network ganache",
     "compile": "truffle compile --all",
     "mig-ganache": "truffle migrate --reset --network ganache",
+    "mig-ganache-token": "truffle migrate -f 2 --to 2 --reset --network ganache",
+    "mig-ganache-voting": "truffle migrate -f 3 --to 3 --reset --network ganache",
     "mig-ropsten": "truffle migrate --reset --network ropsten --skipDryRun",
+    "mig-ropsten-token": "truffle migrate -f 2 --to 2 --reset --network ropsten --skipDryRun",
+    "mig-ropsten-voting": "truffle migrate -f 3 --to 3 --reset --network ropsten --skipDryRun",
     "con-ganache": "truffle console --network ganache",
     "con-ropsten": "truffle console --network ropsten",
-    "size": "truffle run contract-size"
+    "size": "truffle run contract-size",
+    "auto-tally-ganache": "truffle exec test/helpers/auto_tally_votes.js  --network=ganache",
+    "auto-tally-ropsten": "truffle exec test/helpers/auto_tally_votes.js  --network=ropsten"
   },
   "author": "Shane van Coller",
   "license": "MIT",

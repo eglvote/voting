@@ -1,12 +1,5 @@
 const { BN } = require("bn.js");
 
-const Contract = require("@truffle/contract");
-const EglToken = artifacts.require("./EglToken.sol");
-const EglContract = artifacts.require("./EglContract.sol");
-const TestableEglContract = artifacts.require("./helpers/TestableEglContract.sol");
-const MockEglGenesis = artifacts.require("./helpers/MockEglGenesis.sol");
-const MockBalancerPoolToken = artifacts.require("./helpers/MockBalancerPoolToken.sol");
-
 const EventType = {
     INITIALIZED: "Initialized",
     VOTE: "Vote",
@@ -55,16 +48,8 @@ const ValidGasTarget = 7000000;
 const InvalidGasTargetHigh = 13000000;
 const InvalidGasTargetLow = 1000000;
 
-const InitialCreatorReward = new BN("750000000000000000000000000").div(new BN("43"));   
-
-
 module.exports = {
     BN,
-    EglToken,
-    EglContract,
-    TestableEglContract,
-    MockEglGenesis,
-    MockBalancerPoolToken,
     EventType,
     VoterAttributes,
     ZeroAddress,
@@ -73,6 +58,5 @@ module.exports = {
     ValidGasTarget,
     InvalidGasTargetHigh,
     InvalidGasTargetLow,
-    InitialCreatorReward,
-    ConsoleColors,
+    ConsoleColors,    
 }

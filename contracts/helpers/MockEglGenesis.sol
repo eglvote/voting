@@ -15,8 +15,8 @@ contract MockEglGenesis {
         uint date;
     }
 
-    constructor() public {
-        owner = msg.sender;
+    constructor(address _owner) public {
+        owner = _owner;
     }
 
     receive() external payable {

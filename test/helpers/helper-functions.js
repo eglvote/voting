@@ -1,5 +1,3 @@
-const { BN } = require("bn.js");
-
 async function sleep(seconds) {
     return new Promise((resolve) => {
         setTimeout(resolve, seconds * 1000);
@@ -52,21 +50,11 @@ function getNewWalletAddress(web3) {
     return web3.eth.accounts.create()
 }
 
-async function airDropTokens(airdropAccounts, eglToken) {
-    let airdroppedEgls = new BN("0");
-    for (let [, address] of Object.entries(airdropAccounts)) {
-        await eglToken.transfer(address, "50000000000000000000000000");
-        airdroppedEgls = airdroppedEgls.add(new BN("50000000000000000000000000"));
-    }
-    return airdroppedEgls;
-}
-
 module.exports = {
     sleep,
     populateEventDataFromLogs,
     populateAllEventDataFromLogs,
     getBlockTimestamp,    
-    airDropTokens,
     getAllEventsForType,
     getBlockGasLimit,
     getNewWalletAddress
