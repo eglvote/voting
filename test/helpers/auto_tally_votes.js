@@ -6,7 +6,7 @@ module.exports = async function(callback) {
     // let eglContract = await EglContract.at("0xEbc912Ff269221d158FE20f64A731fF56fFa9Ff0");
     let eglContract = await EglContract.deployed();
     console.log("Starting Epoch: ", (await eglContract.currentEpoch()).toString());
-    let sleepTime = 300
+    let sleepTime = 5
     while (true) {      
         try {            
             await sleep(sleepTime);        

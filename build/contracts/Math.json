@@ -13,14 +13,14 @@
     "absolutePath": "/Users/svancoller/Development/bloXroute/egl/contracts/libraries/Math.sol",
     "exportedSymbols": {
       "Math": [
-        3335
+        3403
       ]
     },
-    "id": 3336,
+    "id": 3404,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 3218,
+        "id": 3286,
         "literals": [
           "solidity",
           "^",
@@ -37,16 +37,16 @@
         "contractKind": "library",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 3335,
+        "id": 3403,
         "linearizedBaseContracts": [
-          3335
+          3403
         ],
         "name": "Math",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "body": {
-              "id": 3235,
+              "id": 3303,
               "nodeType": "Block",
               "src": "168:38:7",
               "statements": [
@@ -59,18 +59,18 @@
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       },
-                      "id": 3230,
+                      "id": 3298,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 3228,
+                        "id": 3296,
                         "name": "a",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3221,
+                        "referencedDeclaration": 3289,
                         "src": "185:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -81,11 +81,11 @@
                       "operator": ">=",
                       "rightExpression": {
                         "argumentTypes": null,
-                        "id": 3229,
+                        "id": 3297,
                         "name": "b",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3223,
+                        "referencedDeclaration": 3291,
                         "src": "190:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -100,18 +100,18 @@
                     },
                     "falseExpression": {
                       "argumentTypes": null,
-                      "id": 3232,
+                      "id": 3300,
                       "name": "b",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3223,
+                      "referencedDeclaration": 3291,
                       "src": "198:1:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "id": 3233,
+                    "id": 3301,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -120,11 +120,11 @@
                     "src": "185:14:7",
                     "trueExpression": {
                       "argumentTypes": null,
-                      "id": 3231,
+                      "id": 3299,
                       "name": "a",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3221,
+                      "referencedDeclaration": 3289,
                       "src": "194:1:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -136,20 +136,20 @@
                       "typeString": "uint256"
                     }
                   },
-                  "functionReturnParameters": 3227,
-                  "id": 3234,
+                  "functionReturnParameters": 3295,
+                  "id": 3302,
                   "nodeType": "Return",
                   "src": "178:21:7"
                 }
               ]
             },
             "documentation": {
-              "id": 3219,
+              "id": 3287,
               "nodeType": "StructuredDocumentation",
               "src": "44:60:7",
               "text": "@dev Returns max value of 2 unsigned ints"
             },
-            "id": 3236,
+            "id": 3304,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
@@ -157,17 +157,17 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 3224,
+              "id": 3292,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3221,
+                  "id": 3289,
                   "mutability": "mutable",
                   "name": "a",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3236,
+                  "scope": 3304,
                   "src": "123:6:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -176,7 +176,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3220,
+                    "id": 3288,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "123:4:7",
@@ -190,12 +190,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 3223,
+                  "id": 3291,
                   "mutability": "mutable",
                   "name": "b",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3236,
+                  "scope": 3304,
                   "src": "131:6:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -204,7 +204,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3222,
+                    "id": 3290,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "131:4:7",
@@ -220,17 +220,17 @@
               "src": "122:16:7"
             },
             "returnParameters": {
-              "id": 3227,
+              "id": 3295,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3226,
+                  "id": 3294,
                   "mutability": "mutable",
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3236,
+                  "scope": 3304,
                   "src": "162:4:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -239,7 +239,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3225,
+                    "id": 3293,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "162:4:7",
@@ -254,7 +254,7 @@
               ],
               "src": "161:6:7"
             },
-            "scope": 3335,
+            "scope": 3403,
             "src": "109:97:7",
             "stateMutability": "pure",
             "virtual": false,
@@ -262,7 +262,7 @@
           },
           {
             "body": {
-              "id": 3253,
+              "id": 3321,
               "nodeType": "Block",
               "src": "336:37:7",
               "statements": [
@@ -275,18 +275,18 @@
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       },
-                      "id": 3248,
+                      "id": 3316,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 3246,
+                        "id": 3314,
                         "name": "a",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3239,
+                        "referencedDeclaration": 3307,
                         "src": "353:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -297,11 +297,11 @@
                       "operator": "<",
                       "rightExpression": {
                         "argumentTypes": null,
-                        "id": 3247,
+                        "id": 3315,
                         "name": "b",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3241,
+                        "referencedDeclaration": 3309,
                         "src": "357:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -316,18 +316,18 @@
                     },
                     "falseExpression": {
                       "argumentTypes": null,
-                      "id": 3250,
+                      "id": 3318,
                       "name": "b",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3241,
+                      "referencedDeclaration": 3309,
                       "src": "365:1:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "id": 3251,
+                    "id": 3319,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -336,11 +336,11 @@
                     "src": "353:13:7",
                     "trueExpression": {
                       "argumentTypes": null,
-                      "id": 3249,
+                      "id": 3317,
                       "name": "a",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3239,
+                      "referencedDeclaration": 3307,
                       "src": "361:1:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -352,20 +352,20 @@
                       "typeString": "uint256"
                     }
                   },
-                  "functionReturnParameters": 3245,
-                  "id": 3252,
+                  "functionReturnParameters": 3313,
+                  "id": 3320,
                   "nodeType": "Return",
                   "src": "346:20:7"
                 }
               ]
             },
             "documentation": {
-              "id": 3237,
+              "id": 3305,
               "nodeType": "StructuredDocumentation",
               "src": "212:60:7",
               "text": "@dev Returns min value of 2 unsigned ints"
             },
-            "id": 3254,
+            "id": 3322,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
@@ -373,17 +373,17 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 3242,
+              "id": 3310,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3239,
+                  "id": 3307,
                   "mutability": "mutable",
                   "name": "a",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3254,
+                  "scope": 3322,
                   "src": "291:6:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -392,7 +392,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3238,
+                    "id": 3306,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "291:4:7",
@@ -406,12 +406,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 3241,
+                  "id": 3309,
                   "mutability": "mutable",
                   "name": "b",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3254,
+                  "scope": 3322,
                   "src": "299:6:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -420,7 +420,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3240,
+                    "id": 3308,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "299:4:7",
@@ -436,17 +436,17 @@
               "src": "290:16:7"
             },
             "returnParameters": {
-              "id": 3245,
+              "id": 3313,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3244,
+                  "id": 3312,
                   "mutability": "mutable",
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3254,
+                  "scope": 3322,
                   "src": "330:4:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -455,7 +455,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3243,
+                    "id": 3311,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "330:4:7",
@@ -470,7 +470,7 @@
               ],
               "src": "329:6:7"
             },
-            "scope": 3335,
+            "scope": 3403,
             "src": "277:96:7",
             "stateMutability": "pure",
             "virtual": false,
@@ -478,7 +478,7 @@
           },
           {
             "body": {
-              "id": 3271,
+              "id": 3339,
               "nodeType": "Block",
               "src": "497:38:7",
               "statements": [
@@ -491,18 +491,18 @@
                         "typeIdentifier": "t_int256",
                         "typeString": "int256"
                       },
-                      "id": 3266,
+                      "id": 3334,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 3264,
+                        "id": 3332,
                         "name": "a",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3257,
+                        "referencedDeclaration": 3325,
                         "src": "514:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_int256",
@@ -513,11 +513,11 @@
                       "operator": ">=",
                       "rightExpression": {
                         "argumentTypes": null,
-                        "id": 3265,
+                        "id": 3333,
                         "name": "b",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3259,
+                        "referencedDeclaration": 3327,
                         "src": "519:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_int256",
@@ -532,18 +532,18 @@
                     },
                     "falseExpression": {
                       "argumentTypes": null,
-                      "id": 3268,
+                      "id": 3336,
                       "name": "b",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3259,
+                      "referencedDeclaration": 3327,
                       "src": "527:1:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_int256",
                         "typeString": "int256"
                       }
                     },
-                    "id": 3269,
+                    "id": 3337,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -552,11 +552,11 @@
                     "src": "514:14:7",
                     "trueExpression": {
                       "argumentTypes": null,
-                      "id": 3267,
+                      "id": 3335,
                       "name": "a",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3257,
+                      "referencedDeclaration": 3325,
                       "src": "523:1:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_int256",
@@ -568,20 +568,20 @@
                       "typeString": "int256"
                     }
                   },
-                  "functionReturnParameters": 3263,
-                  "id": 3270,
+                  "functionReturnParameters": 3331,
+                  "id": 3338,
                   "nodeType": "Return",
                   "src": "507:21:7"
                 }
               ]
             },
             "documentation": {
-              "id": 3255,
+              "id": 3323,
               "nodeType": "StructuredDocumentation",
               "src": "379:58:7",
               "text": "@dev Returns max value of 2 signed ints"
             },
-            "id": 3272,
+            "id": 3340,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
@@ -589,17 +589,17 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 3260,
+              "id": 3328,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3257,
+                  "id": 3325,
                   "mutability": "mutable",
                   "name": "a",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3272,
+                  "scope": 3340,
                   "src": "455:5:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -608,7 +608,7 @@
                     "typeString": "int256"
                   },
                   "typeName": {
-                    "id": 3256,
+                    "id": 3324,
                     "name": "int",
                     "nodeType": "ElementaryTypeName",
                     "src": "455:3:7",
@@ -622,12 +622,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 3259,
+                  "id": 3327,
                   "mutability": "mutable",
                   "name": "b",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3272,
+                  "scope": 3340,
                   "src": "462:5:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -636,7 +636,7 @@
                     "typeString": "int256"
                   },
                   "typeName": {
-                    "id": 3258,
+                    "id": 3326,
                     "name": "int",
                     "nodeType": "ElementaryTypeName",
                     "src": "462:3:7",
@@ -652,17 +652,17 @@
               "src": "454:14:7"
             },
             "returnParameters": {
-              "id": 3263,
+              "id": 3331,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3262,
+                  "id": 3330,
                   "mutability": "mutable",
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3272,
+                  "scope": 3340,
                   "src": "492:3:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -671,7 +671,7 @@
                     "typeString": "int256"
                   },
                   "typeName": {
-                    "id": 3261,
+                    "id": 3329,
                     "name": "int",
                     "nodeType": "ElementaryTypeName",
                     "src": "492:3:7",
@@ -686,7 +686,7 @@
               ],
               "src": "491:5:7"
             },
-            "scope": 3335,
+            "scope": 3403,
             "src": "442:93:7",
             "stateMutability": "pure",
             "virtual": false,
@@ -694,7 +694,7 @@
           },
           {
             "body": {
-              "id": 3289,
+              "id": 3357,
               "nodeType": "Block",
               "src": "659:37:7",
               "statements": [
@@ -707,18 +707,18 @@
                         "typeIdentifier": "t_int256",
                         "typeString": "int256"
                       },
-                      "id": 3284,
+                      "id": 3352,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 3282,
+                        "id": 3350,
                         "name": "a",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3275,
+                        "referencedDeclaration": 3343,
                         "src": "676:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_int256",
@@ -729,11 +729,11 @@
                       "operator": "<",
                       "rightExpression": {
                         "argumentTypes": null,
-                        "id": 3283,
+                        "id": 3351,
                         "name": "b",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3277,
+                        "referencedDeclaration": 3345,
                         "src": "680:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_int256",
@@ -748,18 +748,18 @@
                     },
                     "falseExpression": {
                       "argumentTypes": null,
-                      "id": 3286,
+                      "id": 3354,
                       "name": "b",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3277,
+                      "referencedDeclaration": 3345,
                       "src": "688:1:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_int256",
                         "typeString": "int256"
                       }
                     },
-                    "id": 3287,
+                    "id": 3355,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -768,11 +768,11 @@
                     "src": "676:13:7",
                     "trueExpression": {
                       "argumentTypes": null,
-                      "id": 3285,
+                      "id": 3353,
                       "name": "a",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3275,
+                      "referencedDeclaration": 3343,
                       "src": "684:1:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_int256",
@@ -784,20 +784,20 @@
                       "typeString": "int256"
                     }
                   },
-                  "functionReturnParameters": 3281,
-                  "id": 3288,
+                  "functionReturnParameters": 3349,
+                  "id": 3356,
                   "nodeType": "Return",
                   "src": "669:20:7"
                 }
               ]
             },
             "documentation": {
-              "id": 3273,
+              "id": 3341,
               "nodeType": "StructuredDocumentation",
               "src": "541:58:7",
               "text": "@dev Returns min value of 2 signed ints"
             },
-            "id": 3290,
+            "id": 3358,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
@@ -805,17 +805,17 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 3278,
+              "id": 3346,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3275,
+                  "id": 3343,
                   "mutability": "mutable",
                   "name": "a",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3290,
+                  "scope": 3358,
                   "src": "617:5:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -824,7 +824,7 @@
                     "typeString": "int256"
                   },
                   "typeName": {
-                    "id": 3274,
+                    "id": 3342,
                     "name": "int",
                     "nodeType": "ElementaryTypeName",
                     "src": "617:3:7",
@@ -838,12 +838,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 3277,
+                  "id": 3345,
                   "mutability": "mutable",
                   "name": "b",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3290,
+                  "scope": 3358,
                   "src": "624:5:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -852,7 +852,7 @@
                     "typeString": "int256"
                   },
                   "typeName": {
-                    "id": 3276,
+                    "id": 3344,
                     "name": "int",
                     "nodeType": "ElementaryTypeName",
                     "src": "624:3:7",
@@ -868,17 +868,17 @@
               "src": "616:14:7"
             },
             "returnParameters": {
-              "id": 3281,
+              "id": 3349,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3280,
+                  "id": 3348,
                   "mutability": "mutable",
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3290,
+                  "scope": 3358,
                   "src": "654:3:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -887,7 +887,7 @@
                     "typeString": "int256"
                   },
                   "typeName": {
-                    "id": 3279,
+                    "id": 3347,
                     "name": "int",
                     "nodeType": "ElementaryTypeName",
                     "src": "654:3:7",
@@ -902,7 +902,7 @@
               ],
               "src": "653:5:7"
             },
-            "scope": 3335,
+            "scope": 3403,
             "src": "604:92:7",
             "stateMutability": "pure",
             "virtual": false,
@@ -910,7 +910,7 @@
           },
           {
             "body": {
-              "id": 3311,
+              "id": 3379,
               "nodeType": "Block",
               "src": "842:45:7",
               "statements": [
@@ -923,18 +923,18 @@
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       },
-                      "id": 3302,
+                      "id": 3370,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 3300,
+                        "id": 3368,
                         "name": "a",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3293,
+                        "referencedDeclaration": 3361,
                         "src": "859:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -945,11 +945,11 @@
                       "operator": ">",
                       "rightExpression": {
                         "argumentTypes": null,
-                        "id": 3301,
+                        "id": 3369,
                         "name": "b",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3295,
+                        "referencedDeclaration": 3363,
                         "src": "863:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -968,18 +968,18 @@
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       },
-                      "id": 3308,
+                      "id": 3376,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 3306,
+                        "id": 3374,
                         "name": "b",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3295,
+                        "referencedDeclaration": 3363,
                         "src": "875:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -990,11 +990,11 @@
                       "operator": "-",
                       "rightExpression": {
                         "argumentTypes": null,
-                        "id": 3307,
+                        "id": 3375,
                         "name": "a",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3293,
+                        "referencedDeclaration": 3361,
                         "src": "879:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -1007,7 +1007,7 @@
                         "typeString": "uint256"
                       }
                     },
-                    "id": 3309,
+                    "id": 3377,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1020,18 +1020,18 @@
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       },
-                      "id": 3305,
+                      "id": 3373,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 3303,
+                        "id": 3371,
                         "name": "a",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3293,
+                        "referencedDeclaration": 3361,
                         "src": "867:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -1042,11 +1042,11 @@
                       "operator": "-",
                       "rightExpression": {
                         "argumentTypes": null,
-                        "id": 3304,
+                        "id": 3372,
                         "name": "b",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3295,
+                        "referencedDeclaration": 3363,
                         "src": "871:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -1064,20 +1064,20 @@
                       "typeString": "uint256"
                     }
                   },
-                  "functionReturnParameters": 3299,
-                  "id": 3310,
+                  "functionReturnParameters": 3367,
+                  "id": 3378,
                   "nodeType": "Return",
                   "src": "852:28:7"
                 }
               ]
             },
             "documentation": {
-              "id": 3291,
+              "id": 3359,
               "nodeType": "StructuredDocumentation",
               "src": "702:74:7",
               "text": "@dev Returns the positive delta between 2 unsigned ints"
             },
-            "id": 3312,
+            "id": 3380,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
@@ -1085,17 +1085,17 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 3296,
+              "id": 3364,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3293,
+                  "id": 3361,
                   "mutability": "mutable",
                   "name": "a",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3312,
+                  "scope": 3380,
                   "src": "797:6:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1104,7 +1104,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3292,
+                    "id": 3360,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "797:4:7",
@@ -1118,12 +1118,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 3295,
+                  "id": 3363,
                   "mutability": "mutable",
                   "name": "b",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3312,
+                  "scope": 3380,
                   "src": "805:6:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1132,7 +1132,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3294,
+                    "id": 3362,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "805:4:7",
@@ -1148,17 +1148,17 @@
               "src": "796:16:7"
             },
             "returnParameters": {
-              "id": 3299,
+              "id": 3367,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3298,
+                  "id": 3366,
                   "mutability": "mutable",
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3312,
+                  "scope": 3380,
                   "src": "836:4:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1167,7 +1167,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3297,
+                    "id": 3365,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "836:4:7",
@@ -1182,7 +1182,7 @@
               ],
               "src": "835:6:7"
             },
-            "scope": 3335,
+            "scope": 3403,
             "src": "781:106:7",
             "stateMutability": "pure",
             "virtual": false,
@@ -1190,7 +1190,7 @@
           },
           {
             "body": {
-              "id": 3333,
+              "id": 3401,
               "nodeType": "Block",
               "src": "1027:45:7",
               "statements": [
@@ -1203,18 +1203,18 @@
                         "typeIdentifier": "t_int256",
                         "typeString": "int256"
                       },
-                      "id": 3324,
+                      "id": 3392,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 3322,
+                        "id": 3390,
                         "name": "a",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3315,
+                        "referencedDeclaration": 3383,
                         "src": "1044:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_int256",
@@ -1225,11 +1225,11 @@
                       "operator": ">",
                       "rightExpression": {
                         "argumentTypes": null,
-                        "id": 3323,
+                        "id": 3391,
                         "name": "b",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3317,
+                        "referencedDeclaration": 3385,
                         "src": "1048:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_int256",
@@ -1248,18 +1248,18 @@
                         "typeIdentifier": "t_int256",
                         "typeString": "int256"
                       },
-                      "id": 3330,
+                      "id": 3398,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 3328,
+                        "id": 3396,
                         "name": "b",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3317,
+                        "referencedDeclaration": 3385,
                         "src": "1060:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_int256",
@@ -1270,11 +1270,11 @@
                       "operator": "-",
                       "rightExpression": {
                         "argumentTypes": null,
-                        "id": 3329,
+                        "id": 3397,
                         "name": "a",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3315,
+                        "referencedDeclaration": 3383,
                         "src": "1064:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_int256",
@@ -1287,7 +1287,7 @@
                         "typeString": "int256"
                       }
                     },
-                    "id": 3331,
+                    "id": 3399,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1300,18 +1300,18 @@
                         "typeIdentifier": "t_int256",
                         "typeString": "int256"
                       },
-                      "id": 3327,
+                      "id": 3395,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 3325,
+                        "id": 3393,
                         "name": "a",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3315,
+                        "referencedDeclaration": 3383,
                         "src": "1052:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_int256",
@@ -1322,11 +1322,11 @@
                       "operator": "-",
                       "rightExpression": {
                         "argumentTypes": null,
-                        "id": 3326,
+                        "id": 3394,
                         "name": "b",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3317,
+                        "referencedDeclaration": 3385,
                         "src": "1056:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_int256",
@@ -1344,20 +1344,20 @@
                       "typeString": "int256"
                     }
                   },
-                  "functionReturnParameters": 3321,
-                  "id": 3332,
+                  "functionReturnParameters": 3389,
+                  "id": 3400,
                   "nodeType": "Return",
                   "src": "1037:28:7"
                 }
               ]
             },
             "documentation": {
-              "id": 3313,
+              "id": 3381,
               "nodeType": "StructuredDocumentation",
               "src": "893:72:7",
               "text": "@dev Returns the positive delta between 2 signed ints"
             },
-            "id": 3334,
+            "id": 3402,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
@@ -1365,17 +1365,17 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 3318,
+              "id": 3386,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3315,
+                  "id": 3383,
                   "mutability": "mutable",
                   "name": "a",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3334,
+                  "scope": 3402,
                   "src": "985:5:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1384,7 +1384,7 @@
                     "typeString": "int256"
                   },
                   "typeName": {
-                    "id": 3314,
+                    "id": 3382,
                     "name": "int",
                     "nodeType": "ElementaryTypeName",
                     "src": "985:3:7",
@@ -1398,12 +1398,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 3317,
+                  "id": 3385,
                   "mutability": "mutable",
                   "name": "b",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3334,
+                  "scope": 3402,
                   "src": "992:5:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1412,7 +1412,7 @@
                     "typeString": "int256"
                   },
                   "typeName": {
-                    "id": 3316,
+                    "id": 3384,
                     "name": "int",
                     "nodeType": "ElementaryTypeName",
                     "src": "992:3:7",
@@ -1428,17 +1428,17 @@
               "src": "984:14:7"
             },
             "returnParameters": {
-              "id": 3321,
+              "id": 3389,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3320,
+                  "id": 3388,
                   "mutability": "mutable",
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3334,
+                  "scope": 3402,
                   "src": "1022:3:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1447,7 +1447,7 @@
                     "typeString": "int256"
                   },
                   "typeName": {
-                    "id": 3319,
+                    "id": 3387,
                     "name": "int",
                     "nodeType": "ElementaryTypeName",
                     "src": "1022:3:7",
@@ -1462,14 +1462,14 @@
               ],
               "src": "1021:5:7"
             },
-            "scope": 3335,
+            "scope": 3403,
             "src": "970:102:7",
             "stateMutability": "pure",
             "virtual": false,
             "visibility": "internal"
           }
         ],
-        "scope": 3336,
+        "scope": 3404,
         "src": "25:1050:7"
       }
     ],
@@ -1479,14 +1479,14 @@
     "absolutePath": "/Users/svancoller/Development/bloXroute/egl/contracts/libraries/Math.sol",
     "exportedSymbols": {
       "Math": [
-        3335
+        3403
       ]
     },
-    "id": 3336,
+    "id": 3404,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 3218,
+        "id": 3286,
         "literals": [
           "solidity",
           "^",
@@ -1503,16 +1503,16 @@
         "contractKind": "library",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 3335,
+        "id": 3403,
         "linearizedBaseContracts": [
-          3335
+          3403
         ],
         "name": "Math",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "body": {
-              "id": 3235,
+              "id": 3303,
               "nodeType": "Block",
               "src": "168:38:7",
               "statements": [
@@ -1525,18 +1525,18 @@
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       },
-                      "id": 3230,
+                      "id": 3298,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 3228,
+                        "id": 3296,
                         "name": "a",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3221,
+                        "referencedDeclaration": 3289,
                         "src": "185:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -1547,11 +1547,11 @@
                       "operator": ">=",
                       "rightExpression": {
                         "argumentTypes": null,
-                        "id": 3229,
+                        "id": 3297,
                         "name": "b",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3223,
+                        "referencedDeclaration": 3291,
                         "src": "190:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -1566,18 +1566,18 @@
                     },
                     "falseExpression": {
                       "argumentTypes": null,
-                      "id": 3232,
+                      "id": 3300,
                       "name": "b",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3223,
+                      "referencedDeclaration": 3291,
                       "src": "198:1:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "id": 3233,
+                    "id": 3301,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1586,11 +1586,11 @@
                     "src": "185:14:7",
                     "trueExpression": {
                       "argumentTypes": null,
-                      "id": 3231,
+                      "id": 3299,
                       "name": "a",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3221,
+                      "referencedDeclaration": 3289,
                       "src": "194:1:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -1602,20 +1602,20 @@
                       "typeString": "uint256"
                     }
                   },
-                  "functionReturnParameters": 3227,
-                  "id": 3234,
+                  "functionReturnParameters": 3295,
+                  "id": 3302,
                   "nodeType": "Return",
                   "src": "178:21:7"
                 }
               ]
             },
             "documentation": {
-              "id": 3219,
+              "id": 3287,
               "nodeType": "StructuredDocumentation",
               "src": "44:60:7",
               "text": "@dev Returns max value of 2 unsigned ints"
             },
-            "id": 3236,
+            "id": 3304,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
@@ -1623,17 +1623,17 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 3224,
+              "id": 3292,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3221,
+                  "id": 3289,
                   "mutability": "mutable",
                   "name": "a",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3236,
+                  "scope": 3304,
                   "src": "123:6:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1642,7 +1642,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3220,
+                    "id": 3288,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "123:4:7",
@@ -1656,12 +1656,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 3223,
+                  "id": 3291,
                   "mutability": "mutable",
                   "name": "b",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3236,
+                  "scope": 3304,
                   "src": "131:6:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1670,7 +1670,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3222,
+                    "id": 3290,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "131:4:7",
@@ -1686,17 +1686,17 @@
               "src": "122:16:7"
             },
             "returnParameters": {
-              "id": 3227,
+              "id": 3295,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3226,
+                  "id": 3294,
                   "mutability": "mutable",
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3236,
+                  "scope": 3304,
                   "src": "162:4:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1705,7 +1705,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3225,
+                    "id": 3293,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "162:4:7",
@@ -1720,7 +1720,7 @@
               ],
               "src": "161:6:7"
             },
-            "scope": 3335,
+            "scope": 3403,
             "src": "109:97:7",
             "stateMutability": "pure",
             "virtual": false,
@@ -1728,7 +1728,7 @@
           },
           {
             "body": {
-              "id": 3253,
+              "id": 3321,
               "nodeType": "Block",
               "src": "336:37:7",
               "statements": [
@@ -1741,18 +1741,18 @@
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       },
-                      "id": 3248,
+                      "id": 3316,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 3246,
+                        "id": 3314,
                         "name": "a",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3239,
+                        "referencedDeclaration": 3307,
                         "src": "353:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -1763,11 +1763,11 @@
                       "operator": "<",
                       "rightExpression": {
                         "argumentTypes": null,
-                        "id": 3247,
+                        "id": 3315,
                         "name": "b",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3241,
+                        "referencedDeclaration": 3309,
                         "src": "357:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -1782,18 +1782,18 @@
                     },
                     "falseExpression": {
                       "argumentTypes": null,
-                      "id": 3250,
+                      "id": 3318,
                       "name": "b",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3241,
+                      "referencedDeclaration": 3309,
                       "src": "365:1:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "id": 3251,
+                    "id": 3319,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1802,11 +1802,11 @@
                     "src": "353:13:7",
                     "trueExpression": {
                       "argumentTypes": null,
-                      "id": 3249,
+                      "id": 3317,
                       "name": "a",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3239,
+                      "referencedDeclaration": 3307,
                       "src": "361:1:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -1818,20 +1818,20 @@
                       "typeString": "uint256"
                     }
                   },
-                  "functionReturnParameters": 3245,
-                  "id": 3252,
+                  "functionReturnParameters": 3313,
+                  "id": 3320,
                   "nodeType": "Return",
                   "src": "346:20:7"
                 }
               ]
             },
             "documentation": {
-              "id": 3237,
+              "id": 3305,
               "nodeType": "StructuredDocumentation",
               "src": "212:60:7",
               "text": "@dev Returns min value of 2 unsigned ints"
             },
-            "id": 3254,
+            "id": 3322,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
@@ -1839,17 +1839,17 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 3242,
+              "id": 3310,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3239,
+                  "id": 3307,
                   "mutability": "mutable",
                   "name": "a",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3254,
+                  "scope": 3322,
                   "src": "291:6:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1858,7 +1858,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3238,
+                    "id": 3306,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "291:4:7",
@@ -1872,12 +1872,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 3241,
+                  "id": 3309,
                   "mutability": "mutable",
                   "name": "b",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3254,
+                  "scope": 3322,
                   "src": "299:6:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1886,7 +1886,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3240,
+                    "id": 3308,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "299:4:7",
@@ -1902,17 +1902,17 @@
               "src": "290:16:7"
             },
             "returnParameters": {
-              "id": 3245,
+              "id": 3313,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3244,
+                  "id": 3312,
                   "mutability": "mutable",
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3254,
+                  "scope": 3322,
                   "src": "330:4:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1921,7 +1921,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3243,
+                    "id": 3311,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "330:4:7",
@@ -1936,7 +1936,7 @@
               ],
               "src": "329:6:7"
             },
-            "scope": 3335,
+            "scope": 3403,
             "src": "277:96:7",
             "stateMutability": "pure",
             "virtual": false,
@@ -1944,7 +1944,7 @@
           },
           {
             "body": {
-              "id": 3271,
+              "id": 3339,
               "nodeType": "Block",
               "src": "497:38:7",
               "statements": [
@@ -1957,18 +1957,18 @@
                         "typeIdentifier": "t_int256",
                         "typeString": "int256"
                       },
-                      "id": 3266,
+                      "id": 3334,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 3264,
+                        "id": 3332,
                         "name": "a",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3257,
+                        "referencedDeclaration": 3325,
                         "src": "514:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_int256",
@@ -1979,11 +1979,11 @@
                       "operator": ">=",
                       "rightExpression": {
                         "argumentTypes": null,
-                        "id": 3265,
+                        "id": 3333,
                         "name": "b",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3259,
+                        "referencedDeclaration": 3327,
                         "src": "519:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_int256",
@@ -1998,18 +1998,18 @@
                     },
                     "falseExpression": {
                       "argumentTypes": null,
-                      "id": 3268,
+                      "id": 3336,
                       "name": "b",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3259,
+                      "referencedDeclaration": 3327,
                       "src": "527:1:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_int256",
                         "typeString": "int256"
                       }
                     },
-                    "id": 3269,
+                    "id": 3337,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2018,11 +2018,11 @@
                     "src": "514:14:7",
                     "trueExpression": {
                       "argumentTypes": null,
-                      "id": 3267,
+                      "id": 3335,
                       "name": "a",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3257,
+                      "referencedDeclaration": 3325,
                       "src": "523:1:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_int256",
@@ -2034,20 +2034,20 @@
                       "typeString": "int256"
                     }
                   },
-                  "functionReturnParameters": 3263,
-                  "id": 3270,
+                  "functionReturnParameters": 3331,
+                  "id": 3338,
                   "nodeType": "Return",
                   "src": "507:21:7"
                 }
               ]
             },
             "documentation": {
-              "id": 3255,
+              "id": 3323,
               "nodeType": "StructuredDocumentation",
               "src": "379:58:7",
               "text": "@dev Returns max value of 2 signed ints"
             },
-            "id": 3272,
+            "id": 3340,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
@@ -2055,17 +2055,17 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 3260,
+              "id": 3328,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3257,
+                  "id": 3325,
                   "mutability": "mutable",
                   "name": "a",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3272,
+                  "scope": 3340,
                   "src": "455:5:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2074,7 +2074,7 @@
                     "typeString": "int256"
                   },
                   "typeName": {
-                    "id": 3256,
+                    "id": 3324,
                     "name": "int",
                     "nodeType": "ElementaryTypeName",
                     "src": "455:3:7",
@@ -2088,12 +2088,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 3259,
+                  "id": 3327,
                   "mutability": "mutable",
                   "name": "b",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3272,
+                  "scope": 3340,
                   "src": "462:5:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2102,7 +2102,7 @@
                     "typeString": "int256"
                   },
                   "typeName": {
-                    "id": 3258,
+                    "id": 3326,
                     "name": "int",
                     "nodeType": "ElementaryTypeName",
                     "src": "462:3:7",
@@ -2118,17 +2118,17 @@
               "src": "454:14:7"
             },
             "returnParameters": {
-              "id": 3263,
+              "id": 3331,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3262,
+                  "id": 3330,
                   "mutability": "mutable",
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3272,
+                  "scope": 3340,
                   "src": "492:3:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2137,7 +2137,7 @@
                     "typeString": "int256"
                   },
                   "typeName": {
-                    "id": 3261,
+                    "id": 3329,
                     "name": "int",
                     "nodeType": "ElementaryTypeName",
                     "src": "492:3:7",
@@ -2152,7 +2152,7 @@
               ],
               "src": "491:5:7"
             },
-            "scope": 3335,
+            "scope": 3403,
             "src": "442:93:7",
             "stateMutability": "pure",
             "virtual": false,
@@ -2160,7 +2160,7 @@
           },
           {
             "body": {
-              "id": 3289,
+              "id": 3357,
               "nodeType": "Block",
               "src": "659:37:7",
               "statements": [
@@ -2173,18 +2173,18 @@
                         "typeIdentifier": "t_int256",
                         "typeString": "int256"
                       },
-                      "id": 3284,
+                      "id": 3352,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 3282,
+                        "id": 3350,
                         "name": "a",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3275,
+                        "referencedDeclaration": 3343,
                         "src": "676:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_int256",
@@ -2195,11 +2195,11 @@
                       "operator": "<",
                       "rightExpression": {
                         "argumentTypes": null,
-                        "id": 3283,
+                        "id": 3351,
                         "name": "b",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3277,
+                        "referencedDeclaration": 3345,
                         "src": "680:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_int256",
@@ -2214,18 +2214,18 @@
                     },
                     "falseExpression": {
                       "argumentTypes": null,
-                      "id": 3286,
+                      "id": 3354,
                       "name": "b",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3277,
+                      "referencedDeclaration": 3345,
                       "src": "688:1:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_int256",
                         "typeString": "int256"
                       }
                     },
-                    "id": 3287,
+                    "id": 3355,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2234,11 +2234,11 @@
                     "src": "676:13:7",
                     "trueExpression": {
                       "argumentTypes": null,
-                      "id": 3285,
+                      "id": 3353,
                       "name": "a",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3275,
+                      "referencedDeclaration": 3343,
                       "src": "684:1:7",
                       "typeDescriptions": {
                         "typeIdentifier": "t_int256",
@@ -2250,20 +2250,20 @@
                       "typeString": "int256"
                     }
                   },
-                  "functionReturnParameters": 3281,
-                  "id": 3288,
+                  "functionReturnParameters": 3349,
+                  "id": 3356,
                   "nodeType": "Return",
                   "src": "669:20:7"
                 }
               ]
             },
             "documentation": {
-              "id": 3273,
+              "id": 3341,
               "nodeType": "StructuredDocumentation",
               "src": "541:58:7",
               "text": "@dev Returns min value of 2 signed ints"
             },
-            "id": 3290,
+            "id": 3358,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
@@ -2271,17 +2271,17 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 3278,
+              "id": 3346,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3275,
+                  "id": 3343,
                   "mutability": "mutable",
                   "name": "a",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3290,
+                  "scope": 3358,
                   "src": "617:5:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2290,7 +2290,7 @@
                     "typeString": "int256"
                   },
                   "typeName": {
-                    "id": 3274,
+                    "id": 3342,
                     "name": "int",
                     "nodeType": "ElementaryTypeName",
                     "src": "617:3:7",
@@ -2304,12 +2304,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 3277,
+                  "id": 3345,
                   "mutability": "mutable",
                   "name": "b",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3290,
+                  "scope": 3358,
                   "src": "624:5:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2318,7 +2318,7 @@
                     "typeString": "int256"
                   },
                   "typeName": {
-                    "id": 3276,
+                    "id": 3344,
                     "name": "int",
                     "nodeType": "ElementaryTypeName",
                     "src": "624:3:7",
@@ -2334,17 +2334,17 @@
               "src": "616:14:7"
             },
             "returnParameters": {
-              "id": 3281,
+              "id": 3349,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3280,
+                  "id": 3348,
                   "mutability": "mutable",
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3290,
+                  "scope": 3358,
                   "src": "654:3:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2353,7 +2353,7 @@
                     "typeString": "int256"
                   },
                   "typeName": {
-                    "id": 3279,
+                    "id": 3347,
                     "name": "int",
                     "nodeType": "ElementaryTypeName",
                     "src": "654:3:7",
@@ -2368,7 +2368,7 @@
               ],
               "src": "653:5:7"
             },
-            "scope": 3335,
+            "scope": 3403,
             "src": "604:92:7",
             "stateMutability": "pure",
             "virtual": false,
@@ -2376,7 +2376,7 @@
           },
           {
             "body": {
-              "id": 3311,
+              "id": 3379,
               "nodeType": "Block",
               "src": "842:45:7",
               "statements": [
@@ -2389,18 +2389,18 @@
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       },
-                      "id": 3302,
+                      "id": 3370,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 3300,
+                        "id": 3368,
                         "name": "a",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3293,
+                        "referencedDeclaration": 3361,
                         "src": "859:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -2411,11 +2411,11 @@
                       "operator": ">",
                       "rightExpression": {
                         "argumentTypes": null,
-                        "id": 3301,
+                        "id": 3369,
                         "name": "b",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3295,
+                        "referencedDeclaration": 3363,
                         "src": "863:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -2434,18 +2434,18 @@
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       },
-                      "id": 3308,
+                      "id": 3376,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 3306,
+                        "id": 3374,
                         "name": "b",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3295,
+                        "referencedDeclaration": 3363,
                         "src": "875:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -2456,11 +2456,11 @@
                       "operator": "-",
                       "rightExpression": {
                         "argumentTypes": null,
-                        "id": 3307,
+                        "id": 3375,
                         "name": "a",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3293,
+                        "referencedDeclaration": 3361,
                         "src": "879:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -2473,7 +2473,7 @@
                         "typeString": "uint256"
                       }
                     },
-                    "id": 3309,
+                    "id": 3377,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2486,18 +2486,18 @@
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       },
-                      "id": 3305,
+                      "id": 3373,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 3303,
+                        "id": 3371,
                         "name": "a",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3293,
+                        "referencedDeclaration": 3361,
                         "src": "867:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -2508,11 +2508,11 @@
                       "operator": "-",
                       "rightExpression": {
                         "argumentTypes": null,
-                        "id": 3304,
+                        "id": 3372,
                         "name": "b",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3295,
+                        "referencedDeclaration": 3363,
                         "src": "871:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -2530,20 +2530,20 @@
                       "typeString": "uint256"
                     }
                   },
-                  "functionReturnParameters": 3299,
-                  "id": 3310,
+                  "functionReturnParameters": 3367,
+                  "id": 3378,
                   "nodeType": "Return",
                   "src": "852:28:7"
                 }
               ]
             },
             "documentation": {
-              "id": 3291,
+              "id": 3359,
               "nodeType": "StructuredDocumentation",
               "src": "702:74:7",
               "text": "@dev Returns the positive delta between 2 unsigned ints"
             },
-            "id": 3312,
+            "id": 3380,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
@@ -2551,17 +2551,17 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 3296,
+              "id": 3364,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3293,
+                  "id": 3361,
                   "mutability": "mutable",
                   "name": "a",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3312,
+                  "scope": 3380,
                   "src": "797:6:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2570,7 +2570,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3292,
+                    "id": 3360,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "797:4:7",
@@ -2584,12 +2584,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 3295,
+                  "id": 3363,
                   "mutability": "mutable",
                   "name": "b",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3312,
+                  "scope": 3380,
                   "src": "805:6:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2598,7 +2598,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3294,
+                    "id": 3362,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "805:4:7",
@@ -2614,17 +2614,17 @@
               "src": "796:16:7"
             },
             "returnParameters": {
-              "id": 3299,
+              "id": 3367,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3298,
+                  "id": 3366,
                   "mutability": "mutable",
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3312,
+                  "scope": 3380,
                   "src": "836:4:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2633,7 +2633,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3297,
+                    "id": 3365,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
                     "src": "836:4:7",
@@ -2648,7 +2648,7 @@
               ],
               "src": "835:6:7"
             },
-            "scope": 3335,
+            "scope": 3403,
             "src": "781:106:7",
             "stateMutability": "pure",
             "virtual": false,
@@ -2656,7 +2656,7 @@
           },
           {
             "body": {
-              "id": 3333,
+              "id": 3401,
               "nodeType": "Block",
               "src": "1027:45:7",
               "statements": [
@@ -2669,18 +2669,18 @@
                         "typeIdentifier": "t_int256",
                         "typeString": "int256"
                       },
-                      "id": 3324,
+                      "id": 3392,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 3322,
+                        "id": 3390,
                         "name": "a",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3315,
+                        "referencedDeclaration": 3383,
                         "src": "1044:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_int256",
@@ -2691,11 +2691,11 @@
                       "operator": ">",
                       "rightExpression": {
                         "argumentTypes": null,
-                        "id": 3323,
+                        "id": 3391,
                         "name": "b",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3317,
+                        "referencedDeclaration": 3385,
                         "src": "1048:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_int256",
@@ -2714,18 +2714,18 @@
                         "typeIdentifier": "t_int256",
                         "typeString": "int256"
                       },
-                      "id": 3330,
+                      "id": 3398,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 3328,
+                        "id": 3396,
                         "name": "b",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3317,
+                        "referencedDeclaration": 3385,
                         "src": "1060:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_int256",
@@ -2736,11 +2736,11 @@
                       "operator": "-",
                       "rightExpression": {
                         "argumentTypes": null,
-                        "id": 3329,
+                        "id": 3397,
                         "name": "a",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3315,
+                        "referencedDeclaration": 3383,
                         "src": "1064:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_int256",
@@ -2753,7 +2753,7 @@
                         "typeString": "int256"
                       }
                     },
-                    "id": 3331,
+                    "id": 3399,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2766,18 +2766,18 @@
                         "typeIdentifier": "t_int256",
                         "typeString": "int256"
                       },
-                      "id": 3327,
+                      "id": 3395,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 3325,
+                        "id": 3393,
                         "name": "a",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3315,
+                        "referencedDeclaration": 3383,
                         "src": "1052:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_int256",
@@ -2788,11 +2788,11 @@
                       "operator": "-",
                       "rightExpression": {
                         "argumentTypes": null,
-                        "id": 3326,
+                        "id": 3394,
                         "name": "b",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3317,
+                        "referencedDeclaration": 3385,
                         "src": "1056:1:7",
                         "typeDescriptions": {
                           "typeIdentifier": "t_int256",
@@ -2810,20 +2810,20 @@
                       "typeString": "int256"
                     }
                   },
-                  "functionReturnParameters": 3321,
-                  "id": 3332,
+                  "functionReturnParameters": 3389,
+                  "id": 3400,
                   "nodeType": "Return",
                   "src": "1037:28:7"
                 }
               ]
             },
             "documentation": {
-              "id": 3313,
+              "id": 3381,
               "nodeType": "StructuredDocumentation",
               "src": "893:72:7",
               "text": "@dev Returns the positive delta between 2 signed ints"
             },
-            "id": 3334,
+            "id": 3402,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
@@ -2831,17 +2831,17 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 3318,
+              "id": 3386,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3315,
+                  "id": 3383,
                   "mutability": "mutable",
                   "name": "a",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3334,
+                  "scope": 3402,
                   "src": "985:5:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2850,7 +2850,7 @@
                     "typeString": "int256"
                   },
                   "typeName": {
-                    "id": 3314,
+                    "id": 3382,
                     "name": "int",
                     "nodeType": "ElementaryTypeName",
                     "src": "985:3:7",
@@ -2864,12 +2864,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 3317,
+                  "id": 3385,
                   "mutability": "mutable",
                   "name": "b",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3334,
+                  "scope": 3402,
                   "src": "992:5:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2878,7 +2878,7 @@
                     "typeString": "int256"
                   },
                   "typeName": {
-                    "id": 3316,
+                    "id": 3384,
                     "name": "int",
                     "nodeType": "ElementaryTypeName",
                     "src": "992:3:7",
@@ -2894,17 +2894,17 @@
               "src": "984:14:7"
             },
             "returnParameters": {
-              "id": 3321,
+              "id": 3389,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3320,
+                  "id": 3388,
                   "mutability": "mutable",
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3334,
+                  "scope": 3402,
                   "src": "1022:3:7",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2913,7 +2913,7 @@
                     "typeString": "int256"
                   },
                   "typeName": {
-                    "id": 3319,
+                    "id": 3387,
                     "name": "int",
                     "nodeType": "ElementaryTypeName",
                     "src": "1022:3:7",
@@ -2928,14 +2928,14 @@
               ],
               "src": "1021:5:7"
             },
-            "scope": 3335,
+            "scope": 3403,
             "src": "970:102:7",
             "stateMutability": "pure",
             "virtual": false,
             "visibility": "internal"
           }
         ],
-        "scope": 3336,
+        "scope": 3404,
         "src": "25:1050:7"
       }
     ],
@@ -2947,7 +2947,7 @@
   },
   "networks": {},
   "schemaVersion": "3.2.5",
-  "updatedAt": "2021-06-17T00:14:56.855Z",
+  "updatedAt": "2021-06-18T05:44:41.070Z",
   "devdoc": {
     "methods": {}
   },

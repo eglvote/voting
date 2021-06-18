@@ -18,20 +18,17 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
     using SignedSafeMathUpgradeable for int;
 
     /********************************** CONSTANTS ***********************************/
-    int constant GAS_LIMIT_CHANGE = 1000000;
     uint8 constant WEEKS_IN_YEAR = 52;
-    uint8 constant CREATOR_REWARD_FIRST_EPOCH = 10;
-    uint constant GAS_TARGET_TOLERANCE = 4000000;
     uint constant DECIMAL_PRECISION = 10**18;
-    uint constant VOTER_REWARD_MULTIPLIER = 362844.70 ether;    
-    uint constant LAUNCH_EGLS = 750000000 ether;
-    uint constant TOTAL_CREATOR_EGLS = 750000000 ether;
 
     /**************************** PUBLIC STATE VARIABLES ****************************/
     int public desiredEgl;
     int public baselineEgl;
     int public initialEgl;
     int public tallyVotesGasLimit;
+
+    uint public creatorEglsTotal;
+    uint public liquidityEglMatchingTotal;
 
     uint16 public currentEpoch;
     uint public currentEpochStartDate;
@@ -70,19 +67,24 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
 
     int private epochGasLimitSum;
     int private epochVoteCount;
+    int private desiredEglThreshold;
 
     uint24 private votingPauseSeconds;
     uint32 private epochLength;
     uint private firstEpochStartDate;
     uint private latestRewardSwept;
     uint private minLiquidityTokensLockup;
+    uint private creatorRewardFirstEpoch;
     uint private remainingPoolReward;
     uint private remainingCreatorReward;
+    uint private remainingDaoBalance;
     uint private lastCreatorRewardAmount;
     uint private supporterEglsTotal;
     uint private poolTokensHeld;  
     uint private ethEglRatio;
     uint private ethBptRatio;
+    uint private voterRewardMultiplier;
+    uint private gasTargetTolerance;    
 
     /************************************ EVENTS ************************************/
     event Initialized(
@@ -189,7 +191,8 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         int tallyVotesGasLimit,
         uint proximityRewardPercent,
         uint totalRewardPercent,
-        uint blockReward
+        uint blockReward,
+        uint date
     );
     event SeedAccountClaimed(
         address seedAddress, 
@@ -232,12 +235,18 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         uint lastEgl, 
         uint date
     );  
-
     event ReleasedEglCalculated(
         uint currentEpoch, 
         uint timePassedPercentage, 
         uint currentEgl,
-        uint maxSupply
+        uint maxSupply,
+        uint date
+    );
+    event SeedAccountAdded(
+        address seedAccount,
+        uint seedAmount,
+        uint remainingDaoBalance,
+        uint date
     );
 
     /***************************** RECEIVE FUNCTION *****************************/
@@ -289,13 +298,26 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         balancerPoolToken = IERC20Upgradeable(_poolToken);
         eglGenesis = IEglGenesis(_genesis);        
 
+        creatorEglsTotal = 750000000 ether;
+        remainingCreatorReward = creatorEglsTotal;
+
+        liquidityEglMatchingTotal = 750000000 ether;
+        remainingPoolReward = 1250000000 ether;        
+        remainingDaoBalance = 250000000 ether;
+        
+        voterRewardMultiplier = 362844.70 ether;
+
         uint totalGenesisEth = eglGenesis.cumulativeBalance();
         require(totalGenesisEth > 0, "EGL:NO_GENESIS_BALANCE");
 
         uint totalBpts = balancerPoolToken.balanceOf(eglGenesis.owner());
-        ethEglRatio = LAUNCH_EGLS.mul(DECIMAL_PRECISION).div(totalGenesisEth);
-        ethBptRatio = totalBpts.mul(DECIMAL_PRECISION).div(totalGenesisEth);
+        require(totalBpts > 0, "EGL:NO_BPT_BALANCE");
+        ethEglRatio = liquidityEglMatchingTotal.mul(DECIMAL_PRECISION)
+            .div(totalGenesisEth);
+        ethBptRatio = totalBpts.mul(DECIMAL_PRECISION)
+            .div(totalGenesisEth);
 
+        creatorRewardFirstEpoch = 10;
         minLiquidityTokensLockup = _epochLength.mul(10);
 
         firstEpochStartDate = _currentEpochStartDate;
@@ -303,15 +325,15 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         votingPauseSeconds = _votingPauseSeconds;
         epochLength = _epochLength;
         creatorRewardsAddress = _creatorRewardsAccount;
-        tokensInCirculation = LAUNCH_EGLS;
+        tokensInCirculation = liquidityEglMatchingTotal;
         tallyVotesGasLimit = int(block.gaslimit);
         
         baselineEgl = int(block.gaslimit);
         initialEgl = baselineEgl;
         desiredEgl = baselineEgl;
 
-        remainingPoolReward = 1250000000 ether;
-        remainingCreatorReward = TOTAL_CREATOR_EGLS;
+        gasTargetTolerance = 4000000;
+        desiredEglThreshold = 1000000;    
 
         if (_seedAccounts.length > 0)
             for (uint8 i = 0; i < _seedAccounts.length; i++) {
@@ -527,7 +549,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
 
         uint currentEgl = _calculateReleasedEgl(
             block.timestamp.sub(firstEpochStartDate), 
-            LAUNCH_EGLS, 
+            liquidityEglMatchingTotal, 
             minLiquidityTokensLockup
         );
 
@@ -608,8 +630,8 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             baselineEgl = epochGasLimitSum.div(epochVoteCount);
 
             desiredEgl = baselineEgl > averageGasTarget
-                ? baselineEgl.sub(baselineEgl.sub(averageGasTarget).min(GAS_LIMIT_CHANGE))
-                : baselineEgl.add(averageGasTarget.sub(baselineEgl).min(GAS_LIMIT_CHANGE));
+                ? baselineEgl.sub(baselineEgl.sub(averageGasTarget).min(desiredEglThreshold))
+                : baselineEgl.add(averageGasTarget.sub(baselineEgl).min(desiredEglThreshold));
 
             if (
                 desiredEgl >= tallyVotesGasLimit.sub(10000) &&
@@ -659,7 +681,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         epochGasLimitSum = 0;
         epochVoteCount = 0;
 
-        if (currentEpoch >= CREATOR_REWARD_FIRST_EPOCH && remainingCreatorReward > 0)
+        if (currentEpoch >= creatorRewardFirstEpoch && remainingCreatorReward > 0)
             _issueCreatorRewards(currentEpoch);
 
         currentEpoch += 1;
@@ -684,13 +706,22 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
      * @param _seedAmount Amount to seed
      */
     function addSeedAccount(address _seedAccount, uint _seedAmount) public onlyOwner {
+        require(_seedAmount <= remainingDaoBalance, "EGL:INSUFFICIENT_DAO_BALANCE");
         require(seeders[_seedAccount] == 0, "EGL:ALREADY_SEEDER");
         require(voters[_seedAccount].tokensLocked == 0, "EGL:ALREADY_HAS_VOTE");
         require(eglToken.balanceOf(_seedAccount) == 0, "EGL:ALREADY_HAS_EGLS");
         require(now < firstEpochStartDate.add(minLiquidityTokensLockup), "EGL:SEED_PERIOD_PASSED");
         (uint contributorAmount,,,) = eglGenesis.contributors(msg.sender);
         require(contributorAmount == 0, "EGL:IS_CONTRIBUTOR");
+        
+        remainingDaoBalance = remainingDaoBalance.sub(_seedAmount);
         seeders[_seedAccount] = _seedAmount;
+        emit SeedAccountAdded(
+            _seedAccount,
+            _seedAmount,
+            remainingDaoBalance,
+            now
+        );
     }
 
     /**
@@ -719,7 +750,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
     ) internal {
         require(voters[_voter].tokensLocked == 0, "EGL:ALREADY_VOTED");
         require(
-            Math.udelta(_gasTarget, block.gaslimit) < GAS_TARGET_TOLERANCE,
+            Math.udelta(_gasTarget, block.gaslimit) < gasTargetTolerance,
             "EGL:INVALID_GAS_TARGET"
         );
 
@@ -815,8 +846,8 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
     function _issueCreatorRewards(uint _rewardEpoch) internal {
         uint releasedEgl = _calculateReleasedEgl(
             _rewardEpoch.mul(epochLength), 
-            TOTAL_CREATOR_EGLS,
-            CREATOR_REWARD_FIRST_EPOCH.mul(epochLength)
+            creatorEglsTotal,
+            creatorRewardFirstEpoch.mul(epochLength)
         );
         uint creatorRewardForEpoch = releasedEgl.sub(lastCreatorRewardAmount).umin(remainingCreatorReward);
                 
@@ -891,7 +922,8 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             _tallyVotesGasLimit,
             proximityRewardPercent,
             totalRewardPercent, 
-            blockReward
+            blockReward,
+            now
         );
     }
 
@@ -922,7 +954,8 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             currentEpoch, 
             timePassedPercentage.mul(100), 
             currentEgl, 
-            _maxEglSupply
+            _maxEglSupply,
+            now
         );
     }
 
@@ -981,7 +1014,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
     {
         uint rewardEpochs = _voterEpoch.add(_lockupDuration).umin(_currentEpoch).umin(WEEKS_IN_YEAR);
         for (uint16 i = _voterEpoch; i < rewardEpochs; i++) {
-            uint epochReward = _voteWeight.mul(VOTER_REWARD_MULTIPLIER)
+            uint epochReward = _voteWeight.mul(voterRewardMultiplier)
                 .mul(WEEKS_IN_YEAR.sub(i))
                 .div(voterRewardSums[i]);
             rewardsDue = rewardsDue.add(epochReward);
@@ -991,7 +1024,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
                 rewardsDue,
                 epochReward,
                 _voteWeight,
-                VOTER_REWARD_MULTIPLIER,
+                voterRewardMultiplier,
                 WEEKS_IN_YEAR.sub(i),
                 voterRewardSums[i],
                 now

@@ -59,12 +59,19 @@ module.exports = async function (deployer, network, accounts) {
         console.log(
             `Mock Balancer Pool Token deployed to address: ${ConsoleColors.GREEN}`, mockBalancerPoolToken.address
         );
+        await mockBalancerPoolToken.transfer(
+            accounts[1],
+            mockBalancerPoolTokenSupply
+        );
+        console.log(
+            `Mock Balancer Pool Token transferred to address: ${ConsoleColors.yellow}`, accounts[1]
+        );
 
         eglProxyAdmin = accounts[9]; // TODO: SET PROXY ADMIN
-        eglGenesisAddress = mockEglGenesis.address; // TODO: SET DEPLOYED GENESIS ADDRESS
+        eglGenesisAddress = "0x6eE5ec4FCE5f05eCcc90bA1de13225F6A28991db"; // TODO: SET DEPLOYED GENESIS ADDRESS
         balancerPoolTokenAddress = mockBalancerPoolToken.address; // TODO: SET BPT ADDRESS
         firstEpochStartDate = Math.round(new Date().getTime() / 1000);
-        votePauseSeconds = 60; // 1 minute
+        votePauseSeconds = 10; // 1 minute
         epochLengthSeconds = 300; // 5 minutes
         seedAccounts = [
             "0xd33004d667264373F4e090140993e2D471aa1763", // Eleni
@@ -87,7 +94,7 @@ module.exports = async function (deployer, network, accounts) {
         );
         await mockEglGenesis.sendTransaction({ from: accounts[8], value: web3.utils.toWei("0.01") });
         console.log(
-            `Contributed 0.1ETH to Genesis from account: ${ConsoleColors.YELLOW}`, accounts[8]
+            `Contributed 0.1 ETH to Genesis from account: ${ConsoleColors.YELLOW}`, accounts[8]
         );
 
         const MockBalancerPoolToken = artifacts.require("./helpers/MockBalancerPoolToken.sol");
@@ -98,6 +105,13 @@ module.exports = async function (deployer, network, accounts) {
         );
         console.log(
             `Mock Balancer Pool Token deployed to address: ${ConsoleColors.GREEN}`, mockBalancerPoolToken.address
+        );
+        await mockBalancerPoolToken.transfer(
+            accounts[1],
+            mockBalancerPoolTokenSupply
+        );
+        console.log(
+            `Mock Balancer Pool Token transferred to address: ${ConsoleColors.yellow}`, accounts[1]
         );
         /**
          * End deploy mock
@@ -158,7 +172,7 @@ module.exports = async function (deployer, network, accounts) {
         remainingEglBalance.toString()
     );
     console.log(
-        `Remaining EGL's transferred to account: ${ConsoleColors.YELLOW}`,
+        `Remaining EGL's transferred to EGL Contract: ${ConsoleColors.GREEN}`,
         parseFloat(web3.utils.fromWei(remainingEglBalance)).toLocaleString(
             "en-US",
             {
@@ -173,7 +187,8 @@ module.exports = async function (deployer, network, accounts) {
         // Transfer all mock BPT tokens to EGL contract
         await mockBalancerPoolToken.transfer(
             eglContract.address,
-            mockBalancerPoolTokenSupply
+            mockBalancerPoolTokenSupply,
+            { from: accounts[1] }
         );
     }
 };
