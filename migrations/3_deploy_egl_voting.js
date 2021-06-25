@@ -5,7 +5,7 @@ const { getBlockTimestamp } = require("../test/helpers/helper-functions");
 const EglToken = artifacts.require("./EglToken.sol");
 const EglContract = artifacts.require("./EglContract.sol");
 
-const mockBalancerPoolTokenSupply = web3.utils.toWei("10000");
+const mockBalancerPoolTokenSupply = web3.utils.toWei("75000000");
 
 let eglProxyAdmin,
     eglGenesisAddress,
@@ -16,7 +16,8 @@ let eglProxyAdmin,
     seedAccounts,
     seedAmounts,
     creatorRewardAccount,
-    mockBalancerPoolToken;
+    mockBalancerPoolToken,
+    eglOwner;
 
 module.exports = async function (deployer, network, accounts) {
     /**
@@ -38,6 +39,7 @@ module.exports = async function (deployer, network, accounts) {
 
     if (network === "mainnet") {
         throw "Confirm Contract Parameters"
+        eglOwner = ""; // TODO: SET OWNER ADDRESS
         eglProxyAdmin = ""; // TODO: SET PROXY ADMIN
         eglGenesisAddress = ""; // TODO: SET DEPLOYED GENESIS ADDRESS
         balancerPoolTokenAddress = ""; // TODO: SET BPT ADDRESS
@@ -64,20 +66,25 @@ module.exports = async function (deployer, network, accounts) {
             mockBalancerPoolTokenSupply
         );
         console.log(
-            `Mock Balancer Pool Token transferred to address: ${ConsoleColors.yellow}`, accounts[1]
+            `Mock Balancer Pool Token transferred to Genesis owner address: ${ConsoleColors.YELLOW}\n`, accounts[1]
         );
 
+        eglOwner = accounts[1];
         eglProxyAdmin = accounts[9]; // TODO: SET PROXY ADMIN
-        eglGenesisAddress = "0x6eE5ec4FCE5f05eCcc90bA1de13225F6A28991db"; // TODO: SET DEPLOYED GENESIS ADDRESS
+        eglGenesisAddress = "0x9eFC6c1CBBEC1E57acbb2CCC99019628be6B3DeF"; // TODO: SET DEPLOYED GENESIS ADDRESS
         balancerPoolTokenAddress = mockBalancerPoolToken.address; // TODO: SET BPT ADDRESS
         firstEpochStartDate = Math.round(new Date().getTime() / 1000);
-        votePauseSeconds = 10; // 1 minute
+        votePauseSeconds = 30; // 1 minute
         epochLengthSeconds = 300; // 5 minutes
         seedAccounts = [
             "0xd33004d667264373F4e090140993e2D471aa1763", // Eleni
+            "0xb5c93f1B6fA9613Db47e8d4E88cDafeDd3e666C8", // Jason
+            "0xe2a5a680E6ec55bC5072EfAA79a74bb52c9EC65c", // Shane
         ];
         seedAmounts = [
-            web3.utils.toWei("500000000"),
+            web3.utils.toWei("5000000"),
+            web3.utils.toWei("5000000"),
+            web3.utils.toWei("5000000"),
         ];
         creatorRewardAccount = "0x2755f888047Db8E3d169C6A427470C44b19a7270";
     }
@@ -111,12 +118,13 @@ module.exports = async function (deployer, network, accounts) {
             mockBalancerPoolTokenSupply
         );
         console.log(
-            `Mock Balancer Pool Token transferred to address: ${ConsoleColors.yellow}`, accounts[1]
+            `Mock Balancer Pool Token transferred to address: ${ConsoleColors.YELLOW}\n`, accounts[1]
         );
         /**
          * End deploy mock
          */
 
+        eglOwner = accounts[1];
         eglProxyAdmin = accounts[9];
         eglGenesisAddress = mockEglGenesis.address;
         balancerPoolTokenAddress = mockBalancerPoolToken.address;
@@ -136,7 +144,7 @@ module.exports = async function (deployer, network, accounts) {
 
     let eglToken = await EglToken.deployed();
     console.log(
-        `EGL Contract deployed to address: ${ConsoleColors.GREEN}`, eglToken.address
+        `Using EGL Token at address: ${ConsoleColors.CYAN}`, eglToken.address
     );
 
     let eglContract = await deployProxy(
@@ -158,11 +166,15 @@ module.exports = async function (deployer, network, accounts) {
         `EGL Contract deployed to address: ${ConsoleColors.GREEN}`, eglContract.address
     );
 
-    // Don't forget to transfer BPT tokens from MultiSig to EglContract
+    // Transfer ownership to eglOwner
+    await eglContract.transferOwnership(eglOwner)
+    console.log(
+        `EGL Contract ownership transferred to account: ${ConsoleColors.YELLOW}`, eglOwner
+    );
 
     admin.changeProxyAdmin(eglContract.address, eglProxyAdmin);
     console.log(
-        `EGL Contract admin set to account: ${ConsoleColors.YELLOW}`, eglProxyAdmin
+        `EGL Contract admin set to account: ${ConsoleColors.YELLOW}\n`, eglProxyAdmin
     );
 
     // Transfer all EGL tokens to EGL contract
@@ -190,5 +202,8 @@ module.exports = async function (deployer, network, accounts) {
             mockBalancerPoolTokenSupply,
             { from: accounts[1] }
         );
-    }
+        console.log(
+            `Mock Balancer Tokens transferred to EGL contract: ${ConsoleColors.YELLOW}`, eglContract.address
+        );
+        }
 };

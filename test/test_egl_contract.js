@@ -25,30 +25,40 @@ const {
     getAllEventsForType,
 } = require("./helpers/helper-functions")
 
-contract("EglTests", (accounts) => {
-    const [
+contract("EglVotingTests", (accounts) => {
+    [
         _deployer, 
-        _voter1, _voter2, _voter3, _voter4NoAllowance, 
-        _creator, 
-        _seed1, _seed2, 
-        _supporter1, _supporter2
+        _genesisOwner, 
+        _seedAccount1, 
+        _seedAccount2, 
+        _genesisSupporter2, 
+        _voter1, 
+        _voter2, 
+        _creatorRewardsAccount, 
+        _genesisSupporter1, 
+        _proxyAdmin
     ] = accounts;
-    const SEED_ACCOUNTS = [
-        _seed1, 
-        _seed2
+
+    let seedAccounts = [
+        _seedAccount1, 
+        _seedAccount2
     ];
-    const SEED_AMOUNTS = [
-        web3.utils.toWei("2500000"), 
-        web3.utils.toWei("2500000")
+    let seedAmounts = [
+        web3.utils.toWei("10000000"), 
+        web3.utils.toWei("12000000")
     ];
-    const CREATOR_REWARDS_ACCOUNT = _creator;
-    
+
+    let eglContractDeployBlockNumber;
+    let eglContractDeployGasLimit;
+    let eglContractDeploymentBlock;
+    let minLiquidityTokensLockup;
+    let epochLength;
+    let firstEpochStartDate;
+
     let eglTokenInstance;
     let eglContractInstance;
     let mockEglGenesisInstance;
     let mockBalancerPoolTokenInstance;
-    let eglContractDeployBlockNumber;
-    let eglContractDeployGasLimit;
     let initEvent;
 
     async function castSimpleVotes(...voteValues) {
@@ -78,23 +88,28 @@ contract("EglTests", (accounts) => {
         await eglTokenInstance.initialize("EthereumGasLimit", "EGL", totalTokenSupply);
 
         mockEglGenesisInstance = await MockEglGenesis.new(accounts[1]);
-        await mockEglGenesisInstance.sendTransaction({from: _supporter1, value: web3.utils.toWei("0.1")});
-        await mockEglGenesisInstance.sendTransaction({from: _supporter2, value: web3.utils.toWei("1.65")});
+        await mockEglGenesisInstance.sendTransaction({from: _genesisSupporter1, value: web3.utils.toWei("0.1")});
+        await mockEglGenesisInstance.sendTransaction({from: _genesisSupporter2, value: web3.utils.toWei("1.65")});
         await eglTokenInstance.transfer(
-            accounts[1],
+            _genesisOwner,
             web3.utils.toWei("750000000"),
             { from: _deployer }
         )
 
         mockBalancerPoolTokenInstance = await MockBalancerPoolToken.new();
-        await mockBalancerPoolTokenInstance.initialize("BalancerPoolToken", "BPT", web3.utils.toWei("10000"));        
+        await mockBalancerPoolTokenInstance.initialize("BalancerPoolToken", "BPT", web3.utils.toWei("75000000"));        
+        await mockBalancerPoolTokenInstance.transfer(
+            _genesisOwner,
+            web3.utils.toWei("75000000"),
+            { from: _deployer }
+        )
         
         eglContractInstance = await EglContract.new();        
         
         let eglContractDeploymentHash = eglContractInstance.transactionHash;
-        let eglContractDeploymentTransaction = await web3.eth.getTransaction(eglContractDeploymentHash);
+        let eglContractDeploymentTransaction = await web3.eth.getTransaction(eglContractDeploymentHash);        
         eglContractDeployBlockNumber = eglContractDeploymentTransaction.blockNumber;
-        let eglContractDeploymentBlock = await web3.eth.getBlock(eglContractDeployBlockNumber);
+        eglContractDeploymentBlock = await web3.eth.getBlock(eglContractDeployBlockNumber);
         let eglContractDeploymentTimestamp = eglContractDeploymentBlock.timestamp;        
         eglContractDeployGasLimit = eglContractDeploymentBlock.gasLimit;
 
@@ -105,277 +120,135 @@ contract("EglTests", (accounts) => {
             eglContractDeploymentTimestamp,
             DefaultVotePauseSeconds,
             DefaultEpochLengthSeconds,
-            SEED_ACCOUNTS,
-            SEED_AMOUNTS,
-            CREATOR_REWARDS_ACCOUNT
+            seedAccounts,
+            seedAmounts,
+            _creatorRewardsAccount
         );
 
         let remainingTokenBalance = await eglTokenInstance.balanceOf(_deployer);
         await eglTokenInstance.transfer(eglContractInstance.address, remainingTokenBalance.toString(), { from: _deployer });
-        await mockBalancerPoolTokenInstance.transfer(eglContractInstance.address, web3.utils.toWei("10000"), { from: _deployer });
-      
+        await mockBalancerPoolTokenInstance.transfer(eglContractInstance.address, web3.utils.toWei("75000000"), { from: _genesisOwner });
+
+        await eglTokenInstance.transfer(_voter1, web3.utils.toWei("250000000"), { from: accounts[1] })
+        await eglTokenInstance.transfer(_voter2, web3.utils.toWei("250000000"), { from: accounts[1] })
+        await eglTokenInstance.increaseAllowance(eglContractInstance.address, web3.utils.toWei("250000000"), { from: _voter1 });
+        await eglTokenInstance.increaseAllowance(eglContractInstance.address, web3.utils.toWei("250000000"), { from: _voter2 });
+
         initEvent = populateAllEventDataFromLogs(txReceipt, EventType.INITIALIZED)[0];        
+
+        minLiquidityTokensLockup = parseInt(initEvent.minLiquidityTokensLockup);
+        epochLength = parseInt(initEvent.epochLength);
+        firstEpochStartDate = parseInt(initEvent.firstEpochStartDate);
     });
 
-    describe.skip("Debug", function () {
-        it("", async () => {
-        });
-    });
-    describe("EGL Genesis Claims", function () {
-        it("should be able to claim bonus EGL's", async () => {
-            let supporter = await eglContractInstance.supporters(_supporter1);
-            assert.equal(supporter.matches, "0", "Should have no matches before claim");
-            
-            let txReceipt = await eglContractInstance.claimSupporterEgls({ from: _supporter1 });
-            let supporterTokensClaimedEvent = populateAllEventDataFromLogs(txReceipt, EventType.SUPPORTER_TOKENS_CLAIMED)[0];        
-            
-            supporter = await eglContractInstance.supporters(_supporter1);
-            assert.equal(supporter.matches, "1", "Should have 1 match after claim");
-            assert.isAbove(parseFloat(web3.utils.fromWei(supporter.poolTokens)), 0, "Should have more than 0 pool tokens");
-            assert.isAbove(parseFloat(web3.utils.fromWei(supporter.lastEgl)), 0, "Last EGL should be greater than 0");
-            assert.isAbove(parseFloat(web3.utils.fromWei(supporterTokensClaimedEvent.bonusEglsReceived)), 0, "Should receive bonus EGL's");
-
-            // console.log("ETH:EGL ratio: ", web3.utils.fromWei(initEvent.ethEglRatio.toString()));
-            // console.log("");
-
-            // let txReceipt = await eglContractInstance.claimSupporterEgls({from: _supporter1});
-            // let supporter = await eglContractInstance.supporters(_supporter1);
-            // let originalContributor = await mockEglGenesisInstance.contributors(_supporter1);
-            // console.log("Contribution Amount: ", web3.utils.fromWei(originalContributor.amount.toString()));
-            // console.log("S1 Pool Tokens: ", web3.utils.fromWei(supporter.poolTokens.toString()));
-            // console.log("S1 First Egl: ", web3.utils.fromWei(supporter.firstEgl.toString()));
-            // console.log("S1 last Egl: ", web3.utils.fromWei(supporter.lastEgl.toString()));
-            // supporterTokensClaimedEvent = populateAllEventDataFromLogs(txReceipt, "SupporterTokensClaimed")[0];
-            // console.log("S1 Bonus Egls Received: ", web3.utils.fromWei(supporterTokensClaimedEvent.bonusEglsReceived.toString()));
-            
-            // let txReceipt2 = await eglContractInstance.claimSupporterEgls({from: _supporter2});
-            // let supporter2 = await eglContractInstance.supporters(_supporter2);
-            // let originalContributor2 = await mockEglGenesisInstance.contributors(_supporter2);
-            // console.log("Contribution Amount: ", web3.utils.fromWei(originalContributor2.amount.toString()));
-            // console.log("S2 Pool Tokens: ", web3.utils.fromWei(supporter2.poolTokens.toString()));
-            // console.log("S2 First Egl: ", web3.utils.fromWei(supporter2.firstEgl.toString()));
-            // console.log("S2 last Egl: ", web3.utils.fromWei(supporter2.lastEgl.toString()));
-            // supporterTokensClaimedEvent2 = populateAllEventDataFromLogs(txReceipt2, "SupporterTokensClaimed")[0];
-            // console.log("S2 Bonus Egls Received: ", web3.utils.fromWei(supporterTokensClaimedEvent2.bonusEglsReceived.toString()));
-            
-            // let txReceipt3 = await eglContractInstance.withdrawPoolTokens({from: _supporter1});
-            // debugEvent = populateAllEventDataFromLogs(txReceipt3, EventType.POOL_TOKENS_WITHDRAWN)[0];
-            // console.log("Event: ", debugEvent);
-            // console.log("Intentional Error", debugEvent.noAttribute());
-            // console.log("seconds passed: ", debugEvent.secondsPassed.toString());
-            // console.log("timePassedPercentage: ", debugEvent.timePassedPercentage.toString());
-            // console.log("releasedEgl: ", debugEvent.releasedEgl.toString());
-
-            // let tx = await eglContractInstance.calculateCurrentEgl("93600")
-            // let currentEglEvent = populateAllEventDataFromLogs(tx, "CurrentEglCalculated")[0];
-            // let currentEglCalcEvent = populateAllEventDataFromLogs(tx, "Debug")[0];
-            // console.log("Testable: Current Egl after 18001 seconds: ", web3.utils.fromWei(currentEglEvent.currentEgl.toString()));
-            // console.log("Intentional Error", currentEglEvent.noAttribute());
-        });
-        it("should calculate amount of pool tokens due after claim", async () => {
-            let bptRatio = new BN(initEvent.ethBptRatio);
-            let expectedPoolTokens = web3.utils.fromWei(
-                new BN(web3.utils.toWei("0.1"))
-                .mul(bptRatio)
-                .div(new BN(10).pow(new BN(18)))
-            );
-            let txReceipt = await eglContractInstance.claimSupporterEgls({ from: _supporter1 });            
-            let supporterTokensClaimedEvent = populateAllEventDataFromLogs(txReceipt, EventType.SUPPORTER_TOKENS_CLAIMED)[0];
-            assert.equal(
-                parseFloat(web3.utils.fromWei(supporterTokensClaimedEvent.poolTokensReceived)), 
-                expectedPoolTokens.toString(), 
-                "Incorrect number of pool tokens received"
-            );
-        });
-        it("should calculate the correct first and last serialized EGL's", async () => {
-            await eglContractInstance.claimSupporterEgls({ from: _supporter2 });            
-            let genesisContribution = await mockEglGenesisInstance.contributors(_supporter2);
-            let expectedFirstEgl = (genesisContribution.cumulativeBalance)
-                .sub(genesisContribution.amount)
-                .mul(initEvent.ethEglRatio)
-                .div(new BN(10).pow(new BN(18)));
-            let expectedLastEgl = expectedFirstEgl
-                .add(
-                    (genesisContribution.amount)
-                    .mul(initEvent.ethEglRatio)
-                    .div(new BN(10).pow(new BN(18)))
-                )
-            let supporter = await eglContractInstance.supporters(_supporter2);
-
-            assert.equal(
-                web3.utils.fromWei(supporter.firstEgl), 
-                web3.utils.fromWei(expectedFirstEgl.toString()), 
-                "Incorrect first EGL calculated"
-            );
-            assert.equal(
-                web3.utils.fromWei(supporter.lastEgl), 
-                web3.utils.fromWei(expectedLastEgl.toString()), 
-                "Incorrect last EGL calculated"
-            );
-        });
-        it("should not be able to claim if already claimed", async () => {
-            await eglContractInstance.claimSupporterEgls({ from: _supporter1 });  
+    describe("Claim Genesis EGLs (Bonus EGLs)", function () {
+        it("should not be able to claim if genesis not ended", async () => {
+            await mockEglGenesisInstance.setCanContribute(true)
             await expectRevert(
-                eglContractInstance.claimSupporterEgls({ from: _supporter1 }),
+                eglContractInstance.claimSupporterEgls(7000000, 2, { from: _genesisSupporter1 }),
+                "EGL:GENESIS_LOCKED"
+            )
+        });
+        it("should not be able to claim if genesis is refunding", async () => {
+            await mockEglGenesisInstance.setCanWithdraw(true)
+            await expectRevert(
+                eglContractInstance.claimSupporterEgls(7000000, 2, { from: _genesisSupporter1 }),
+                "EGL:GENESIS_LOCKED"
+            )
+        });
+        it("should not be able to claim twice", async () => {
+            await eglContractInstance.claimSupporterEgls(7000000, 2, { from: _genesisSupporter1 });
+            await expectRevert(
+                eglContractInstance.claimSupporterEgls(7000000, 2, { from: _genesisSupporter1 }),
                 "EGL:ALREADY_CLAIMED"
-            );          
+            )
         });
-        it("should not be able to claim if not contributed to Genesis", async () => {
+        it("should not be able to claim if not contributed in genesis", async () => {
             await expectRevert(
-                eglContractInstance.claimSupporterEgls({ from: _voter1 }),
+                eglContractInstance.claimSupporterEgls(7000000, 2, { from: _voter1 }),
                 "EGL:NOT_CONTRIBUTED"
-            );          
+            )
+        });
+        it("should call tally votes if epoch has expired", async () => {
+            await time.increase(DefaultEpochLengthSeconds + 60);
+            let txReceipt = await eglContractInstance.claimSupporterEgls(7200000, 1, { from: _genesisSupporter1 });
+            let events = populateAllEventDataFromLogs(txReceipt, EventType.VOTES_TALLIED);
+            assert.equal(events.length, "1", "Tally votes not called");
+        });
+        it("should be able to claim bonus EGL's", async () => {
+            // See CLAIM BONUS EGLS in 'files/calculations.txt' for formulas to calculate expected values
+            let txReceipt = await eglContractInstance.claimSupporterEgls(7000000, 2, { from: _genesisSupporter1 });
+
+            let events = populateAllEventDataFromLogs(txReceipt, EventType.SUPPORTER_TOKENS_CLAIMED);
+            let actualBonusEgls = parseFloat(web3.utils.fromWei(events[0].bonusEglsReceived.toString())).toFixed(2)            
+            assert.equal(actualBonusEgls, "5331.11", "Incorrect bonus EGLs calculated");
+            let actualBpts = parseFloat(web3.utils.fromWei(events[0].poolTokensReceived.toString())).toFixed(9)
+            assert.equal(actualBpts, "4285714.285714285", "Incorrect BPT's calculated");
+
+            let supporter = await eglContractInstance.supporters(_genesisSupporter1);
+            assert.equal(supporter.matches, "1", "Should have 1 match after claim");            
+        });
+        it("should lock claimed tokens in a vote", async () => {
+            // See CLAIM BONUS EGLS in 'files/calculations.txt' for formulas to calculate expected values
+            let txReceipt = await eglContractInstance.claimSupporterEgls(7000000, 2, { from: _genesisSupporter1 });
+
+            events = populateAllEventDataFromLogs(txReceipt, EventType.VOTE);
+            assert.equal(events.length, "1", "No vote entered for genesis supporter");
+        });
+        it("should not be able to claim Bonus EGL's if contract paused", async () => {
+            await eglContractInstance.pauseEgl({ from: _deployer });
+
+            await expectRevert(
+                eglContractInstance.claimSupporterEgls(7000000, 2, { from: _genesisSupporter1 }),
+                "Pausable: paused"
+            )
         });
     });
-
-    describe("Initial Balances & Seed Accounts", function () {
-        it("seed account tokens should be locked and not available to withdraw", async () => {
-            assert.equal(
-                await eglTokenInstance.balanceOf(_seed1),
-                "0",
-                "Seed 1 account tokens should still be locked"
-            );
-            assert.equal(
-                await eglTokenInstance.balanceOf(_seed2),
-                "0",
-                "Seed 2 account tokens should still be locked"
+    describe("Claim Seeder EGLs", function () {
+        it("should not be able to claim seeder tokens if not seeder", async () => {
+            await expectRevert(
+                eglContractInstance.claimSeederEgls(7200000, 1, { from: _voter1 }),
+                "EGL:NOT_SEEDER"
             );
         });
-        it("seed accounts should have tokens locked in voting", async () => {
-            let seeders = [
-                await eglContractInstance.voters(_seed1), 
-                await eglContractInstance.voters(_seed2),
-            ];
-            let epochLength = parseInt(initEvent.epochLength);
-            let expectedReleaseDate = parseInt(initEvent.firstEpochStartDate) + (52 * epochLength);
-
-            seeders.forEach((seedAccount) => {
-                assert.equal(
-                    seedAccount[VoterAttributes.LOCKUP_DURATION],
-                    "8",
-                    "Incorrect seed account initial lockup duration"
-                );
-                assert.equal(
-                    seedAccount[VoterAttributes.VOTE_EPOCH],
-                    "0",
-                    "Incorrect seed account initial vote epoch"
-                );
-                assert.equal(
-                    seedAccount[VoterAttributes.RELEASE_DATE],
-                    expectedReleaseDate,
-                    "Incorrect seed account release date"
-                );
-                assert.equal(
-                    seedAccount[VoterAttributes.TOKENS_LOCKED].toString(),
-                    web3.utils.toWei("2500000"),
-                    "Incorrect seed account tokens locked"
-                );
-                assert.equal(
-                    seedAccount[VoterAttributes.GAS_TARGET],
-                    eglContractDeployGasLimit,
-                    "Incorrect seed account gas target"
-                );
-            });
+        it("should call tally votes if epoch has expired", async () => {
+            await time.increase(DefaultEpochLengthSeconds + 60);
+            let txReceipt = await eglContractInstance.claimSeederEgls(7200000, 1, { from: _seedAccount1 });
+            let events = populateAllEventDataFromLogs(txReceipt, EventType.VOTES_TALLIED);
+            assert.equal(events.length, "1", "Tally votes not called");
         });
-        it("seed account votes should be included in initial totals", async () => {
-            for (let i = 0; i < 8; i++) {
-                // Vote weight total for epoch
-                assert.equal(
-                    (await eglContractInstance.voteWeightsSum(i)).toString(),
-                    web3.utils.toWei("40000000"),                    
-                    "Incorrect initial vote weight sum - week " + i
-                );
-
-                // Gas target total for epoch
-                assert.equal(
-                    (await eglContractInstance.gasTargetSum(i)).toString(),
-                    new BN(web3.utils.toWei("40000000")).mul(new BN(eglContractDeployGasLimit)).toString(),
-                    "Incorrect initial gas target sum - week " + i
-                );
-
-                // Votes total for epoch
-                assert.equal(
-                    (await eglContractInstance.votesTotal(i)).toString(),
-                    web3.utils.toWei("5000000"),
-                    "Incorrect initial votes total - week " + i
-                );
-
-                // Voter reward total for epoch
-                assert.equal(
-                    (await eglContractInstance.voterRewardSums(i)).toString(),
-                    web3.utils.toWei("40000000"),
-                    "Incorrect initial voter reward sum - week " + i
-                );
-            }
-
-            assert.equal(
-                (await eglContractInstance.voterRewardSums(8)).toString(),
-                "0",
-                "Initial vote reward sums should be '0' - week 9"
-            );
-
+        it("should remove as seeder once claimed", async () => {
+            let seedAmount = await eglContractInstance.seeders(_seedAccount1);
+            assert.isAbove(parseFloat(web3.utils.fromWei(seedAmount.toString())), 0, "Incorrect seed amount");
+            
+            await eglContractInstance.claimSeederEgls(7200000, 1, { from: _seedAccount1 });
+            seedAmount = await eglContractInstance.seeders(_seedAccount1);
+            assert.equal(web3.utils.fromWei(seedAmount.toString()), "0", "Seed amount should be 0");
         });
-        it("gift accounts should have a token balance but no locked tokens", async () => {
-            assert.equal(
-                await eglTokenInstance.balanceOf(_voter1),
-                web3.utils.toWei("50000000"),
-                "Account 1 should have free tokens"
-            );
-            assert.equal(
-                await eglTokenInstance.balanceOf(_voter2),
-                web3.utils.toWei("50000000"),
-                "Account 2 should have free tokens"
-            );
+        it("should add seed amount to tokens in circulation once claimed", async () => {
+            let tokensInCirculationPre = await eglContractInstance.tokensInCirculation();
 
-            let gifters = [
-                await eglContractInstance.voters(_voter1), 
-                await eglContractInstance.voters(_voter2),
-            ];
-
-            gifters.forEach((giftAccount) => {
-                assert.equal(
-                    giftAccount[VoterAttributes.TOKENS_LOCKED],
-                    "0",
-                    "Gifter account should not have any tokens locked"
-                );
-            });
+            await eglContractInstance.claimSeederEgls(7200000, 1, { from: _seedAccount1 });
+            
+            let tokensInCirculationPost = await eglContractInstance.tokensInCirculation();
+            let expectedTic = 10000000 + parseFloat(web3.utils.fromWei(tokensInCirculationPre.toString()))
+            assert.equal(web3.utils.fromWei(tokensInCirculationPost.toString()), expectedTic.toString(), "Incorrect tokens in circulation") 
         });
-        it("no other accounts should have tokens locked in voting", async () => {
-            let uninitializedAccounts = [
-                await eglContractInstance.voters(_voter3),
-                await eglContractInstance.voters(_voter4NoAllowance),
-            ];
-
-            uninitializedAccounts.forEach((uninitializedAccount) => {
-                assert.equal(
-                    uninitializedAccount[VoterAttributes.LOCKUP_DURATION],
-                    "0",
-                    "Uninitialized account should not have an initial lockup duration"
-                );
-                assert.equal(
-                    uninitializedAccount[VoterAttributes.VOTE_EPOCH],
-                    "0",
-                    "Uninitialized account should not have an initial vote epoch"
-                );
-                assert.equal(
-                    uninitializedAccount[VoterAttributes.RELEASE_DATE],
-                    "0",
-                    "Uninitialized account should not have an initial release date"
-                );
-                assert.equal(
-                    uninitializedAccount[VoterAttributes.TOKENS_LOCKED],
-                    "0",
-                    "Uninitialized account should not have an initial tokens locked"
-                );
-                assert.equal(
-                    uninitializedAccount[VoterAttributes.GAS_TARGET],
-                    "0",
-                    "Uninitialized account should not have an initial gas target"
-                );
-            });
+        it("should lock claimed tokens in a vote", async () => {
+            let txReceipt = await eglContractInstance.claimSeederEgls(7200000, 1, { from: _seedAccount1 });
+            
+            events = populateAllEventDataFromLogs(txReceipt, EventType.VOTE);
+            assert.equal(events.length, "1", "No vote entered for seeder");
         });
-    });
+        it("should not be able to claim seeder EGL's if contract paused", async () => {
+            await eglContractInstance.pauseEgl({ from: _deployer });
 
+            await expectRevert(
+                eglContractInstance.claimSeederEgls(7200000, 1, { from: _seedAccount1 }),
+                "Pausable: paused"
+            )
+        });
+    });    
     describe("EGL Vote", function () {
         it("should not allow voting with no tokens available", async () => {
             await expectRevert(
@@ -383,18 +256,19 @@ contract("EglTests", (accounts) => {
                     ValidGasTarget,
                     web3.utils.toWei("1"),
                     1,
-                    {from: _voter3}
+                    {from: _proxyAdmin}
                 ),
                 "EGL:INSUFFICIENT_EGL_BALANCE"
             );
         });
         it("should not allow voting without first giving an allowance to the EGL contract", async () => {
+            await eglTokenInstance.transfer(_proxyAdmin, web3.utils.toWei("25000"), { from: accounts[1] })
             await expectRevert(
                 eglContractInstance.vote(
                     ValidGasTarget,
                     web3.utils.toWei("1"),
                     1,
-                    {from: _voter1}
+                    {from: _proxyAdmin}
                 ),
                 "EGL:INSUFFICIENT_ALLOWANCE"
             );
@@ -411,514 +285,154 @@ contract("EglTests", (accounts) => {
             );
         });
         it("should record valid vote", async () => {
-            const VoteAmount = web3.utils.toWei("10");
-            const VoteLockupDuration = 2;
-            eglTokenInstance.increaseAllowance(
-                eglContractInstance.address,
-                web3.utils.toWei("50000000"),
-                {from: _voter1}
-            );
-
             let txReceipt = await eglContractInstance.vote(
                 ValidGasTarget,
-                VoteAmount,
-                VoteLockupDuration,
+                web3.utils.toWei("1000"),
+                2,
                 {from: _voter1}
-            );
-
-            let voter = await eglContractInstance.voters(_voter1);
-            let voteCallBlockTimestamp = await getBlockTimestamp(web3, txReceipt);
-
-            assert.equal(
-                voter[VoterAttributes.GAS_TARGET],
-                ValidGasTarget,
-                "Incorrect vote target stored after vote()"
-            );
-            assert.equal(
-                voter[VoterAttributes.LOCKUP_DURATION],
-                VoteLockupDuration.toString(),
-                "Incorrect lockup duration stored after vote()"
-            );
-            assert.equal(
-                voter[VoterAttributes.VOTE_EPOCH],
-                "0",
-                "Incorrect starting epoch stored after vote()"
-            );
-            assert.equal(
-                voter[VoterAttributes.RELEASE_DATE],
-                voteCallBlockTimestamp + VoteLockupDuration * DefaultEpochLengthSeconds,
-                "Incorrect release date stored after vote()"
-            );
-            assert.equal(
-                voter[VoterAttributes.TOKENS_LOCKED],
-                VoteAmount,
-                "Incorrect tokens locked stored for voter"
-            );
+            )
+            let events = populateAllEventDataFromLogs(txReceipt, EventType.VOTE)
+            assert.equal(events.length, "1", "No vote recorded");
         });
         it("should increase egl balance of contract after vote", async () => {
-            let initialContractEglBalance = new BN(await eglTokenInstance.balanceOf(eglContractInstance.address));
-            let voteAmount = new BN(web3.utils.toWei("10"));
-
-            eglTokenInstance.increaseAllowance(
-                eglContractInstance.address,
-                voteAmount.toString(),
-                {from: _voter1}
-            );
+            let initialContractEglBalance = web3.utils.fromWei(await eglTokenInstance.balanceOf(eglContractInstance.address));
+            let voteAmount = 10;
 
             await eglContractInstance.vote(
                 ValidGasTarget,
-                voteAmount.toString(),
+                web3.utils.toWei(voteAmount.toString()),
                 2,
                 {from: _voter1}
             );            
 
             assert.equal(
-                (await eglTokenInstance.balanceOf(eglContractInstance.address)).toString(),
-                initialContractEglBalance.add(voteAmount).toString(),
+                web3.utils.fromWei(await eglTokenInstance.balanceOf(eglContractInstance.address)),
+                parseFloat(initialContractEglBalance) + voteAmount,
                 "Incorrect EglContract token balance after vote()"
             );
         });
-        it("should add vote to existing totals", async () => {
-            let voteAmount = new BN(web3.utils.toWei("10"));
-
-            eglTokenInstance.increaseAllowance(
-                eglContractInstance.address,
-                voteAmount.toString(),
-                {from: _voter1}
-            );
-
-            await eglContractInstance.vote(
+        it("should call tally votes if epoch has expired", async () => {
+            await time.increase(DefaultEpochLengthSeconds + 60);
+            let txReceipt = await eglContractInstance.vote(
                 ValidGasTarget,
-                voteAmount.toString(),
+                web3.utils.toWei("1000"),
                 2,
                 {from: _voter1}
             );            
 
-            let voteWeight = voteAmount.mul(new BN("2"));
-            let seedEpochGasTargetTotal = new BN(web3.utils.toWei("40000000")).mul(new BN(eglContractDeployGasLimit));
-            // Include voters vote for 2 periods
-            for (let i = 0; i < 2; i++) {
-                // Vote weight total for epoch
-                assert.equal(
-                    (await eglContractInstance.voteWeightsSum(i)).toString(),
-                    web3.utils.toWei("40000020"),
-                    "Incorrect vote weight sum after vote - week " + i
-                );
-
-                // Gas target total for epoch
-                assert.equal(
-                    (await eglContractInstance.gasTargetSum(i)).toString(),
-                    seedEpochGasTargetTotal.add(voteWeight.mul(new BN(ValidGasTarget))).toString(),
-                    "Incorrect initial gas target sum - week " + i
-                );
-
-                // Votes total
-                assert.equal(
-                    (await eglContractInstance.votesTotal(i)).toString(),
-                    web3.utils.toWei("5000010"),
-                    "Incorrect votes total after vote() - week " + i
-                );
-
-                // Voter reward sums
-                assert.equal(
-                    (await eglContractInstance.voterRewardSums(i)).toString(),
-                    web3.utils.toWei("40000020"),
-                    "Incorrect voter reward sums after vote() - week " + i
-                );
-            }
-
-            // Only seed votes left
-            for (let i = 2; i < 8; i++) {
-                // Vote weight total for epoch
-                assert.equal(
-                    (await eglContractInstance.voteWeightsSum(i)).toString(),
-                    web3.utils.toWei("40000000"),
-                    "Incorrect vote weight sum after vote - week " + i
-                );
-
-                // Gas target total for epoch
-                assert.equal(
-                    (await eglContractInstance.gasTargetSum(i)).toString(),
-                    seedEpochGasTargetTotal.toString(),
-                    "Incorrect initial gas target sum - week " + i
-                );
-
-                // Votes total
-                assert.equal(
-                    (await eglContractInstance.votesTotal(i)).toString(),
-                    web3.utils.toWei("5000000"),
-                    "Incorrect votes total after vote() - week " + i
-                );
-
-                // Voter reward sums
-                assert.equal(
-                    (await eglContractInstance.voterRewardSums(i)).toString(),
-                    web3.utils.toWei("40000000"),
-                    "Incorrect voter reward sums after vote() - week " + i
-                );
-            }
+            let events = populateAllEventDataFromLogs(txReceipt, EventType.VOTES_TALLIED);
+            assert.equal(events.length, "1", "Tally votes not called");
         });
-        it("should not be able to vote if a vote already exists for user", async () => {
-            let voteAmount = new BN(web3.utils.toWei("1"));
-            eglTokenInstance.increaseAllowance(
-                eglContractInstance.address,
-                web3.utils.toWei("2"),
-                {from: _voter1}
-            );
-            await eglContractInstance.vote(
-                ValidGasTarget,
-                voteAmount.toString(),
-                1,
-                {from: _voter1}
-            );
-            await expectRevert(
-                eglContractInstance.vote(
-                    ValidGasTarget,
-                    voteAmount.toString(),
-                    1,
-                    {from: _voter1}
-                ),
-                "EGL:ALREADY_VOTED"
-            );
-        });
-        it("should not be able to vote if gas target outside current gas limit tolerance", async () => {
-            let voteAmount = new BN(web3.utils.toWei("1"));
-            eglTokenInstance.increaseAllowance(
-                eglContractInstance.address,
-                voteAmount.toString(),
-                {from: _voter1}
-            );
-            await expectRevert(
-                eglContractInstance.vote(
-                    InvalidGasTargetHigh,
-                    voteAmount.toString(),
-                    1,
-                    {from: _voter1}
-                ),
-                "EGL:INVALID_GAS_TARGET."
-            );
+        it("should not be able to vote if contract paused", async () => {
+            await eglContractInstance.pauseEgl({ from: _deployer });
 
             await expectRevert(
-                eglContractInstance.vote(
-                    InvalidGasTargetLow,
-                    voteAmount.toString(),
-                    1,
-                    {from: _voter1}
-                ),
-                "EGL:INVALID_GAS_TARGET"
-            );
-        });
-        it("should not be able to vote if invalid lockup duration specified", async () => {
-            let voteAmount = new BN(web3.utils.toWei("1"));
-            eglTokenInstance.increaseAllowance(
-                eglContractInstance.address,
-                voteAmount.toString(),
-                {from: _voter1}
-            );
-            await expectRevert(
-                eglContractInstance.vote(
-                    ValidGasTarget,
-                    voteAmount.toString(),
-                    9,
-                    {from: _voter1}
-                ),
-                "EGL:INVALID_LOCKUP"
-            );
-            await expectRevert(
-                eglContractInstance.vote(
-                    ValidGasTarget,
-                    voteAmount.toString(),
-                    0,
-                    {from: _voter1}
-                ),
-                "EGL:INVALID_LOCKUP"
-            );
-        });
-        it.skip("should record votes in different epochs and update totals for relevant periods", async () => {
-
-        });
-        it.skip("should emit 'Vote' event with relevant details of the vote", async () => {
-
+                eglContractInstance.vote(7000000, web3.utils.toWei("1000"), 2, { from: _voter1 }),
+                "Pausable: paused"
+            )
         });
     });
-
     describe("ReVote", function () {
-        it("should not change release date of seeder account after re-vote", async () => {
-            let seed = await eglContractInstance.voters(_seed1);
-            let originalReleaseDate = seed[VoterAttributes.RELEASE_DATE];
+        it("should not change release date of voter after re-vote if lockup period is shorter than original vote", async () => {
+            await castSimpleVotes(
+                [7000000, "10", 8, _voter1]
+            );            
+
+            let voter = await eglContractInstance.voters(_voter1);
+            let originalReleaseDate = voter.releaseDate;
+
+            await time.increase(DefaultEpochLengthSeconds * 2 + 60);
+            await eglContractInstance.tallyVotes();
 
             await eglContractInstance.reVote(
                 ValidGasTarget,
                 "0",
-                4,
-                {from: _seed1}
+                2,
+                {from: _voter1}
             );
-            seed = await eglContractInstance.voters(_seed1);
-            assert.equal(
-                seed[VoterAttributes.RELEASE_DATE],
-                originalReleaseDate.toNumber(),
-                "Incorrect release date after re-vote()"
-            );
+            voter = await eglContractInstance.voters(_voter1);
+            assert.equal(voter.releaseDate.toString(), originalReleaseDate.toString(), "Incorrect release date after re-vote()");
         });
-        it("should add to existing locked EGL's on re-vote if EGL amount > 0 for seeder account", async () => {
+        it("should add to existing locked EGL's on re-vote if EGL amount > 0", async () => {
             let voteAmount = new BN(web3.utils.toWei("2"));
             let reVoteAmount = new BN(web3.utils.toWei("1"));
             
-            eglTokenInstance.increaseAllowance(
-                eglContractInstance.address,
-                (voteAmount.add(reVoteAmount)).toString(),
-                {from: _voter1}
-            );
-
             await eglContractInstance.vote(
                 ValidGasTarget,
-                voteAmount.toString(),
+                web3.utils.toWei("2"),
                 4,
                 {from: _voter1}
             );
 
-            let initialContractEglBalance = new BN(
-                await eglTokenInstance.balanceOf(eglContractInstance.address)
+            let voter = await eglContractInstance.voters(_voter1);
+            assert.equal(
+                web3.utils.fromWei(voter.tokensLocked.toString()),
+                "2",
+                "Incorrect locked tokens after re-vote()"
             );
 
-            let voter = await eglContractInstance.voters(_voter1);
-            let originalLockedTokens = new BN(voter[VoterAttributes.TOKENS_LOCKED]);
+            let initialContractEglBalance = web3.utils.fromWei(await eglTokenInstance.balanceOf(eglContractInstance.address))
 
             await eglContractInstance.reVote(
                 ValidGasTarget,
-                reVoteAmount.toString(),
+                web3.utils.toWei("1"),
                 3,
                 {from: _voter1}
             );
 
             voter = await eglContractInstance.voters(_voter1);
-            assert.notEqual(
-                voter[VoterAttributes.TOKENS_LOCKED],
-                originalLockedTokens.toString(),
-                "Tokens locked should not be the same as original vote"
-            );
             assert.equal(
-                voter[VoterAttributes.TOKENS_LOCKED],
-                web3.utils.toWei("3"),
+                web3.utils.fromWei(voter.tokensLocked.toString()),
+                "3",
                 "Incorrect locked tokens after re-vote()"
             );
 
+            let expectedValue = parseFloat(initialContractEglBalance) + 1
             assert.equal(
-                (await eglTokenInstance.balanceOf(eglContractInstance.address)).toString(),
-                initialContractEglBalance.add(reVoteAmount).toString(),
+                web3.utils.fromWei(await eglTokenInstance.balanceOf(eglContractInstance.address)),
+                expectedValue.toString(),
                 "Incorrect EglContract token balance after re-vote()"
             );
         });
-        it("should allow changing of lockup duration on re-vote in same epoch", async () => {
-            let newLockupDuration = 4;
-            let seed = await eglContractInstance.voters(_seed1);
-            let originalLockupDuration = seed[VoterAttributes.LOCKUP_DURATION];
+        it("should allow changing of lockup duration on re-vote", async () => {
+            await castSimpleVotes(
+                [7000000, "10", 8, _voter1]
+            );            
 
             await eglContractInstance.reVote(
-                7325000,
-                "0",
-                newLockupDuration,
-                {from: _seed1}
-            );
-
-            seed = await eglContractInstance.voters(_seed1);
-            assert.notEqual(
-                seed[VoterAttributes.LOCKUP_DURATION],
-                originalLockupDuration,
-                "Lockup duration should not the same as the original vote"
-            )
-            assert.equal(
-                seed[VoterAttributes.LOCKUP_DURATION],
-                newLockupDuration,
-                "Incorrect lockup duration after re-vote()"
-            );
-
-            // Totals
-            for (let i = 0; i < 4; i++) {
-                // Vote weight total for epoch
-                assert.equal(
-                    (await eglContractInstance.voteWeightsSum(i)).toString(),
-                    web3.utils.toWei("30000000"),
-                    "Incorrect vote weight sum after re-vote - week " + i
-                );
-
-                // TODO: Test gasTargetSum
-
-                // Votes total
-                assert.equal(
-                    (await eglContractInstance.votesTotal(i)).toString(),
-                    web3.utils.toWei("5000000"),
-                    "Incorrect votes total after re-vote() - week " + i
-                );
-
-                // Voter reward sums
-                assert.equal(
-                    (await eglContractInstance.voterRewardSums(i)).toString(),
-                    web3.utils.toWei("30000000"),
-                    "Incorrect voter reward sums after re-vote() - week " + i
-                );
-            }
-
-            for (let i = 4; i < 8; i++) {
-                // Vote weight total for epoch
-                assert.equal(
-                    (await eglContractInstance.voteWeightsSum(i)).toString(),
-                    web3.utils.toWei("20000000"),
-                    "Incorrect vote weight sum after re-vote - week " + i
-                );
-
-                // Votes total
-                assert.equal(
-                    (await eglContractInstance.votesTotal(i)).toString(),
-                    web3.utils.toWei("2500000"),
-                    "Incorrect votes total after vote() - week " + i
-                );
-
-                // Voter reward sums
-                assert.equal(
-                    (await eglContractInstance.voterRewardSums(i)).toString(),
-                    web3.utils.toWei("20000000"),
-                    "Incorrect voter reward sums after vote() - week " + i
-                );
-            }
-        });
-        it("should allow changing of gas target amount on re-vote in same epoch", async () => {
-            let seed = await eglContractInstance.voters(_seed1);
-            let originalGasTarget = seed[VoterAttributes.GAS_TARGET];
-
-            await eglContractInstance.reVote(
-                7325000,
+                7000000,
                 "0",
                 "4",
-                {from: _seed1}
-            );
-
-            seed = await eglContractInstance.voters(_seed1);
-            assert.notEqual(
-                seed[VoterAttributes.GAS_TARGET],
-                originalGasTarget,
-                "Gas target should not the same as the original vote"
-            )
-            assert.equal(
-                seed[VoterAttributes.GAS_TARGET],
-                7325000,
-                "Incorrect gas target after re-vote()"
-            );
-
-        });
-        it("user account can re-vote with additional tokens and extend lockup period (same epoch)", async () => {
-            const REVOTE_AMOUNT = web3.utils.toWei("60");
-            const REVOTE_LOCKUP_DURATION = 4;
-            eglTokenInstance.increaseAllowance(
-                eglContractInstance.address,
-                web3.utils.toWei("50000000"),
                 {from: _voter1}
             );
 
-            let [txReceipt] = await castSimpleVotes([
-                ValidGasTarget,
-                "10",
-                2,
-                _voter1,
-            ]);
-
-            let initialContractEglBalance = new BN(
-                await eglTokenInstance.balanceOf(eglContractInstance.address)
+            let voter = await eglContractInstance.voters(_voter1);
+            assert.equal(
+                voter.lockupDuration,
+                "4",
+                "Incorrect lockup period after re-vote()"
             );
-            let voteBlockTimestamp = (
-                await web3.eth.getBlock(txReceipt.receipt.blockNumber)
-            ).timestamp;
-            let expectedReleaseDate = new BN(
-                voteBlockTimestamp + REVOTE_LOCKUP_DURATION * DefaultEpochLengthSeconds
-            );
+        });
+        it("should allow changing of gas target amount on re-vote in same epoch", async () => {
+            await castSimpleVotes(
+                [7000000, "10", 8, _voter1]
+            );            
 
             await eglContractInstance.reVote(
-                ValidGasTarget,
-                REVOTE_AMOUNT,
-                REVOTE_LOCKUP_DURATION,
+                7500000,
+                "0",
+                "8",
                 {from: _voter1}
             );
+
             let voter = await eglContractInstance.voters(_voter1);
-
             assert.equal(
-                voter[VoterAttributes.LOCKUP_DURATION],
-                REVOTE_LOCKUP_DURATION,
-                "Incorrect lockup duration after re-vote()"
+                voter.gasTarget,
+                "7500000",
+                "Incorrect gas target after re-vote()"
             );
-            assert.equal(
-                voter[VoterAttributes.VOTE_EPOCH],
-                "0",
-                "Incorrect starting epoch after re-vote()"
-            );
-            assert.approximately(
-                voter[VoterAttributes.RELEASE_DATE].toNumber(),
-                expectedReleaseDate.toNumber(),
-                1,
-                "Incorrect release date after re-vote()"
-            );
-            assert.equal(
-                voter[VoterAttributes.TOKENS_LOCKED],
-                web3.utils.toWei("70"),
-                "Incorrect tokens locked after re-vote()"
-            );
-
-            //Token transfer
-            assert.equal(
-                (
-                    await eglTokenInstance.balanceOf(eglContractInstance.address)
-                ).toString(),
-                initialContractEglBalance.add(new BN(REVOTE_AMOUNT)).toString(),
-                "Incorrect EglContract token balance"
-            );
-
-            // Totals
-            for (let i = 0; i < 4; i++) {
-                // Vote weight total for epoch
-                assert.equal(
-                    (await eglContractInstance.voteWeightsSum(i)).toString(),
-                    web3.utils.toWei("40000280"),
-                    "Incorrect vote weight sum after re-vote - week " + i
-                );
-
-                // Votes total
-                assert.equal(
-                    (await eglContractInstance.votesTotal(i)).toString(),
-                    web3.utils.toWei("5000070"),
-                    "Incorrect votes total after re-vote() - week " + i
-                );
-
-                // Voter reward sums
-                assert.equal(
-                    (await eglContractInstance.voterRewardSums(i)).toString(),
-                    web3.utils.toWei("40000280"),
-                    "Incorrect voter reward sums after re-vote() - week " + i
-                );
-            }
-
-            for (let i = 4; i < 8; i++) {
-                // Vote weight total for epoch
-                assert.equal(
-                    (await eglContractInstance.voteWeightsSum(i)).toString(),
-                    web3.utils.toWei("40000000"),
-                    "Incorrect vote weight sum after re-vote - week " + i
-                );
-
-                // Votes total
-                assert.equal(
-                    (await eglContractInstance.votesTotal(i)).toString(),
-                    web3.utils.toWei("5000000"),
-                    "Incorrect votes total after vote() - week " + i
-                );
-
-                // Voter reward sums
-                assert.equal(
-                    (await eglContractInstance.voterRewardSums(i)).toString(),
-                    web3.utils.toWei("40000000"),
-                    "Incorrect voter reward sums after vote() - week " + i
-                );
-            }
         });
-        it("should fail re-vote validations", async () => {
+        it("should not allow re-vote for account that hasn't voted yet", async () => {
             await expectRevert(
                 eglContractInstance.reVote(
                     ValidGasTarget,
@@ -928,13 +442,11 @@ contract("EglTests", (accounts) => {
                 ),
                 "EGL:NOT_VOTED"
             );
-
-            eglTokenInstance.increaseAllowance(
-                eglContractInstance.address,
-                web3.utils.toWei("20000000"),
-                {from: _voter1}
-            );
-            await castSimpleVotes([ValidGasTarget, "10", 2, _voter1]);
+        });
+        it("should not allow re-vote with amount greater than 0 but less than 1", async () => {
+            await castSimpleVotes(
+                [7000000, "10", 8, _voter1]
+            );            
 
             await expectRevert(
                 eglContractInstance.reVote(
@@ -945,29 +457,233 @@ contract("EglTests", (accounts) => {
                 ),
                 "EGL:AMNT_TOO_LOW"
             );
+        });
+        it("should not allow re-vote if amount is greater than 0 but has an insufficient EGL balance", async () => {
+            await castSimpleVotes(
+                [7000000, "10", 8, _voter1]
+            );
 
             await expectRevert(
                 eglContractInstance.reVote(
                     ValidGasTarget,
-                    web3.utils.toWei("100000000"),
+                    web3.utils.toWei("10000000000"),
                     1,
                     {from: _voter1}
                 ),
                 "EGL:INSUFFICIENT_EGL_BALANCE"
             );
+        });
+        it("should not allow re-vote if amount is greater than 0 but has an insufficient allowance", async () => {
+            await eglTokenInstance.transfer(_proxyAdmin, web3.utils.toWei("2500"), { from: accounts[1] })
+            await eglTokenInstance.increaseAllowance(eglContractInstance.address, web3.utils.toWei("2000"), { from: _proxyAdmin });
+            await castSimpleVotes(
+                [7000000, "2000", 8, _proxyAdmin]
+            );
 
             await expectRevert(
                 eglContractInstance.reVote(
                     ValidGasTarget,
-                    web3.utils.toWei("30000000"),
+                    web3.utils.toWei("250"),
                     1,
-                    {from: _voter1}
+                    {from: _proxyAdmin}
                 ),
                 "EGL:INSUFFICIENT_ALLOWANCE"
             );
         });
-    });
+        it("should call tally votes if epoch has expired", async () => {
+            await castSimpleVotes(
+                [7000000, "10", 8, _voter1]
+            );
 
+            await time.increase(DefaultEpochLengthSeconds + 60);
+            let txReceipt = await eglContractInstance.reVote(
+                ValidGasTarget,
+                web3.utils.toWei("1000"),
+                2,
+                {from: _voter1}
+            );            
+
+            let events = populateAllEventDataFromLogs(txReceipt, EventType.VOTES_TALLIED);
+            assert.equal(events.length, "1", "Tally votes not called");
+        });
+        it("should not be able to re-vote if contract paused", async () => {
+            await castSimpleVotes(
+                [7000000, "10", 8, _voter1]
+            );
+            await eglContractInstance.pauseEgl({ from: _deployer });
+
+            await expectRevert(
+                eglContractInstance.reVote(7000000, web3.utils.toWei("1000"), 2, { from: _voter1 }),
+                "Pausable: paused"
+            )
+        });
+    });
+    describe("Withdraw", function () {
+        it("should not be able to withdraw if not voted", async () => {
+            await expectRevert(
+                eglContractInstance.withdraw({from: _voter1}),
+                "EGL:NOT_VOTED"
+            );
+        });
+        it("should not be able to withdraw before lockup period elapsed", async () => {
+            await castSimpleVotes(
+                [7000000, "10", 8, _voter1]
+            );
+            await time.increase(DefaultEpochLengthSeconds + 60);
+            await eglContractInstance.tallyVotes();
+
+            await expectRevert(
+                eglContractInstance.withdraw({from: _voter1}),
+                "EGL:NOT_RELEASE_DATE"
+            );
+        });
+        it("should be able to withdraw after lockup period", async () => {
+            await castSimpleVotes(
+                [7000000, "10", 4, _voter1]
+            );
+
+            for (let i = 0; i < 4; i++) {
+                await time.increase(DefaultEpochLengthSeconds + 60);
+                await eglContractInstance.tallyVotes();
+            }
+            let initialContractEglBalance = web3.utils.fromWei((await eglTokenInstance.balanceOf(eglContractInstance.address)).toString());
+            let initialVoterBalance = web3.utils.fromWei((await eglTokenInstance.balanceOf(_voter1)).toString());
+
+            let txReceipt = await eglContractInstance.withdraw({from: _voter1})
+
+            let events = populateAllEventDataFromLogs(txReceipt, EventType.WITHDRAW);
+            let tokensLocked = parseFloat(web3.utils.fromWei(events[0].tokensLocked.toString()));
+            let rewardTokens = parseFloat(web3.utils.fromWei(events[0].rewardTokens.toString()));
+            let withdrawAmount = tokensLocked + rewardTokens;
+            let voterBalance = parseFloat(initialVoterBalance) + withdrawAmount;
+            let expectedContractBalance = parseFloat(initialContractEglBalance) - withdrawAmount;
+            
+            assert.equal(
+                web3.utils.fromWei((await eglTokenInstance.balanceOf(_voter1)).toString()), 
+                voterBalance.toString(), 
+                "Incorrect voter amount after withdraw"
+            );
+            assert.equal(
+                web3.utils.fromWei((await eglTokenInstance.balanceOf(eglContractInstance.address)).toString()), 
+                expectedContractBalance.toString(), 
+                "Incorrect contract balance after withdraw"
+            );
+        });
+        it("should not be able to withdraw if contract paused", async () => {
+            await castSimpleVotes(
+                [7000000, "10", 2, _voter1]
+            );
+            for (let i = 0; i < 3; i++) {
+                await time.increase(DefaultEpochLengthSeconds + 60);
+                await eglContractInstance.tallyVotes();
+            }
+
+            await eglContractInstance.pauseEgl({ from: _deployer });
+
+            await expectRevert(
+                eglContractInstance.withdraw({from: _voter1}),
+                "Pausable: paused"
+            )
+        });
+    });
+    describe("Sweep Pool Rewards", function () {
+        /** 
+         * *******************************************************************************************************************
+         * Ganache sets the coinbase account to 0x0 so the token transfer fails. Can only enable these test once that is fixed
+         * *******************************************************************************************************************
+         * */ 
+        it.skip("should send block reward to coinbase account", async () => {
+            let initialCoinbaseBalance = web3.utils.fromWei((await eglTokenInstance.balanceOf(eglContractDeploymentBlock.miner)).toString());
+            let txReceipt = await eglContractInstance.sweepPoolRewards();
+
+            let eventData = populateEventDataFromLogs(txReceipt, EventType.POOL_REWARD_SWEPT);
+            let expectedCoinbaseBalance = parseFloat(initialCoinbaseBalance) + parseFloat(web3.utils.fromWei(eventData[0].blockReward.toString()))
+            assert.equal(
+                web3.utils.fromWei((await eglTokenInstance.balanceOf(eglContractDeploymentBlock.miner)).toString()),
+                expectedCoinbaseBalance.toString(),
+                "Incorrect reward amount sent to coinbase account"
+            )
+        });
+        it.skip("should add miner reward to tokens in circulation once claimed", async () => {
+            let tokensInCirculationPre = await eglContractInstance.tokensInCirculation();
+
+            let txReceipt = await eglContractInstance.sweepPoolRewards();
+            
+            let eventData = populateEventDataFromLogs(txReceipt, EventType.POOL_REWARD_SWEPT);
+            let tokensInCirculationPost = await eglContractInstance.tokensInCirculation();
+            let blockReward = parseFloat(web3.utils.fromWei(eventData[0].blockReward.toString()))
+            let expectedTic = blockReward + parseFloat(web3.utils.fromWei(tokensInCirculationPre.toString()))
+            assert.equal(web3.utils.fromWei(tokensInCirculationPost.toString()), expectedTic.toString(), "Incorrect tokens in circulation after pool sweep") 
+        });
+        it.skip("should decrease remaining pool reward balance after pool sweep", async () => {
+            let initialPoolBalance = 1500000000;
+
+            let txReceipt = await eglContractInstance.sweepPoolRewards();
+            
+            let eventData = populateEventDataFromLogs(txReceipt, EventType.BLOCK_REWARD_CALCULATED);
+            let blockReward = parseFloat(web3.utils.fromWei(eventData[0].blockReward.toString()))
+
+            assert.equal(
+                web3.utils.fromWei(eventData[0].remainingPoolReward.toString()), 
+                initialPoolBalance - blockReward, 
+                "Incorrect remaining pool reward balance"
+            ) 
+        });
+        it("should not be able to sweep pool rewards if contract paused", async () => {
+            await eglContractInstance.pauseEgl({ from: _deployer });
+
+            await expectRevert(
+                eglContractInstance.sweepPoolRewards(),
+                "Pausable: paused"
+            )
+        });
+    });
+    describe("Withdraw Pool Tokens", function () {      
+        it("should not allow withdraw if not participated in Genesis or has not pool tokens due", async () => {
+            await expectRevert(
+                eglContractInstance.withdrawPoolTokens({ from: _proxyAdmin }),
+                "EGL:NO_POOL_TOKENS"
+            )
+        });  
+        it("should not allow withdraw before the minimum pool token lockup period has elapsed", async () => {
+            await eglContractInstance.claimSupporterEgls(7500000, 8, { from: _genesisSupporter1 });
+            await time.increase((DefaultEpochLengthSeconds * 4) + 60);
+
+            await expectRevert(
+                eglContractInstance.withdrawPoolTokens({ from: _genesisSupporter1 }),
+                "EGL:ALL_TOKENS_LOCKED"
+            )
+        });  
+        it("should not allow withdraw before participants serialized EGL's have started to unlock", async () => {
+            await eglContractInstance.claimSupporterEgls(7500000, 8, { from: _genesisSupporter2 });
+
+            // After minimum lockup but before release date
+            await time.increase((DefaultEpochLengthSeconds * 12) + 60);
+            await expectRevert(
+                eglContractInstance.withdrawPoolTokens({ from: _genesisSupporter2 }),
+                "EGL:ADDR_TOKENS_LOCKED"
+            )
+        });  
+        it("should allow participants to withdraw pool tokens", async () => {
+            await eglContractInstance.claimSupporterEgls(7500000, 8, { from: _genesisSupporter1 });
+
+            // After minimum lockup but before release date
+            await time.increase((DefaultEpochLengthSeconds * 52) + 60);
+            let txReceipt = await eglContractInstance.withdrawPoolTokens({ from: _genesisSupporter1 })
+            let events = populateAllEventDataFromLogs(txReceipt, EventType.POOL_TOKENS_WITHDRAWN)
+            assert.equal(events.length, "1", "Expected withdraw event")
+        });  
+        it("should not be able to withdraw pool tokens if contract paused", async () => {
+            await eglContractInstance.claimSupporterEgls(7500000, 8, { from: _genesisSupporter1 });
+            await time.increase((DefaultEpochLengthSeconds * 52) + 60);
+            await eglContractInstance.pauseEgl({ from: _deployer });
+
+            await expectRevert(
+                eglContractInstance.withdrawPoolTokens({ from: _genesisSupporter1 }),
+                "Pausable: paused"
+            )
+        });
+    });
     describe("Tally Votes", function () {
         it("should revert if epoch has not ended", async () => {
             let currentEpoch = await eglContractInstance.currentEpoch();
@@ -977,288 +693,432 @@ contract("EglTests", (accounts) => {
                 "EGL:VOTE_NOT_ENDED"
             );
         });
-        it("should set voting threshold to 30% for the first 52 epochs", async () => {
-            for (let i = 0; i <= 52; i++) {
-                await time.increase(DefaultEpochLengthSeconds + 10);
-                let txReceipt = await eglContractInstance.tallyVotes({ from: accounts[9] })
+        it("should have a voting threshold of 10% for the first 7 epochs", async () => {
+            for (let i = 0; i < 8; i++) {                
+                await time.increase(DefaultEpochLengthSeconds + 60);
+                let txReceipt = await eglContractInstance.tallyVotes();
+                let tallyVotesEvent = await populateAllEventDataFromLogs(txReceipt, EventType.VOTES_TALLIED)[0];
+                assert.equal(web3.utils.fromWei(tallyVotesEvent.votingThreshold.toString()), "10", "Vote threshold should be 10%")
+            }
+        });
+        it("should increment current epoch on tally votes call", async () => {
+            let currentEpoch = await eglContractInstance.currentEpoch();
+            assert.equal(currentEpoch.toString(), "0", "Incorrect epoch number")
+            for (let i = 1; i < 5; i++) {                
+                await time.increase(DefaultEpochLengthSeconds + 60);
+                await eglContractInstance.tallyVotes();
+                
+                currentEpoch = await eglContractInstance.currentEpoch();
+                assert.equal(currentEpoch.toString(), i.toString(), "Incorrect epoch number")
+            }
+        });
+        it("should set new epoch start date on tally votes call", async () => {
+            let currentEpochStartDate = await eglContractInstance.currentEpochStartDate();
+            assert.equal(currentEpochStartDate.toString(), initEvent.firstEpochStartDate.toString(), "Incorrect epoch start date")
+            for (let i = 1; i < 5; i++) {                
+                await time.increase(DefaultEpochLengthSeconds + 60);
+                await eglContractInstance.tallyVotes();
+                
+                currentEpochStartDate = await eglContractInstance.currentEpochStartDate();
+                assert.equal(
+                    currentEpochStartDate.toString(), 
+                    (parseInt(initEvent.firstEpochStartDate) + (DefaultEpochLengthSeconds * i)).toString(), 
+                    "Incorrect epoch start date"
+                );
+            }
+        });
+        it("should have a voting threshold to 30% from the remainder of the year (epochs 8 to 52)", async () => {
+            for (let i = 0; i < 8; i++) {
+                await time.increase(DefaultEpochLengthSeconds + 60);
+                await eglContractInstance.tallyVotes();
+            }
+
+            for (let i = 8; i <= 51; i++) {                
+                await time.increase(DefaultEpochLengthSeconds + 60);
+                let txReceipt = await eglContractInstance.tallyVotes()
                 let tallyVotesEvent = await populateAllEventDataFromLogs(txReceipt, EventType.VOTES_TALLIED)[0];
                 assert.equal(web3.utils.fromWei(tallyVotesEvent.votingThreshold.toString()), "30", "Vote threshold should be 30%")
             }
         });
         it("should increase vote threshold from 30% to a max of 50% over 3 years (runs long)", async () => {
-            let yearlyThreshold = 30;
-            for (let i = 0; i <= 52 * 4; i++) {
-                await time.increase(DefaultEpochLengthSeconds + 10);
-                let txReceipt = await eglContractInstance.tallyVotes({ from: accounts[9] })
-                if (i > 0 && i % 52 === 0) {
-                    let tallyVotesEvent = await populateAllEventDataFromLogs(txReceipt, EventType.VOTES_TALLIED)[0];
-                    assert.approximately(
-                        parseFloat(web3.utils.fromWei(tallyVotesEvent.votingThreshold)), 
-                        yearlyThreshold, 
-                        0.0000001,
-                        "Incorrect vote threshold percentage after"
-                    );
-                    yearlyThreshold = yearlyThreshold === 50 ? yearlyThreshold : yearlyThreshold + 6.66666666666666667;
-                }
+            let txReceipt;
+            for (let i = 0; i <= 51; i++) {                
+                await time.increase(DefaultEpochLengthSeconds + 60);
+                txReceipt = await eglContractInstance.tallyVotes();
+            }
+            let lastTallyVotesEvent = await populateAllEventDataFromLogs(txReceipt, EventType.VOTES_TALLIED)[0];
+            let voteThreshold = parseFloat(web3.utils.fromWei(lastTallyVotesEvent.votingThreshold.toString()))
+
+            for (let i = 51; i <= 51 * 3; i++) {
+                await time.increase(DefaultEpochLengthSeconds + 60);
+                txReceipt = await eglContractInstance.tallyVotes();
+                
+                let currentEpoch = parseInt((await eglContractInstance.currentEpoch()).toString());
+                let tallyVotesEvent = await populateAllEventDataFromLogs(txReceipt, EventType.VOTES_TALLIED)[0];
+                let expectedVoteThreshold = voteThreshold + (20 / (52 * 2)) * (currentEpoch - 1 - 51);
+                assert.equal(
+                    parseFloat(web3.utils.fromWei(tallyVotesEvent.votingThreshold.toString())).toFixed(13),
+                    expectedVoteThreshold.toFixed(13),
+                    "Incorrect vote threshold calculated for epoch"
+                )
+            }
+            await time.increase(DefaultEpochLengthSeconds + 60);
+            txReceipt = await eglContractInstance.tallyVotes();
+            let finalTallyVotesEvent = await populateAllEventDataFromLogs(txReceipt, EventType.VOTES_TALLIED)[0];
+            assert.approximately(
+                parseFloat(web3.utils.fromWei(finalTallyVotesEvent.votingThreshold.toString())),
+                50,
+                0.0000000000001,
+                "Incorrect vote threshold calculated for epoch"
+            )
+        });
+        it("should not exceed a vote threshold of 50% (runs long)", async () => {
+            let txReceipt;
+            for (let i = 0; i <= (52 * 3) + 1; i++) {                
+                await time.increase(DefaultEpochLengthSeconds + 60);
+                txReceipt = await eglContractInstance.tallyVotes();
+            }
+
+            for (let i = 153; i <= 52 * 4; i++) {
+                await time.increase(DefaultEpochLengthSeconds + 60);
+                txReceipt = await eglContractInstance.tallyVotes();
+                
+                let tallyVotesEvent = await populateAllEventDataFromLogs(txReceipt, EventType.VOTES_TALLIED)[0];
+                assert.equal(
+                    web3.utils.fromWei(tallyVotesEvent.votingThreshold.toString()),
+                    "50",
+                    "Vote threshold should not exceed 50%"
+                )
             }
         });
-        it("should pass vote if vote percentage greater than the vote threshold", async () => {
-            eglTokenInstance.increaseAllowance(
-                eglContractInstance.address,
-                web3.utils.toWei("50000000"),
-                {from: _voter1}
+        it("should pass vote if vote percentage greater than the vote threshold during the grace period", async () => {
+            await castSimpleVotes(
+                [7000000, "75000000", 4, _voter1]
             );
+            await time.increase(DefaultEpochLengthSeconds + 60);
+            let txReceipt = await eglContractInstance.tallyVotes();
 
-            let voteAmount = await getVoteAmount("31");
-            await castSimpleVotes([ValidGasTarget, (parseFloat(web3.utils.fromWei(voteAmount))).toString(), 1, _voter1]);
-            epochVoteTotal = await eglContractInstance.votesTotal(0);            
-            await time.increase(DefaultEpochLengthSeconds + 10)
-            let txReceipt = await eglContractInstance.tallyVotes({ from: accounts[9] })
+            let tallyVotesEvent = populateAllEventDataFromLogs(txReceipt, EventType.VOTES_TALLIED)[0];
+            assert.equal(web3.utils.fromWei(tallyVotesEvent.actualVotePercentage.toString()), "10", "Incorrect actual vote percentage")
+            assert.equal(web3.utils.fromWei(tallyVotesEvent.votingThreshold.toString()), "10", "Incorrect threshold")
+
+            let thresholdMetEvent = populateAllEventDataFromLogs(txReceipt, EventType.VOTE_THRESHOLD_MET);            
+            assert.equal(thresholdMetEvent.length, "1", "Expected threshold met event");
+
+            let thresholdFailedEvent = populateAllEventDataFromLogs(txReceipt, EventType.VOTE_THRESHOLD_FAILED);
+            assert.equal(thresholdFailedEvent.length, "0", "Did not expect threshold failed event");
+        });
+        it("should fail vote if vote percentage less than the vote threshold during the grace period", async () => {
+            await castSimpleVotes(
+                [7000000, "74999999", 4, _voter1]
+            );
+            await time.increase(DefaultEpochLengthSeconds + 60);
+            let txReceipt = await eglContractInstance.tallyVotes();
+
+            let tallyVotesEvent = populateAllEventDataFromLogs(txReceipt, EventType.VOTES_TALLIED)[0];
+            assert.isBelow(
+                parseFloat(web3.utils.fromWei(tallyVotesEvent.actualVotePercentage.toString())), 
+                10, 
+                "Should be below vote threshold"
+            )
+            assert.equal(web3.utils.fromWei(tallyVotesEvent.votingThreshold.toString()), "10", "Incorrect threshold")
+
+            let thresholdMetEvent = populateAllEventDataFromLogs(txReceipt, EventType.VOTE_THRESHOLD_MET);            
+            assert.equal(thresholdMetEvent.length, "0", "Did not expect threshold met event");
+
+            let thresholdFailedEvent = populateAllEventDataFromLogs(txReceipt, EventType.VOTE_THRESHOLD_FAILED);
+            assert.equal(thresholdFailedEvent.length, "1", "Expected threshold failed event");
+        });
+        it("should pass vote if vote percentage greater than the vote threshold after the grace period", async () => {            
+            for (let i = 0; i < 10; i++) {
+                await time.increase(DefaultEpochLengthSeconds + 60);
+                await eglContractInstance.tallyVotes();
+            }
+            await castSimpleVotes(
+                [7000000, "225000000", 4, _voter1]
+            );
+            await time.increase(DefaultEpochLengthSeconds + 60);
+            let txReceipt = await eglContractInstance.tallyVotes();
+
+            let tallyVotesEvent = populateAllEventDataFromLogs(txReceipt, EventType.VOTES_TALLIED)[0];
+            assert.equal(web3.utils.fromWei(tallyVotesEvent.actualVotePercentage.toString()), "30", "Incorrect actual vote percentage")
+            assert.equal(web3.utils.fromWei(tallyVotesEvent.votingThreshold.toString()), "30", "Incorrect threshold")
+
+            let thresholdMetEvent = populateAllEventDataFromLogs(txReceipt, EventType.VOTE_THRESHOLD_MET);            
+            assert.equal(thresholdMetEvent.length, "1", "Expected threshold met event");
+
+            let thresholdFailedEvent = populateAllEventDataFromLogs(txReceipt, EventType.VOTE_THRESHOLD_FAILED);
+            assert.equal(thresholdFailedEvent.length, "0", "Did not expect threshold failed event");
+        });
+        it("should fail vote if vote percentage less than the vote threshold after the grace period", async () => {
+            for (let i = 0; i < 10; i++) {
+                await time.increase(DefaultEpochLengthSeconds + 60);
+                await eglContractInstance.tallyVotes();
+            }
+            await castSimpleVotes(
+                [7000000, "217500000", 4, _voter1]
+            );
+            await time.increase(DefaultEpochLengthSeconds + 60);
+            let txReceipt = await eglContractInstance.tallyVotes();
+
+            let tallyVotesEvent = populateAllEventDataFromLogs(txReceipt, EventType.VOTES_TALLIED)[0];
+            assert.equal(web3.utils.fromWei(tallyVotesEvent.actualVotePercentage.toString()), "29", "Should be below vote threshold")
+            assert.equal(web3.utils.fromWei(tallyVotesEvent.votingThreshold.toString()), "30", "Incorrect threshold")
+
+            let thresholdMetEvent = populateAllEventDataFromLogs(txReceipt, EventType.VOTE_THRESHOLD_MET);            
+            assert.equal(thresholdMetEvent.length, "0", "Did not expect threshold met event");
+
+            let thresholdFailedEvent = populateAllEventDataFromLogs(txReceipt, EventType.VOTE_THRESHOLD_FAILED);
+            assert.equal(thresholdFailedEvent.length, "1", "Expected threshold failed event");
+        });
+        it("should adjust EGL to average gas target value if vote passes and vote weights are the same", async () => {
+            await castSimpleVotes(
+                [7000000, "37500000", 4, _voter1],
+                [8000000, "37500000", 4, _voter2],
+            );
+            await time.increase(DefaultEpochLengthSeconds + 60);
+            let txReceipt = await eglContractInstance.tallyVotes();
 
             let votesThresholdMetEvent = await populateAllEventDataFromLogs(txReceipt, EventType.VOTE_THRESHOLD_MET)[0];
-            assert.exists(votesThresholdMetEvent, "Expected 'VoteThresholdMet' event");
-            assert.isAtLeast(parseFloat(web3.utils.fromWei(votesThresholdMetEvent.actualVotePercentage)), 30, "Vote percentage should be above 30%")
-
+            assert.equal(votesThresholdMetEvent.desiredEgl.toString(), "7500000", "Incorrect desired EGL amount calculated")
         });
-        it("should fail vote if vote percentage less than the vote threshold", async () => {
-            eglTokenInstance.increaseAllowance(
-                eglContractInstance.address,
-                web3.utils.toWei("50000000"),
-                {from: _voter1}
+        it("should adjust EGL to average gas target value if vote passes and vote weights are different", async () => {
+            await castSimpleVotes(
+                [7000000, "37500000", 3, _voter1],
+                [8000000, "37500000", 6, _voter2],
             );
-
-            let voteAmount = await getVoteAmount("29");
-            await castSimpleVotes([ValidGasTarget, (parseFloat(web3.utils.fromWei(voteAmount.toString()))).toString(), 1, _voter1]);
-            await time.increase(DefaultEpochLengthSeconds + 10)
-            let txReceipt = await eglContractInstance.tallyVotes({ from: accounts[9] })
-
-            let votesThresholdFailedEvent = await populateAllEventDataFromLogs(txReceipt, EventType.VOTE_THRESHOLD_FAILED)[0];
-            assert.isBelow(parseFloat(web3.utils.fromWei(votesThresholdFailedEvent.actualVotePercentage)), 30, "Vote percentage should be below 30%")
-            assert.exists(votesThresholdFailedEvent, "Expected 'VoteThresholdFailed' event");
-        });
-        it("should adjust EGL to average gas target value if vote passes", async () => {
-            eglTokenInstance.increaseAllowance(
-                eglContractInstance.address,
-                web3.utils.toWei("50000000"),
-                {from: _voter1}
-            );
-
-            let voteAmount = await getVoteAmount("30");
-            await castSimpleVotes([9000000, parseFloat(web3.utils.fromWei(voteAmount)).toString(), 8, _voter1]);
-            await time.increase(DefaultEpochLengthSeconds + 10)
-            let txReceipt = await eglContractInstance.tallyVotes({ from: accounts[9] })
+            await time.increase(DefaultEpochLengthSeconds + 60);
+            let txReceipt = await eglContractInstance.tallyVotes();
 
             let votesThresholdMetEvent = await populateAllEventDataFromLogs(txReceipt, EventType.VOTE_THRESHOLD_MET)[0];
-            let gasTargetSum = await eglContractInstance.gasTargetSum(0);
-            let voteWeightSum = await eglContractInstance.voteWeightsSum(0);
-            let averageGasTarget = gasTargetSum.div(voteWeightSum);
-            let expectedDesiredEgl = eglContractDeployGasLimit + Math.min(averageGasTarget - eglContractDeployGasLimit, 1000000);
-            assert.equal(votesThresholdMetEvent.desiredEgl.toString(), expectedDesiredEgl.toString(), "Incorrect desired EGL amount calculated")
+            let baselineEgl = parseFloat(votesThresholdMetEvent.baselineEgl.toString());
+            let gasTargetSum = parseFloat((await eglContractInstance.gasTargetSum(0)).toString());
+            let voteWeightSum = parseFloat((await eglContractInstance.voteWeightsSum(0)).toString());
+            let averageGasTarget = gasTargetSum / voteWeightSum;
+
+            let expectedDesiredEgl = baselineEgl + Math.min(averageGasTarget - baselineEgl, 1000000);
+            assert.equal(
+                votesThresholdMetEvent.desiredEgl.toString(), 
+                Math.trunc(expectedDesiredEgl).toString(), 
+                "Incorrect desired EGL amount calculated"
+            )
         });
         it("should not adjust EGL if vote fails and still within grace period", async () => {
-            eglTokenInstance.increaseAllowance(eglContractInstance.address, web3.utils.toWei("50000000"), { from: _voter1 });
-            eglTokenInstance.increaseAllowance(eglContractInstance.address, web3.utils.toWei("50000000"), { from: _voter2 });
-
-            // Vote to increase EGL
-            let voteAmount = await getVoteAmount("30");         
+            let originalDesiredEgl = (await eglContractInstance.desiredEgl()).toString();
             await castSimpleVotes(
-                [10500000, parseFloat(web3.utils.fromWei(voteAmount)).toString(), 1, _voter1],
-                [10500000, parseFloat(web3.utils.fromWei(voteAmount)).toString(), 1, _voter2],
+                [7000000, "10000000", 3, _voter1],
+                [8000000, "37500000", 6, _voter2],
             );
-            await time.increase(DefaultEpochLengthSeconds + 10)
-            let txReceipt = await eglContractInstance.tallyVotes({ from: accounts[9] })
-            let votesThresholdMetEvent = await populateAllEventDataFromLogs(txReceipt, EventType.VOTE_THRESHOLD_MET)[0];
-            let newDesiredEgl = votesThresholdMetEvent.desiredEgl;
+            await time.increase(DefaultEpochLengthSeconds + 60);
+            let txReceipt = await eglContractInstance.tallyVotes();
 
-            for (let i = 1; i < 6; i++) {
-                await time.increase(DefaultEpochLengthSeconds + 10);
-                let txReceipt = await eglContractInstance.tallyVotes({ from: accounts[9] })
-                let votesThresholdFailedEvent = await populateAllEventDataFromLogs(txReceipt, EventType.VOTE_THRESHOLD_FAILED)[0];
-                assert.equal(votesThresholdFailedEvent.desiredEgl.toString(), newDesiredEgl.toString(), "Failed vote during grace period should not change desired EGL");
-            }
+            let votesThresholdFailedEvent = await populateAllEventDataFromLogs(txReceipt, EventType.VOTE_THRESHOLD_FAILED)[0];
+            assert.equal(votesThresholdFailedEvent.desiredEgl.toString(), originalDesiredEgl, "Failed vote during grace period should not change desired EGL");
         });
         it("should adjust EGL if vote fails and grace period is over", async () => {
-            eglTokenInstance.increaseAllowance(eglContractInstance.address, web3.utils.toWei("50000000"), { from: _voter1 });
-            eglTokenInstance.increaseAllowance(eglContractInstance.address, web3.utils.toWei("50000000"), { from: _voter2 });
+            for (let i = 0; i < 6; i++) {
+                await time.increase(DefaultEpochLengthSeconds + 60);
+                await eglContractInstance.tallyVotes();
+            }
 
-            // Vote to increase EGL
-            let voteAmount = await getVoteAmount("30");
             await castSimpleVotes(
-                [10500000, parseFloat(web3.utils.fromWei(voteAmount)).toString(), 1, _voter1],
-                [10500000, parseFloat(web3.utils.fromWei(voteAmount)).toString(), 1, _voter2],
+                [7000000, "10000000", 3, _voter1],
+                [8000000, "37500000", 6, _voter2],
             );
-            await time.increase(DefaultEpochLengthSeconds + 10)
-            let txReceipt = await eglContractInstance.tallyVotes({ from: accounts[9] })
-            let votesThresholdMetEvent = await populateAllEventDataFromLogs(txReceipt, EventType.VOTE_THRESHOLD_MET)[0];
-            let newDesiredEgl = votesThresholdMetEvent.desiredEgl;
 
-            // End grace period
-            for (let i = 1; i < 6; i++) {
-                await time.increase(DefaultEpochLengthSeconds + 10);
-                await eglContractInstance.tallyVotes({ from: accounts[9] })
-            }
+            await time.increase(DefaultEpochLengthSeconds + 60);
+            let txReceipt = await eglContractInstance.tallyVotes();
+            let tallyVotesBlock = await web3.eth.getBlock(txReceipt.receipt.blockNumber);
+            let expectedDesiredEgl = Math.trunc(tallyVotesBlock.gasLimit * 0.95)
 
-            await time.increase(DefaultEpochLengthSeconds + 10);
-            txReceipt = await eglContractInstance.tallyVotes({ from: accounts[9] })
-            votesThresholdFailedEvent = await populateAllEventDataFromLogs(txReceipt, EventType.VOTE_THRESHOLD_FAILED)[0];
-            let initialEgl = await eglContractInstance.initialEgl();
-            let expectedDesiredEgl = Math.trunc(newDesiredEgl.toNumber() + ((initialEgl.toNumber() - newDesiredEgl.toNumber()) * 0.05));
-            assert.approximately(
-                parseFloat(votesThresholdFailedEvent.desiredEgl.toString()), 
-                parseFloat(expectedDesiredEgl.toString()), 
-                1,
-                "Incorrect desired EGL after failed vote"
-            );
+            let votesThresholdFailedEvent = await populateAllEventDataFromLogs(txReceipt, EventType.VOTE_THRESHOLD_FAILED)[0];
+            assert.equal(votesThresholdFailedEvent.desiredEgl.toString(), expectedDesiredEgl.toString(), "Failed vote during grace period should not change desired EGL");
         });
-
         it("should issue creator rewards starting from epoch 10", async () => {
-            for (let i = 0; i < 9; i++) {
-                await time.increase(DefaultEpochLengthSeconds + 10);
-                await eglContractInstance.tallyVotes({ from: accounts[9] })
+            let txReceipt;
+            for (let i = 0; i < 10; i++) {
+                await time.increase(DefaultEpochLengthSeconds + 60);
+                txReceipt = await eglContractInstance.tallyVotes();
             }
 
-            let creatorRewardsClaimedEvents = await getAllEventsForType(EventType.CREATOR_REWARDS_CLAIMED, eglContractInstance);
-            assert.equal(creatorRewardsClaimedEvents.length, 0, "Should not have any creator reward events yet");
+            let creatorRewardsClaimedEvent = populateAllEventDataFromLogs(txReceipt, EventType.CREATOR_REWARDS_CLAIMED);
+            assert.equal(creatorRewardsClaimedEvent.length, "0", "Should not have any creator reward events yet");
 
-            await time.increase(DefaultEpochLengthSeconds + 10);
-            let txReceipts = await eglContractInstance.tallyVotes({ from: accounts[9] })
+            await time.increase(DefaultEpochLengthSeconds + 60);
+            txReceipt = await eglContractInstance.tallyVotes()
+            creatorRewardsClaimedEvent = populateAllEventDataFromLogs(txReceipt, EventType.CREATOR_REWARDS_CLAIMED)
+            assert.equal(creatorRewardsClaimedEvent.length, "1", "Should have claimed creator reward");
+        });
+        it("should process current epochs vote totals and sums and then discard/advance data structures to the next epoch", async () => {
+            await castSimpleVotes(
+                [7000000, "10000000", 3, _voter1],
+                [8000000, "37500000", 6, _voter2],
+            );
 
-            let creatorRewardEvent = populateAllEventDataFromLogs(txReceipts, EventType.CREATOR_REWARDS_CLAIMED)[0];
-            assert.equal(creatorRewardEvent.creatorRewardAddress, CREATOR_REWARDS_ACCOUNT, "Incorrect creator reward address");
-            assert.equal(creatorRewardEvent.amountClaimed.toString(), InitialCreatorReward.toString(), "Incorrect creator reward amount");    
+            let expectedVoteWeightsSum = ["255000000", "255000000", "255000000", "225000000", "225000000", "225000000", "0", "0"];
+            let expectedGasTargetSum = ["2010000000000000", "2010000000000000", "2010000000000000", "1800000000000000", "1800000000000000", "1800000000000000", "0", "0"];
+            let expectedVotesTotal = ["47500000", "47500000", "47500000", "37500000", "37500000", "37500000", "0", "0"];
+            for (let i = 0; i < 8; i++) {
+                assert.equal(
+                    web3.utils.fromWei((await eglContractInstance.voteWeightsSum(i)).toString()), 
+                    expectedVoteWeightsSum[i], 
+                    "Incorrect vote weights sum at epoch " + i
+                );
+                assert.equal(
+                    web3.utils.fromWei((await eglContractInstance.gasTargetSum(i)).toString()), 
+                    expectedGasTargetSum[i], 
+                    "Incorrect gas target sum at epoch " + i
+                );
+                assert.equal(
+                    web3.utils.fromWei((await eglContractInstance.votesTotal(i)).toString()), 
+                    expectedVotesTotal[i], 
+                    "Incorrect votes total at epoch " + i
+                );
+            }
+
+            await time.increase(DefaultEpochLengthSeconds + 60);
+            await eglContractInstance.tallyVotes();
+
+            expectedVoteWeightsSum = ["255000000", "255000000", "225000000", "225000000", "225000000", "0", "0", "0"];
+            expectedGasTargetSum = ["2010000000000000", "2010000000000000", "1800000000000000", "1800000000000000", "1800000000000000", "0", "0", "0"];
+            expectedVotesTotal = ["47500000", "47500000", "37500000", "37500000", "37500000", "0", "0", "0"];
+            for (let i = 0; i < 8; i++) {
+                assert.equal(
+                    web3.utils.fromWei((await eglContractInstance.voteWeightsSum(i)).toString()), 
+                    expectedVoteWeightsSum[i], 
+                    "Incorrect vote weights sum at epoch " + i
+                );
+                assert.equal(
+                    web3.utils.fromWei((await eglContractInstance.gasTargetSum(i)).toString()), 
+                    expectedGasTargetSum[i], 
+                    "Incorrect gas target sum at epoch " + i
+                );
+                assert.equal(
+                    web3.utils.fromWei((await eglContractInstance.votesTotal(i)).toString()), 
+                    expectedVotesTotal[i], 
+                    "Incorrect votes total at epoch " + i
+                );
+            }
+        });
+        it("should not be able to tally votes if contract paused", async () => {            
+            await time.increase(DefaultEpochLengthSeconds + 60);
+            await eglContractInstance.pauseEgl({ from: _deployer });
+
+            await expectRevert(
+                eglContractInstance.tallyVotes(),
+                "Pausable: paused"
+            )
         });
     });
-
-    describe("Withdraw", function () {
-        it.skip("account can withdraw tokens after lockup period has elapsed", async () => {
-            let initialContractEglBalance = (
-                await eglTokenInstance.balanceOf(eglContractInstance.address)
-            ).toString();
-            let initialVoterBalance = (
-                await eglTokenInstance.balanceOf(_voter1)
-            ).toString();
-            eglTokenInstance.increaseAllowance(
-                eglContractInstance.address,
-                web3.utils.toWei("50000000"),
-                {from: _voter1}
-            );
-
-            let [voteTxReceipt] = await castSimpleVotes([
-                ValidGasTarget,
-                "10",
-                1,
-                _voter1,
-            ]);
-
-            let voter = await eglContractInstance.voters(_voter1);
-            let expectedReleaseDate =
-                (await getBlockTimestamp(web3)) + 2 * DefaultEpochLengthSeconds;
-            console.log(
-                "Release date on chain: ",
-                voter[VoterAttributes.RELEASE_DATE].toString()
-            );
-            assert.approximately(
-                voter[VoterAttributes.RELEASE_DATE].toNumber(),
-                expectedReleaseDate,
-                5,
-                "Incorrect release date"
-            );
-
-            await sleep(DefaultEpochLengthSeconds + 1);
-            await eglContractInstance.tallyVotes({from: _voter2});
-
-            let withdrawTxReceipt = await eglContractInstance.withdraw({
-                from: _voter1,
-            });
-            let withdrawEvents = populateEventDataFromLogs(withdrawTxReceipt, EventType.WITHDRAW);
-
-            assert.equal(
-                withdrawEvents.tokensLocked.toString(),
-                web3.utils.toWei("10"),
-                "Incorrect original voter amount"
-            );
-
-            console.log(
-                "Voter reward: ",
-                withdrawEvents.rewardTokens.toString()
-            );
-            let expectedVoterReward = 0;
-            // assert.equal(withdrawEvents[EventType.WITHDRAW].rewardTokens.toString, expectedVoterReward, "Incorrect original voter amount");
-
-            // await eglContractInstance.reVote(
-            //     VoteDirection.UP, web3.utils.toWei("5"), 2, "0x0000000000000000000000000000000000000000", 0, "0x0000000000000000000000000000000000000000",
-            //     {from: _voter2}
-            // );
-            // voter = await eglContractInstance.voters(_voter2);
-            //
-            // assert.equal(voter[VoterAttributes.LOCKUP_DURATION], "2", "Incorrect lockup duration saved for voter");
-            // assert.equal(voter[VoterAttributes.VOTE_EPOCH], "0", "Incorrect starting epoch saved for voter");
-            // assert.equal(voter[VoterAttributes.RELEASE_DATE], expectedReleaseDate, "Incorrect release date saved for voter");
-            // assert.equal(voter[VoterAttributes.TOKENS_LOCKED], web3.utils.toWei("7"), "Incorrect tokens locked for voter");
-            //
-            // //Token transfer
-            // assert.equal(
-            //     await eglTokenInstance.balanceOf(eglContractInstance.address),
-            //     parseInt(initialContractEglBalance) + parseInt(web3.utils.toWei("37")),
-            //     "Incorrect EglContract token balance"
-            // );
-            //
-            // // Direction vote totals
-            // assert.equal(
-            //     (await eglContractInstance.directionVoteCount(VoteDirection.UP, 0)).toString(),
-            //     web3.utils.toWei("34"),
-            //     "Incorrect 'UP' vote count for vote period 0"
-            // );
-            // assert.equal(
-            //     (await eglContractInstance.directionVoteCount(VoteDirection.UP, 2)).toString(),
-            //     "0",
-            //     "Incorrect 'UP' vote count for vote period 2"
-            // );
-            //
-            // // Voter reward sums
-            // assert.equal(
-            //     (await eglContractInstance.voterRewardSums(0)).toString(), web3.utils.toWei("114"), "Incorrect reward sum for epoch 0"
-            // );
-            // assert.equal(
-            //     (await eglContractInstance.voterRewardSums(1)).toString(), web3.utils.toWei("114"), "Incorrect reward sum for epoch 1"
-            // );
-            // assert.equal(
-            //     (await eglContractInstance.voterRewardSums(2)).toString(), web3.utils.toWei("80"), "Incorrect reward sum for epoch 2"
-            // );
-            //
-            // // Vote totals
-            // assert.equal(
-            //     (await eglContractInstance.votesTotal(0)).toString(), web3.utils.toWei("37"), "Incorrect reward sum for vote period 0"
-            // );
-            // assert.equal(
-            //     (await eglContractInstance.votesTotal(1)).toString(), web3.utils.toWei("37"), "Incorrect reward sum for vote period 1"
-            // );
-            // assert.equal(
-            //     (await eglContractInstance.votesTotal(2)).toString(), web3.utils.toWei("20"), "Incorrect reward sum for vote period 2"
-            // );
-        });
-        it("should not be able to withdraw before lockup period elapsed", async () => {
-            eglTokenInstance.increaseAllowance(eglContractInstance.address, web3.utils.toWei("50000000"), { from: _voter1 });
-            await castSimpleVotes([ValidGasTarget, "10", 2, _voter1]);
+    describe("Add Seeder Accounts", function () {
+        it("should not allow none owner accounts to add seeders", async () => {
             await expectRevert(
-                eglContractInstance.withdraw({from: _voter1}),
-                "EGL:NOT_RELEASE_DATE"
-            );
+                eglContractInstance.addSeedAccount(_voter1, web3.utils.toWei("1000"), {from: _creatorRewardsAccount}),
+                "Ownable: caller is not the owner"
+            )
         });
-        it("should not be able to withdraw if not voted", async () => {
+        it("should not allow a seed amount that is larger than the remaining seeder balance", async () => {
             await expectRevert(
-                eglContractInstance.withdraw({from: _voter1}),
-                "EGL:NOT_VOTED"
+                eglContractInstance.addSeedAccount(_voter1, web3.utils.toWei("51000000"), { from: _deployer }),
+                "EGL:INSUFFICIENT_SEED_BALANCE"
+            )
+        });
+        it("should not allow a seed account to be added if it is already a seeder account", async () => {
+            await expectRevert(
+                eglContractInstance.addSeedAccount(_seedAccount1, web3.utils.toWei("5000"), { from: _deployer }),
+                "EGL:ALREADY_SEEDER"
+            )
+        });
+        it("should not allow a seed account to be added if the account already has a vote locked", async () => {
+            await castSimpleVotes(
+                [7000000, "10", 2, _voter1]
             );
+
+            await expectRevert(
+                eglContractInstance.addSeedAccount(_voter1, web3.utils.toWei("5000"), { from: _deployer }),
+                "EGL:ALREADY_HAS_VOTE"
+            )
+        });
+        it("should not allow a seed account to be added if the account already has EGL's", async () => {
+            await expectRevert(
+                eglContractInstance.addSeedAccount(_voter1, web3.utils.toWei("5000"), { from: _deployer }),
+                "EGL:ALREADY_HAS_EGLS"
+            )
+        });
+        it("should not allow a seed account to be added after the first 10 epochs", async () => {
+            await time.increase(DefaultEpochLengthSeconds * 10 + 60);
+            await expectRevert(
+                eglContractInstance.addSeedAccount(_proxyAdmin, web3.utils.toWei("5000"), { from: _deployer }),
+                "EGL:SEED_PERIOD_PASSED"
+            )
+        });
+        it("should not allow a seed account to be added if it participated in Genesis", async () => {            
+            await expectRevert(
+                eglContractInstance.addSeedAccount(_genesisSupporter1, web3.utils.toWei("5000"), { from: _deployer }),
+                "EGL:IS_CONTRIBUTOR"
+            )
+        });
+        it("should add seed account with specified amount", async () => {         
+            let seedAmount = await eglContractInstance.seeders(_proxyAdmin);
+            assert.equal(seedAmount.toString(), "0", "Seed amount for account should be 0");
+
+            await eglContractInstance.addSeedAccount(_proxyAdmin, web3.utils.toWei("5000"), { from: _deployer })
+            seedAmount = await eglContractInstance.seeders(_proxyAdmin);
+            assert.equal(web3.utils.fromWei(seedAmount.toString()), "5000", "Account should have a seed value");
+        });
+        it("should reduce remaining seed balance when seed account added", async () => {         
+            let txReceipt = await eglContractInstance.addSeedAccount(_proxyAdmin, web3.utils.toWei("5000"), { from: _deployer })
+            let events = populateAllEventDataFromLogs(txReceipt, EventType.SEED_ACCOUNT_ADDED);
+            let remainingBalance = parseFloat(web3.utils.fromWei(events[0].remainingSeederBalance.toString()));
+
+            txReceipt = await eglContractInstance.addSeedAccount(_creatorRewardsAccount, web3.utils.toWei("5000"), { from: _deployer })
+            events = populateAllEventDataFromLogs(txReceipt, EventType.SEED_ACCOUNT_ADDED);
+            let remainingBalanceAfter = parseFloat(web3.utils.fromWei(events[0].remainingSeederBalance.toString()));
+            assert.equal(remainingBalanceAfter, remainingBalance - 5000, "Incorrect remaining seeder balance");
         });
     });
+    describe("Ownership", function () {
+        it("should revert if owner attempts to renounce ownership", async () => {
+            await expectRevert(
+                eglContractInstance.renounceOwnership(),
+                "EGL:NO_RENOUNCE_OWNERSHIP"
+            )
+        });
+    });
+    describe("Payments", function () {
+        it("should revert if any eth payment received", async () => {
+            await expectRevert(
+                eglContractInstance.sendTransaction({from: _genesisSupporter1, value: web3.utils.toWei("1")}),
+                "EGL:NO_PAYMENTS"
+            )
+        });
+    });
+    describe("Pause & Unpause", function () {
+        it("should only allow contract owner to pause", async () => {
+            assert.equal(await eglContractInstance.paused(), false, "Contract should be paused");
+            await eglContractInstance.pauseEgl({ from: _deployer });
+            assert.equal(await eglContractInstance.paused(), true, "Contract should be paused")
+        });
+        it("should only allow contract owner to unpause", async () => {            
+            await eglContractInstance.pauseEgl({ from: _deployer });
+            assert.equal(await eglContractInstance.paused(), true, "Contract should be paused");
+            await eglContractInstance.unpauseEgl({ from: _deployer });
+            assert.equal(await eglContractInstance.paused(), false, "Contract should not be paused")
+        });
+        it("should not allow non contract owner to pause", async () => {
+            await expectRevert(
+                eglContractInstance.pauseEgl({ from: _creatorRewardsAccount }),
+                "Ownable: caller is not the owner"
+            )
+        });
+        it("should not allow non contract owner to unpause", async () => {
+            await eglContractInstance.pauseEgl({ from: _deployer });
+            assert.equal(await eglContractInstance.paused(), true, "Contract should be paused");
 
-    describe.skip("Sweep Pool Rewards", function () {
-        it("should send block reward to coinbase account", async () => {
-          let txReceipt = await eglContractInstance.sweepPoolRewards();
-          let eventData = populateEventDataFromLogs(txReceipt, EventType.POOL_REWARD_SWEPT);
-          console.log("blockReward: ", (eventData.blockReward).toString());
-          console.log("proximityRewardPercent: ", (eventData.proximityRewardPercent).toString());
+            await expectRevert(
+                eglContractInstance.unpauseEgl({ from: _creatorRewardsAccount }),
+                "Ownable: caller is not the owner"
+            )
         });
     });
 });

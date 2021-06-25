@@ -29,4 +29,12 @@ contract MockEglGenesis {
         contributor.idx = contributorsList.length;
         contributor.date = now;
     }
+
+    function setCanContribute(bool _canContribute) external {
+        canContribute = _canContribute;
+    }
+
+    function setCanWithdraw(bool _canWithdraw) external {
+        canWithdraw = _canWithdraw;
+    }
 }

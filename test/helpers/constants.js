@@ -11,12 +11,15 @@ const EventType = {
     VOTE_THRESHOLD_FAILED: "VoteThresholdFailed",
     POOL_REWARDS_SWEPT: "PoolRewardsSwept",
     BLOCK_REWARD_CALCULATED: "BlockRewardCalculated",
-    SEED_ACCOUNT_FUNDED: "SeedAccountFunded",
+    SEED_ACCOUNT_CLAIMED: "SeedAccountClaimed",
     VOTER_REWARD_CALCULATED: "VoterRewardCalculated",
-    ETH_RECEIVED: "EthReceived",
     SUPPORTER_TOKENS_CLAIMED: "SupporterTokensClaimed",
     POOL_TOKENS_WITHDRAWN: "PoolTokensWithdrawn",
+    SERIALIZED_EGL_CALCULATED: "SerializedEglCalculated",
+    SEED_ACCOUNT_ADDED: "SeedAccountAdded"
 };
+
+
 
 const VoterAttributes = {
     LOCKUP_DURATION: 0,
@@ -39,7 +42,7 @@ const ConsoleColors = {
 
 const ZeroAddress = "0x0000000000000000000000000000000000000000";
 const DefaultVotePauseSeconds = 300;
-const DefaultEpochLengthSeconds = 1800; 
+const DefaultEpochLengthSeconds = 604800; 
 
 /***************************************************************/
 /**** Assumes default block gas limit in ganache of 6721975 ****/

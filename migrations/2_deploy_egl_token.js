@@ -19,6 +19,10 @@ module.exports = async function (deployer, network, accounts) {
         genesisOwner = accounts[1];
         eglProxyAdmin = accounts[9];    
     }
+    if (network === "kovan") {
+        genesisOwner = accounts[1];
+        eglProxyAdmin = accounts[9];    
+    }
     if (network === "ganache") {
         genesisOwner = accounts[1];
         eglProxyAdmin = accounts[9];    

@@ -4,7 +4,7 @@ import "../EglContract.sol";
 
 contract TestableEglContract is EglContract {
     event PercentageCalculated(uint percentage);
-    event ReleasedEglCalculated(uint currentEgl);
+    event SerializedEglCalculated(uint serializedEgl);
     event PoolTokensDueCalculated(uint poolTokensDue);
     event BonusEglsDueCalculated(uint bonusEglsDue);
 
@@ -36,9 +36,9 @@ contract TestableEglContract is EglContract {
         _calculateBlockReward(_blockGasLimit, _desiredEgl, _tallyVoteGasLimit);
     }
 
-    function calculateReleasedEgl(uint _timePassedSinceOrigin, uint _maxSupply, uint _timeLocked) external {
-        uint releasedEgl = _calculateReleasedEgl(_timePassedSinceOrigin, _maxSupply, _timeLocked);
-        emit ReleasedEglCalculated(releasedEgl);
+    function calculateSerializedEgl(uint _timePassedSinceOrigin, uint _maxSupply, uint _timeLocked) external {
+        uint releasedEgl = _calculateSerializedEgl(_timePassedSinceOrigin, _maxSupply, _timeLocked);
+        emit SerializedEglCalculated(releasedEgl);
     }
     
     function calculateCurrentPoolTokensDue(

@@ -23,6 +23,15 @@ module.exports = {
       },
       network_id: "3",
     },
+    kovan: {
+      provider: function () {
+        return new HDWalletProvider(
+          process.env.KOVAN_MNEMONIC,
+          process.env.KOVAN_NODE_URL
+        );
+      },
+      network_id: "42",
+    },
     mainnet: {
       provider: function () {
         return new HDWalletProvider(
