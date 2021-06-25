@@ -54,7 +54,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
     }
 
     struct Supporter {
-        uint32 matches;
+        uint32 claimed;
         uint poolTokens;
         uint firstEgl;
         uint lastEgl;
@@ -384,7 +384,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             eglGenesis.canContribute() == false && eglGenesis.canWithdraw() == false, 
             "EGL:GENESIS_LOCKED"
         );
-        require(supporters[msg.sender].matches == 0, "EGL:ALREADY_CLAIMED");
+        require(supporters[msg.sender].claimed == 0, "EGL:ALREADY_CLAIMED");
 
         (uint contributionAmount, uint cumulativeBalance, ,) = eglGenesis.contributors(msg.sender);
         require(contributionAmount > 0, "EGL:NOT_CONTRIBUTED");
@@ -411,7 +411,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         tokensInCirculation = tokensInCirculation.add(bonusEglsDue);
 
         Supporter storage _supporter = supporters[msg.sender];        
-        _supporter.matches = 1;
+        _supporter.claimed = 1;
         _supporter.poolTokens = poolTokensDue;
         _supporter.firstEgl = firstEgl;
         _supporter.lastEgl = lastEgl;        
@@ -574,7 +574,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
      * @notice Allows for the withdrawal of liquidity pool tokens once they have matured
      */
     function withdrawPoolTokens() external whenNotPaused {
-        require(supporters[msg.sender].matches > 0, "EGL:NO_POOL_TOKENS");
+        require(supporters[msg.sender].poolTokens > 0, "EGL:NO_POOL_TOKENS");
         require(now.sub(firstEpochStartDate) > minLiquidityTokensLockup, "EGL:ALL_TOKENS_LOCKED");
 
         uint currentSerializedEgl = _calculateSerializedEgl(
@@ -607,7 +607,6 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
                 _voter.releaseDate,
                 now
             );
-            delete supporters[msg.sender];
         } else {
             poolTokensDue = _calculateCurrentPoolTokensDue(
                 currentSerializedEgl, 

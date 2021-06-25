@@ -178,7 +178,7 @@ contract("EglVotingTests", (accounts) => {
             assert.equal(actualBpts, "4285714.285714285", "Incorrect BPT's calculated");
 
             let supporter = await eglContractInstance.supporters(_genesisSupporter1);
-            assert.equal(supporter.matches, "1", "Should have 1 match after claim");            
+            assert.equal(supporter.claimed, "1", "Should have 1 match after claim");            
         });
         it("should lock claimed tokens in a vote", async () => {
             // See CLAIM BONUS EGLS in 'files/calculations.txt' for formulas to calculate expected values
@@ -216,6 +216,13 @@ contract("EglVotingTests", (accounts) => {
             await eglContractInstance.claimSeederEgls(7200000, 1, { from: _seedAccount1 });
             seedAmount = await eglContractInstance.seeders(_seedAccount1);
             assert.equal(web3.utils.fromWei(seedAmount.toString()), "0", "Seed amount should be 0");
+        });
+        it("should not allow seeder to claim twice", async () => {
+            await eglContractInstance.claimSeederEgls(7200000, 1, { from: _seedAccount1 });
+            await expectRevert(
+                eglContractInstance.claimSeederEgls(7200000, 1, { from: _seedAccount1 }),
+                "EGL:NOT_SEEDER"
+            )
         });
         it("should add seed amount to tokens in circulation once claimed", async () => {
             let tokensInCirculationPre = await eglContractInstance.tokensInCirculation();
@@ -656,14 +663,20 @@ contract("EglVotingTests", (accounts) => {
         it("should allow participants to withdraw pool tokens after all pool tokens are due", async () => {
             await eglContractInstance.claimSupporterEgls(7500000, 8, { from: _genesisSupporter1 });
 
-            await time.increase((DefaultEpochLengthSeconds * 52) + 60);
+            let bptBalancePre = parseFloat(web3.utils.fromWei((await mockBalancerPoolTokenInstance.balanceOf(_genesisSupporter1)).toString()));
+
+            await time.increase((DefaultEpochLengthSeconds * 52) + 60);            
             let txReceipt = await eglContractInstance.withdrawPoolTokens({ from: _genesisSupporter1 })
+            let bptBalancePost = parseFloat(web3.utils.fromWei((await mockBalancerPoolTokenInstance.balanceOf(_genesisSupporter1)).toString()));
             let events = populateAllEventDataFromLogs(txReceipt, EventType.POOL_TOKENS_WITHDRAWN)
             assert.equal(events.length, "1", "Expected withdraw event")
+            assert.equal(bptBalancePost, bptBalancePre + parseFloat(web3.utils.fromWei(events[0].poolTokensDue.toString())), "Incorrect BPT balance")
         });  
-        it.only("should allow participants to withdraw pool tokens as they become available (current EGL < last EGL)", async () => {
+        it("should allow participants to withdraw pool tokens as they become available (current EGL < last EGL)", async () => {
             await eglContractInstance.claimSupporterEgls(7500000, 8, { from: _genesisSupporter2 });
+
             let supporter = await eglContractInstance.supporters(_genesisSupporter2)
+            let totalPoolTokensDue = parseFloat(web3.utils.fromWei(supporter.poolTokens.toString()))
             let firstEgl = parseFloat(web3.utils.fromWei(supporter.firstEgl.toString()))
             let secondsFromOrigin = (Math.pow(firstEgl / 750000000, 1/4) * (DefaultEpochLengthSeconds * 42)) + DefaultEpochLengthSeconds * 10;
             let epochsPassed = Math.trunc(secondsFromOrigin / DefaultEpochLengthSeconds);
@@ -679,13 +692,137 @@ contract("EglVotingTests", (accounts) => {
                 }
             }
 
+            let bptBalancePre = parseFloat(web3.utils.fromWei((await mockBalancerPoolTokenInstance.balanceOf(_genesisSupporter2)).toString()));
+            //Make sure we're passed the release date by at least 10 seconds
             await time.increase(10 + secondsFromOrigin - (DefaultEpochLengthSeconds * epochsPassed));
             let txReceipt = await eglContractInstance.withdrawPoolTokens({ from: _genesisSupporter2 })
 
+            supporter = await eglContractInstance.supporters(_genesisSupporter2)
+            let remainingPoolTokensDue = parseFloat(web3.utils.fromWei(supporter.poolTokens.toString()))
+
+            let bptBalancePost = parseFloat(web3.utils.fromWei((await mockBalancerPoolTokenInstance.balanceOf(_genesisSupporter2)).toString()));
             let events = populateAllEventDataFromLogs(txReceipt, EventType.POOL_TOKENS_WITHDRAWN)[0];
-            console.log("Current Pool Tokens Due: ", web3.utils.fromWei(events.poolTokensDue))
-            // Compare pool tokens due to actual pool token balance
+            assert.equal(bptBalancePost, bptBalancePre + parseFloat(web3.utils.fromWei(events.poolTokensDue.toString())), "Incorrect BPT balance")
+            assert.equal(remainingPoolTokensDue, totalPoolTokensDue - bptBalancePost, "Incorrect remaining BPT balance")
         });
+        it("should adjust Bonus EGL's release date to 'now' if there is no current vote exists and all pool tokens have been released", async () => {
+            await eglContractInstance.claimSupporterEgls(7500000, 8, { from: _genesisSupporter1 });            
+
+            let supporter = await eglContractInstance.supporters(_genesisSupporter1)
+            let lastEgl = parseFloat(web3.utils.fromWei(supporter.lastEgl.toString()))
+            let secondsFromOrigin = (Math.pow(lastEgl / 750000000, 1/4) * (DefaultEpochLengthSeconds * 42)) + DefaultEpochLengthSeconds * 10;
+            let epochsPassed = Math.trunc(secondsFromOrigin / DefaultEpochLengthSeconds);
+
+            for (let i = 0; i < epochsPassed; i++) {
+                await time.increase(DefaultEpochLengthSeconds + 60);                
+                await eglContractInstance.tallyVotes();
+            }
+
+            //Make sure we're passed the release date by at least 10 seconds
+            await time.increase(10 + secondsFromOrigin - (DefaultEpochLengthSeconds * epochsPassed));
+            let txReceipt = await eglContractInstance.withdrawPoolTokens({ from: _genesisSupporter1 })
+            
+            let vote = await eglContractInstance.voters(_genesisSupporter1)
+            assert.equal(
+                parseInt(vote.releaseDate), 
+                (await web3.eth.getBlock(txReceipt.receipt.blockNumber)).timestamp, 
+                "Incorrect release date set after all BPT's withdrawn"
+            );
+        });
+        it("should adjust Bonus EGL's release date to the release date of the current vote if all pool tokens have been released", async () => {
+            await eglContractInstance.claimSupporterEgls(7500000, 8, { from: _genesisSupporter1 });
+
+            let supporter = await eglContractInstance.supporters(_genesisSupporter1)
+            let lastEgl = parseFloat(web3.utils.fromWei(supporter.lastEgl.toString()))
+            let secondsFromOrigin = (Math.pow(lastEgl / 750000000, 1/4) * (DefaultEpochLengthSeconds * 42)) + DefaultEpochLengthSeconds * 10;
+            let epochsPassed = Math.trunc(secondsFromOrigin / DefaultEpochLengthSeconds);
+            for (let i = 0; i < epochsPassed - 1; i++) {
+                await time.increase(DefaultEpochLengthSeconds + 60);                
+                await eglContractInstance.tallyVotes();
+            }
+
+            let revoteLockupPeriod = 4
+            //Re-vote the epoch before all pool tokens are due and lockup for 4 epochs
+            await eglContractInstance.reVote(7800000, 0, revoteLockupPeriod, { from: _genesisSupporter1 })
+            await time.increase(DefaultEpochLengthSeconds + 60);                
+            await eglContractInstance.tallyVotes();
+
+            //Make sure we're passed the release date by at least 10 seconds
+            await time.increase(10 + secondsFromOrigin - (DefaultEpochLengthSeconds * epochsPassed));
+
+            // Withdraw Pool tokens
+            let txReceipt = await eglContractInstance.withdrawPoolTokens({ from: _genesisSupporter1 })
+            
+            let remainingVoteEpochs = parseInt((await eglContractInstance.voters(_genesisSupporter1)).voteEpoch.toString()) 
+                + revoteLockupPeriod 
+                - parseInt((await eglContractInstance.currentEpoch()).toString())
+            let expectedNewReleaseDate = parseInt((await web3.eth.getBlock(txReceipt.receipt.blockNumber)).timestamp.toString())
+                + (DefaultEpochLengthSeconds * remainingVoteEpochs);
+
+            assert.equal(
+                ((await eglContractInstance.voters(_genesisSupporter1)).releaseDate).toString(), 
+                expectedNewReleaseDate.toString(), 
+                "Incorrect release date set for EGL release"
+            );
+        });
+        it("should not allow supporter to claim bonus EGL's again after withdrawing all pool tokens", async () => {
+            // Claim bonus EGL's for the first time
+            await eglContractInstance.claimSupporterEgls(7500000, 8, { from: _genesisSupporter1 });
+
+            let supporter = await eglContractInstance.supporters(_genesisSupporter1)
+            let lastEgl = parseFloat(web3.utils.fromWei(supporter.lastEgl.toString()))
+            let secondsFromOrigin = (Math.pow(lastEgl / 750000000, 1/4) * (DefaultEpochLengthSeconds * 42)) + DefaultEpochLengthSeconds * 10;
+            let epochsPassed = Math.trunc(secondsFromOrigin / DefaultEpochLengthSeconds);
+
+            // Wait until all pool tokens are due
+            for (let i = 0; i < epochsPassed; i++) {
+                await time.increase(DefaultEpochLengthSeconds + 60);                
+                await eglContractInstance.tallyVotes();
+            }
+
+            //Make sure we're passed the release date by at least 10 seconds so that we can withdraw all pool tokens
+            await time.increase(10 + secondsFromOrigin - (DefaultEpochLengthSeconds * epochsPassed));            
+            // With draw all pool tokens
+            await eglContractInstance.withdrawPoolTokens({ from: _genesisSupporter1 })
+
+            await time.increase(60);
+            // Withdraw all EGL's
+            await eglContractInstance.withdraw({ from: _genesisSupporter1 });
+
+            // Try to claim again
+            await expectRevert(
+                eglContractInstance.claimSupporterEgls(7500000, 8, { from: _genesisSupporter1 }),
+                "EGL:ALREADY_CLAIMED"
+            )
+        });  
+        it("should not allow supporter to withdraw pool tokens again after withdrawing all pool tokens", async () => {
+            // Claim bonus EGL's for the first time
+            await eglContractInstance.claimSupporterEgls(7500000, 8, { from: _genesisSupporter1 });
+
+            let supporter = await eglContractInstance.supporters(_genesisSupporter1)
+            let lastEgl = parseFloat(web3.utils.fromWei(supporter.lastEgl.toString()))
+            let secondsFromOrigin = (Math.pow(lastEgl / 750000000, 1/4) * (DefaultEpochLengthSeconds * 42)) + DefaultEpochLengthSeconds * 10;
+            let epochsPassed = Math.trunc(secondsFromOrigin / DefaultEpochLengthSeconds);
+
+            // Wait until all pool tokens are due
+            for (let i = 0; i < epochsPassed; i++) {
+                await time.increase(DefaultEpochLengthSeconds + 60);                
+                await eglContractInstance.tallyVotes();
+            }
+
+            //Make sure we're passed the release date by at least 10 seconds so that we can withdraw all pool tokens
+            await time.increase(10 + secondsFromOrigin - (DefaultEpochLengthSeconds * epochsPassed));            
+            // With draw all pool tokens
+            await eglContractInstance.withdrawPoolTokens({ from: _genesisSupporter1 })
+
+            await time.increase(60);
+
+            // Try to withdraw again
+            await expectRevert(
+                eglContractInstance.withdrawPoolTokens({ from: _genesisSupporter1 }),
+                "EGL:NO_POOL_TOKENS"
+            )
+        });  
         it("should not be able to withdraw pool tokens if contract paused", async () => {
             await eglContractInstance.claimSupporterEgls(7500000, 8, { from: _genesisSupporter1 });
             await time.increase((DefaultEpochLengthSeconds * 52) + 60);
