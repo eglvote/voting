@@ -1,8 +1,8 @@
 const { deployProxy, admin } = require("@openzeppelin/truffle-upgrades");
-const { ConsoleColors, BN } = require("../test/helpers/constants");
+const { ConsoleColors } = require("../test/helpers/constants");
 const EglToken = artifacts.require("./EglToken.sol");
 
-const totalEglSupply = new BN(web3.utils.toWei("4000000000")); // 4 billion
+const totalEglSupply = web3.utils.toWei("4000000000"); // 4 billion
 let genesisOwner, eglProxyAdmin;
 
 module.exports = async function (deployer, network, accounts) {

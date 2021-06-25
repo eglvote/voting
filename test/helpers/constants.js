@@ -19,16 +19,6 @@ const EventType = {
     SEED_ACCOUNT_ADDED: "SeedAccountAdded"
 };
 
-
-
-const VoterAttributes = {
-    LOCKUP_DURATION: 0,
-    VOTE_EPOCH: 1,
-    RELEASE_DATE: 2,
-    TOKENS_LOCKED: 3,
-    GAS_TARGET: 4,
-};
-
 const ConsoleColors = {
     BLACK: "\x1b[30m \x1b[0m",
     RED: "\x1b[31m%s\x1b[0m",
@@ -54,7 +44,6 @@ const InvalidGasTargetLow = 1000000;
 module.exports = {
     BN,
     EventType,
-    VoterAttributes,
     ZeroAddress,
     DefaultVotePauseSeconds,
     DefaultEpochLengthSeconds,

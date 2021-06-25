@@ -7,22 +7,14 @@ const MockBalancerPoolToken = artifacts.require("./helpers/MockBalancerPoolToken
 const {
     BN,
     EventType,
-    VoterAttributes,
-    ZeroAddress,
     DefaultVotePauseSeconds,
     DefaultEpochLengthSeconds,
     ValidGasTarget,
-    InvalidGasTargetHigh,
-    InvalidGasTargetLow,
-    InitialCreatorReward,
 } = require("./helpers/constants");
 
 const {
-    sleep, 
     populateEventDataFromLogs,
-    getBlockTimestamp,
     populateAllEventDataFromLogs,
-    getAllEventsForType,
 } = require("./helpers/helper-functions")
 
 contract("EglVotingTests", (accounts) => {
@@ -354,9 +346,6 @@ contract("EglVotingTests", (accounts) => {
             assert.equal(voter.releaseDate.toString(), originalReleaseDate.toString(), "Incorrect release date after re-vote()");
         });
         it("should add to existing locked EGL's on re-vote if EGL amount > 0", async () => {
-            let voteAmount = new BN(web3.utils.toWei("2"));
-            let reVoteAmount = new BN(web3.utils.toWei("1"));
-            
             await eglContractInstance.vote(
                 ValidGasTarget,
                 web3.utils.toWei("2"),
@@ -664,15 +653,39 @@ contract("EglVotingTests", (accounts) => {
                 "EGL:ADDR_TOKENS_LOCKED"
             )
         });  
-        it("should allow participants to withdraw pool tokens", async () => {
+        it("should allow participants to withdraw pool tokens after all pool tokens are due", async () => {
             await eglContractInstance.claimSupporterEgls(7500000, 8, { from: _genesisSupporter1 });
 
-            // After minimum lockup but before release date
             await time.increase((DefaultEpochLengthSeconds * 52) + 60);
             let txReceipt = await eglContractInstance.withdrawPoolTokens({ from: _genesisSupporter1 })
             let events = populateAllEventDataFromLogs(txReceipt, EventType.POOL_TOKENS_WITHDRAWN)
             assert.equal(events.length, "1", "Expected withdraw event")
         });  
+        it.only("should allow participants to withdraw pool tokens as they become available (current EGL < last EGL)", async () => {
+            await eglContractInstance.claimSupporterEgls(7500000, 8, { from: _genesisSupporter2 });
+            let supporter = await eglContractInstance.supporters(_genesisSupporter2)
+            let firstEgl = parseFloat(web3.utils.fromWei(supporter.firstEgl.toString()))
+            let secondsFromOrigin = (Math.pow(firstEgl / 750000000, 1/4) * (DefaultEpochLengthSeconds * 42)) + DefaultEpochLengthSeconds * 10;
+            let epochsPassed = Math.trunc(secondsFromOrigin / DefaultEpochLengthSeconds);
+            
+            for (let i = 0; i < epochsPassed; i++) {
+                await time.increase(DefaultEpochLengthSeconds + 60);                
+                await eglContractInstance.tallyVotes();
+                if (i >= 9) {
+                    await expectRevert(
+                        eglContractInstance.withdrawPoolTokens({ from: _genesisSupporter2 }),
+                        "EGL:ADDR_TOKENS_LOCKED"
+                    )
+                }
+            }
+
+            await time.increase(10 + secondsFromOrigin - (DefaultEpochLengthSeconds * epochsPassed));
+            let txReceipt = await eglContractInstance.withdrawPoolTokens({ from: _genesisSupporter2 })
+
+            let events = populateAllEventDataFromLogs(txReceipt, EventType.POOL_TOKENS_WITHDRAWN)[0];
+            console.log("Current Pool Tokens Due: ", web3.utils.fromWei(events.poolTokensDue))
+            // Compare pool tokens due to actual pool token balance
+        });
         it("should not be able to withdraw pool tokens if contract paused", async () => {
             await eglContractInstance.claimSupporterEgls(7500000, 8, { from: _genesisSupporter1 });
             await time.increase((DefaultEpochLengthSeconds * 52) + 60);

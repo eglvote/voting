@@ -6,7 +6,6 @@ const TestableEglContract = artifacts.require("./helpers/TestableEglContract.sol
 const MockEglGenesis = artifacts.require("./helpers/MockEglGenesis.sol");
 const MockBalancerPoolToken = artifacts.require("./helpers/MockBalancerPoolToken.sol");
 const {
-    BN,
     EventType,
     DefaultVotePauseSeconds,
     DefaultEpochLengthSeconds,
@@ -61,7 +60,7 @@ contract("EglInternalFunctionsTests", (accounts) => {
     }
 
     beforeEach(async () => {
-        let totalTokenSupply = new BN(web3.utils.toWei("4000000000"));
+        let totalTokenSupply = web3.utils.toWei("4000000000");
         eglTokenInstance = await EglToken.new();
         await eglTokenInstance.initialize("EthereumGasLimit", "EGL", totalTokenSupply);
 

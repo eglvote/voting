@@ -577,7 +577,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         require(supporters[msg.sender].matches > 0, "EGL:NO_POOL_TOKENS");
         require(now.sub(firstEpochStartDate) > minLiquidityTokensLockup, "EGL:ALL_TOKENS_LOCKED");
 
-        uint currentEgl = _calculateSerializedEgl(
+        uint currentSerializedEgl = _calculateSerializedEgl(
             block.timestamp.sub(firstEpochStartDate), 
             liquidityEglMatchingTotal, 
             minLiquidityTokensLockup
@@ -585,10 +585,10 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
 
         Voter storage _voter = voters[msg.sender];
         Supporter storage _supporter = supporters[msg.sender];
-        require(_supporter.firstEgl <= currentEgl, "EGL:ADDR_TOKENS_LOCKED");
+        require(_supporter.firstEgl <= currentSerializedEgl, "EGL:ADDR_TOKENS_LOCKED");
 
         uint poolTokensDue;
-        if (currentEgl >= _supporter.lastEgl) {
+        if (currentSerializedEgl >= _supporter.lastEgl) {
             poolTokensDue = _supporter.poolTokens;
             _supporter.poolTokens = 0;
             
@@ -599,7 +599,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
 
             emit PoolTokensWithdrawn(
                 msg.sender, 
-                currentEgl, 
+                currentSerializedEgl, 
                 poolTokensDue, 
                 _supporter.poolTokens,
                 _supporter.firstEgl, 
@@ -610,7 +610,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             delete supporters[msg.sender];
         } else {
             poolTokensDue = _calculateCurrentPoolTokensDue(
-                currentEgl, 
+                currentSerializedEgl, 
                 _supporter.firstEgl, 
                 _supporter.lastEgl, 
                 _supporter.poolTokens
@@ -618,7 +618,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             _supporter.poolTokens = _supporter.poolTokens.sub(poolTokensDue);
             emit PoolTokensWithdrawn(
                 msg.sender,
-                currentEgl,
+                currentSerializedEgl,
                 poolTokensDue,
                 _supporter.poolTokens,
                 _supporter.firstEgl,
@@ -626,13 +626,27 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
                 _voter.releaseDate,
                 now
             );
-            _supporter.firstEgl = currentEgl;
+            _supporter.firstEgl = currentSerializedEgl;
         }        
 
         balancerPoolToken.transfer(
             msg.sender, 
             Math.umin(balancerPoolToken.balanceOf(address(this)), poolTokensDue)
         );        
+    }
+
+    /**
+     * @notice Ower only funciton to pause contract
+     */
+    function pauseEgl() external onlyOwner whenNotPaused {
+        _pause();
+    }
+
+    /** 
+     * @notice Owner only function to unpause contract
+     */
+    function unpauseEgl() external onlyOwner whenPaused {
+        _unpause();
     }
 
     /* PUBLIC FUNCTIONS */
@@ -760,20 +774,6 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             remainingSeederBalance,
             now
         );
-    }
-
-    /**
-     * @notice Ower only funciton to pause contract
-     */
-    function pauseEgl() external onlyOwner whenNotPaused {
-        _pause();
-    }
-
-    /** 
-     * @notice Owner only function to unpause contract
-     */
-    function unpauseEgl() external onlyOwner whenPaused {
-        _unpause();
     }
 
     /**

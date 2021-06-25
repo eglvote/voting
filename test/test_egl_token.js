@@ -1,4 +1,3 @@
-const { BN } = require("./helpers/constants")
 const EglToken = artifacts.require("./EglToken.sol");
 
 contract("EglTokenTests", (accounts) => {
@@ -6,7 +5,7 @@ contract("EglTokenTests", (accounts) => {
     let eglTokenInstance;
 
     beforeEach(async () => {
-        totalTokenSupply = new BN(web3.utils.toWei("4000000000"));
+        totalTokenSupply = web3.utils.toWei("4000000000");
         eglTokenInstance = await EglToken.new();
         await eglTokenInstance.initialize("EthereumGasLimit", "EGL", totalTokenSupply);
     });
