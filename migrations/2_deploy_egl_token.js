@@ -30,23 +30,29 @@ module.exports = async function (deployer, network, accounts) {
 
     let eglToken = await deployProxy(
         EglToken,
-        ["EthereumGasLimit", "EGL", totalEglSupply.toString()],
+        [genesisOwner, "EthereumGasLimit", "EGL", totalEglSupply.toString()],
         { deployer }
     );
     console.log(
         `EGL Token deployed to address: ${ConsoleColors.GREEN}`, eglToken.address
     );
+    console.log(
+        `Initial EGL token recipient: ${ConsoleColors.YELLOW}`, genesisOwner
+    );
+    let ownerEglBalance = web3.utils.fromWei(await eglToken.balanceOf(genesisOwner));
+    console.log(
+        `EGL balance of initial token recipient: ${ConsoleColors.YELLOW} \n`, 
+        parseFloat(ownerEglBalance).toLocaleString(
+            "en-US",
+            {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 18,
+            }
+        )        
+    );
 
     admin.changeProxyAdmin(eglToken.address, eglProxyAdmin);
     console.log(
         `EGL Token admin set to account: ${ConsoleColors.YELLOW} \n`, eglProxyAdmin
-    );
-  
-    await eglToken.transfer(
-        genesisOwner,
-        web3.utils.toWei("750000000")
-    );
-    console.log(
-        `750M EGL's transferred to account for Balancer launch: ${ConsoleColors.YELLOW} \n`, genesisOwner
     );
 };

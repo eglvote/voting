@@ -62,16 +62,11 @@ contract("EglInternalFunctionsTests", (accounts) => {
     beforeEach(async () => {
         let totalTokenSupply = web3.utils.toWei("4000000000");
         eglTokenInstance = await EglToken.new();
-        await eglTokenInstance.initialize("EthereumGasLimit", "EGL", totalTokenSupply);
+        await eglTokenInstance.initialize(_genesisOwner, "EthereumGasLimit", "EGL", totalTokenSupply);
 
         mockEglGenesisInstance = await MockEglGenesis.new(_genesisOwner);
         await mockEglGenesisInstance.sendTransaction({from: _genesisSupporter1, value: web3.utils.toWei("0.1")});
         await mockEglGenesisInstance.sendTransaction({from: _genesisSupporter2, value: web3.utils.toWei("0.2")});
-        await eglTokenInstance.transfer(
-            _genesisOwner,
-            web3.utils.toWei("750000000"),
-            { from: _deployer }
-        )
 
         mockBalancerPoolTokenInstance = await MockBalancerPoolToken.new();
         await mockBalancerPoolTokenInstance.initialize("BalancerPoolToken", "BPT", web3.utils.toWei("75000000"));
@@ -102,8 +97,7 @@ contract("EglInternalFunctionsTests", (accounts) => {
             _creatorRewardsAccount
         );        
 
-        let remainingTokenBalance = await eglTokenInstance.balanceOf(_deployer);
-        await eglTokenInstance.transfer(eglContractInstance.address, remainingTokenBalance.toString(), { from: _deployer });
+        await eglTokenInstance.transfer(eglContractInstance.address, web3.utils.toWei("3250000000"), { from: _genesisOwner });
         await mockBalancerPoolTokenInstance.transfer(eglContractInstance.address, web3.utils.toWei("75000000"), { from: _genesisOwner });
 
         await eglTokenInstance.transfer(_voter1, web3.utils.toWei("250000000"), { from: accounts[1] })

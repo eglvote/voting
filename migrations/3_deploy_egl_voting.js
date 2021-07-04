@@ -71,18 +71,16 @@ module.exports = async function (deployer, network, accounts) {
 
         eglOwner = accounts[1];
         eglProxyAdmin = accounts[9]; // TODO: SET PROXY ADMIN
-        eglGenesisAddress = "0x9eFC6c1CBBEC1E57acbb2CCC99019628be6B3DeF"; // TODO: SET DEPLOYED GENESIS ADDRESS
+        eglGenesisAddress = "0x562F2FD0dB7c991A843fCB4F2EBeD226F1c81765"; // TODO: SET DEPLOYED GENESIS ADDRESS
         balancerPoolTokenAddress = mockBalancerPoolToken.address; // TODO: SET BPT ADDRESS
         firstEpochStartDate = Math.round(new Date().getTime() / 1000);
         votePauseSeconds = 30; // 1 minute
-        epochLengthSeconds = 300; // 5 minutes
+        epochLengthSeconds = 600; // 5 minutes
         seedAccounts = [
-            "0xd33004d667264373F4e090140993e2D471aa1763", // Eleni
-            "0xb5c93f1B6fA9613Db47e8d4E88cDafeDd3e666C8", // Jason
+            "0xd33004d667264373F4e090140993e2D471aa1763", // Eleni            
             "0xe2a5a680E6ec55bC5072EfAA79a74bb52c9EC65c", // Shane
         ];
         seedAmounts = [
-            web3.utils.toWei("5000000"),
             web3.utils.toWei("5000000"),
             web3.utils.toWei("5000000"),
         ];
@@ -178,21 +176,34 @@ module.exports = async function (deployer, network, accounts) {
     );
 
     // Transfer all EGL tokens to EGL contract
-    let remainingEglBalance = await eglToken.balanceOf(accounts[0])
     await eglToken.transfer(
         eglContract.address,
-        remainingEglBalance.toString()
+        web3.utils.toWei("3250000000"),
+        { from: eglOwner }
     );
+
+    let eglContractBalance = await eglToken.balanceOf(eglContract.address)
     console.log(
-        `Remaining EGL's transferred to EGL Contract: ${ConsoleColors.GREEN}`,
-        parseFloat(web3.utils.fromWei(remainingEglBalance)).toLocaleString(
+        `EGL Contract EGL token balance: ${ConsoleColors.GREEN}`,
+        parseFloat(web3.utils.fromWei(eglContractBalance)).toLocaleString(
             "en-US",
             {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 18,
             }
-        ),
-        eglContract.address,
+        )     
+    );
+
+    let genesisOwnerBalance = await eglToken.balanceOf(eglOwner)
+    console.log(
+        `EGL owner token balance: ${ConsoleColors.GREEN}`,
+        parseFloat(web3.utils.fromWei(genesisOwnerBalance)).toLocaleString(
+            "en-US",
+            {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 18,
+            }
+        )     
     );
 
     if (network === "ganache" || network === "ropsten") {
@@ -200,10 +211,19 @@ module.exports = async function (deployer, network, accounts) {
         await mockBalancerPoolToken.transfer(
             eglContract.address,
             mockBalancerPoolTokenSupply,
-            { from: accounts[1] }
+            { from: eglOwner }
         );
+
+        let contractBptBalance = await mockBalancerPoolToken.balanceOf(eglContract.address)
         console.log(
-            `Mock Balancer Tokens transferred to EGL contract: ${ConsoleColors.YELLOW}`, eglContract.address
+            `EGL Contract BPT token balance: ${ConsoleColors.GREEN}`,
+            parseFloat(web3.utils.fromWei(contractBptBalance)).toLocaleString(
+                "en-US",
+                {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 18,
+                }
+            )     
         );
-        }
+    }
 };

@@ -77,16 +77,11 @@ contract("EglVotingTests", (accounts) => {
     beforeEach(async () => {             
         let totalTokenSupply = new BN(web3.utils.toWei("4000000000"));
         eglTokenInstance = await EglToken.new();
-        await eglTokenInstance.initialize("EthereumGasLimit", "EGL", totalTokenSupply);
+        await eglTokenInstance.initialize(_genesisOwner, "EthereumGasLimit", "EGL", totalTokenSupply);
 
         mockEglGenesisInstance = await MockEglGenesis.new(accounts[1]);
         await mockEglGenesisInstance.sendTransaction({from: _genesisSupporter1, value: web3.utils.toWei("0.1")});
         await mockEglGenesisInstance.sendTransaction({from: _genesisSupporter2, value: web3.utils.toWei("1.65")});
-        await eglTokenInstance.transfer(
-            _genesisOwner,
-            web3.utils.toWei("750000000"),
-            { from: _deployer }
-        )
 
         mockBalancerPoolTokenInstance = await MockBalancerPoolToken.new();
         await mockBalancerPoolTokenInstance.initialize("BalancerPoolToken", "BPT", web3.utils.toWei("75000000"));        
@@ -117,8 +112,7 @@ contract("EglVotingTests", (accounts) => {
             _creatorRewardsAccount
         );
 
-        let remainingTokenBalance = await eglTokenInstance.balanceOf(_deployer);
-        await eglTokenInstance.transfer(eglContractInstance.address, remainingTokenBalance.toString(), { from: _deployer });
+        await eglTokenInstance.transfer(eglContractInstance.address, web3.utils.toWei("3250000000"), { from: _genesisOwner });
         await mockBalancerPoolTokenInstance.transfer(eglContractInstance.address, web3.utils.toWei("75000000"), { from: _genesisOwner });
 
         await eglTokenInstance.transfer(_voter1, web3.utils.toWei("250000000"), { from: accounts[1] })
@@ -703,7 +697,7 @@ contract("EglVotingTests", (accounts) => {
             let bptBalancePost = parseFloat(web3.utils.fromWei((await mockBalancerPoolTokenInstance.balanceOf(_genesisSupporter2)).toString()));
             let events = populateAllEventDataFromLogs(txReceipt, EventType.POOL_TOKENS_WITHDRAWN)[0];
             assert.equal(bptBalancePost, bptBalancePre + parseFloat(web3.utils.fromWei(events.poolTokensDue.toString())), "Incorrect BPT balance")
-            assert.equal(remainingPoolTokensDue, totalPoolTokensDue - bptBalancePost, "Incorrect remaining BPT balance")
+            assert.equal(remainingPoolTokensDue.toFixed(7), parseFloat(totalPoolTokensDue - bptBalancePost).toFixed(7), "Incorrect remaining BPT balance")
         });
         it("should adjust Bonus EGL's release date to 'now' if there is no current vote exists and all pool tokens have been released", async () => {
             await eglContractInstance.claimSupporterEgls(7500000, 8, { from: _genesisSupporter1 });            

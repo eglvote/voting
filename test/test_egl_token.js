@@ -7,7 +7,7 @@ contract("EglTokenTests", (accounts) => {
     beforeEach(async () => {
         totalTokenSupply = web3.utils.toWei("4000000000");
         eglTokenInstance = await EglToken.new();
-        await eglTokenInstance.initialize("EthereumGasLimit", "EGL", totalTokenSupply);
+        await eglTokenInstance.initialize(accounts[1], "EthereumGasLimit", "EGL", totalTokenSupply);
     });
 
     describe("Token Supply", function () {
@@ -26,6 +26,22 @@ contract("EglTokenTests", (accounts) => {
                 tokenCap.toString(),
                 web3.utils.toWei("4000000000"),
                 "Incorrect token cap"
+            );
+        });
+        it("should have minted tokens to the correct account", async  () => {
+            let tokenBalance = await eglTokenInstance.balanceOf(accounts[1]);
+            assert.equal(
+                tokenBalance.toString(), 
+                web3.utils.toWei("4000000000"), 
+                "Account does not have correct balance"
+            );
+        });
+        it("should not transfer any tokens to deployer", async  () => {
+            let deployerTokenBalance = await eglTokenInstance.balanceOf(accounts[0]);
+            assert.equal(
+                deployerTokenBalance.toString(), 
+                "0", 
+                "Deployer should not have a token balance"
             );
         });
     });
