@@ -62,6 +62,7 @@ module.exports = async function (deployer, network, accounts) {
             `Mock Balancer Pool Token deployed to address: ${ConsoleColors.GREEN}`, mockBalancerPoolToken.address
         );
         await mockBalancerPoolToken.transfer(
+            // "0x8742622F3ED0F2a507d3891b2B2a6d313d8C1eC3",
             accounts[1],
             mockBalancerPoolTokenSupply
         );
@@ -69,22 +70,23 @@ module.exports = async function (deployer, network, accounts) {
             `Mock Balancer Pool Token transferred to Genesis owner address: ${ConsoleColors.YELLOW}\n`, accounts[1]
         );
 
-        eglOwner = accounts[1];
+        // eglOwner = "0x8742622F3ED0F2a507d3891b2B2a6d313d8C1eC3"; // Gnosis multisig (https://wallet.gnosis.pm/#/wallets)
+        eglOwner = accounts[1]
         eglProxyAdmin = accounts[9]; // TODO: SET PROXY ADMIN
-        eglGenesisAddress = "0x562F2FD0dB7c991A843fCB4F2EBeD226F1c81765"; // TODO: SET DEPLOYED GENESIS ADDRESS
+        eglGenesisAddress = "0xf58399948E9636959Cb6bCD2Ec9eE651848c581f"; // TODO: SET DEPLOYED GENESIS ADDRESS
         balancerPoolTokenAddress = mockBalancerPoolToken.address; // TODO: SET BPT ADDRESS
         firstEpochStartDate = Math.round(new Date().getTime() / 1000);
-        votePauseSeconds = 30; // 1 minute
-        epochLengthSeconds = 600; // 5 minutes
+        votePauseSeconds = 600; // 10 minutes
+        epochLengthSeconds = 10800; // 3 hours
         seedAccounts = [
-            "0xd33004d667264373F4e090140993e2D471aa1763", // Eleni            
-            "0xe2a5a680E6ec55bC5072EfAA79a74bb52c9EC65c", // Shane
+            // "0xd33004d667264373F4e090140993e2D471aa1763", // Eleni            
+            // "0xe2a5a680E6ec55bC5072EfAA79a74bb52c9EC65c", // Shane
         ];
         seedAmounts = [
-            web3.utils.toWei("5000000"),
-            web3.utils.toWei("5000000"),
+            // web3.utils.toWei("5000000"),
+            // web3.utils.toWei("5000000"),
         ];
-        creatorRewardAccount = "0x2755f888047Db8E3d169C6A427470C44b19a7270";
+        creatorRewardAccount = "0xA40b6610677CBD4A9560C00234D86a8C2B1A17CC";
     }
 
     if (network === "ganache") {
@@ -175,6 +177,7 @@ module.exports = async function (deployer, network, accounts) {
         `EGL Contract admin set to account: ${ConsoleColors.YELLOW}\n`, eglProxyAdmin
     );
 
+    // TODO: Multisig wallet
     // Transfer all EGL tokens to EGL contract
     await eglToken.transfer(
         eglContract.address,
