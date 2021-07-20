@@ -10,12 +10,13 @@ import "@openzeppelin/contracts-upgradeable/math/SignedSafeMathUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
 /**
  * @title EGL Voting Smart Contract
  * @author Shane van Coller
  */
-contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
+contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
     using Math for *;
     using SafeMathUpgradeable for *;
     using SignedSafeMathUpgradeable for int;
@@ -85,8 +86,6 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
     uint private remainingBptBalance;
     uint private remainingVoterReward;
     uint private lastSerializedEgl;
-    uint private supporterEglsTotal;
-    uint private poolTokensHeld;  
     uint private ethEglRatio;
     uint private ethBptRatio;
     uint private voterRewardMultiplier;
@@ -301,6 +300,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         __Context_init_unchained();
         __Ownable_init_unchained();
         __Pausable_init_unchained();
+        __ReentrancyGuard_init_unchained();
 
         eglToken = EglToken(_token);
         balancerPoolToken = IERC20Upgradeable(_poolToken);
@@ -366,7 +366,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             firstEpochStartDate,
             votingPauseSeconds,
             epochLength,
-            now
+            block.timestamp
         );
     }
 
@@ -427,7 +427,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             poolTokensDue,
             remainingSupporterBalance,
             remainingBptBalance,
-            now
+            block.timestamp
         );
 
         _internalVote(
@@ -456,7 +456,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
 
         tokensInCirculation = tokensInCirculation.add(seedAmount);
         uint releaseDate = firstEpochStartDate.add(epochLength.mul(WEEKS_IN_YEAR));
-        emit SeedAccountClaimed(msg.sender, seedAmount, releaseDate, now);
+        emit SeedAccountClaimed(msg.sender, seedAmount, releaseDate, block.timestamp);
 
         _internalVote(
             msg.sender,
@@ -480,7 +480,8 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         uint8 _lockupDuration
     ) 
         external 
-        whenNotPaused 
+        whenNotPaused
+        nonReentrant 
     {
         require(_eglAmount >= 1 ether, "EGL:AMNT_TOO_LOW");
         require(_eglAmount <= eglToken.balanceOf(msg.sender), "EGL:INSUFFICIENT_EGL_BALANCE");
@@ -488,7 +489,8 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         if (block.timestamp > currentEpochStartDate.add(epochLength))
             tallyVotes();
 
-        eglToken.transferFrom(msg.sender, address(this), _eglAmount);
+        bool success = eglToken.transferFrom(msg.sender, address(this), _eglAmount);
+        require(success, "EGL:TOKEN_TRANSFER_FAILED");
         _internalVote(
             msg.sender,
             _gasTarget,
@@ -512,14 +514,16 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         uint8 _lockupDuration
     ) 
         external 
-        whenNotPaused 
+        whenNotPaused
+        nonReentrant
     {
         require(voters[msg.sender].tokensLocked > 0, "EGL:NOT_VOTED");
         if (_eglAmount > 0) {
             require(_eglAmount >= 1 ether, "EGL:AMNT_TOO_LOW");
             require(_eglAmount <= eglToken.balanceOf(msg.sender), "EGL:INSUFFICIENT_EGL_BALANCE");
             require(eglToken.allowance(msg.sender, address(this)) >= _eglAmount, "EGL:INSUFFICIENT_ALLOWANCE");
-            eglToken.transferFrom(msg.sender, address(this), _eglAmount);
+            bool success = eglToken.transferFrom(msg.sender, address(this), _eglAmount);
+            require(success, "EGL:TOKEN_TRANSFER_FAILED");
         }
         if (block.timestamp > currentEpochStartDate.add(epochLength))
             tallyVotes();
@@ -533,7 +537,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             _lockupDuration,
             originalReleaseDate
         );
-        emit ReVote(msg.sender, _gasTarget, _eglAmount, now);
+        emit ReVote(msg.sender, _gasTarget, _eglAmount, block.timestamp);
     }
 
     /**
@@ -542,7 +546,8 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
     function withdraw() external whenNotPaused {
         require(voters[msg.sender].tokensLocked > 0, "EGL:NOT_VOTED");
         require(block.timestamp > voters[msg.sender].releaseDate, "EGL:NOT_RELEASE_DATE");
-        eglToken.transfer(msg.sender, _internalWithdraw(msg.sender));
+        bool success = eglToken.transfer(msg.sender, _internalWithdraw(msg.sender));
+        require(success, "EGL:TOKEN_TRANSFER_FAILED");
     }
 
     /**
@@ -557,7 +562,8 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         if (blockReward > 0) {
             remainingPoolReward = remainingPoolReward.sub(blockReward);
             tokensInCirculation = tokensInCirculation.add(blockReward);
-            eglToken.transfer(block.coinbase, Math.umin(eglToken.balanceOf(address(this)), blockReward));
+            bool success = eglToken.transfer(block.coinbase, Math.umin(eglToken.balanceOf(address(this)), blockReward));
+            require(success, "EGL:TOKEN_TRANSFER_FAILED");
         }
 
         emit PoolRewardsSwept(
@@ -566,7 +572,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             latestRewardSwept, 
             blockGasLimit, 
             blockReward,
-            now
+            block.timestamp
         );
     }
 
@@ -575,7 +581,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
      */
     function withdrawPoolTokens() external whenNotPaused {
         require(supporters[msg.sender].poolTokens > 0, "EGL:NO_POOL_TOKENS");
-        require(now.sub(firstEpochStartDate) > minLiquidityTokensLockup, "EGL:ALL_TOKENS_LOCKED");
+        require(block.timestamp.sub(firstEpochStartDate) > minLiquidityTokensLockup, "EGL:ALL_TOKENS_LOCKED");
 
         uint currentSerializedEgl = _calculateSerializedEgl(
             block.timestamp.sub(firstEpochStartDate), 
@@ -605,7 +611,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
                 _supporter.firstEgl, 
                 _supporter.lastEgl, 
                 _voter.releaseDate,
-                now
+                block.timestamp
             );
         } else {
             poolTokensDue = _calculateCurrentPoolTokensDue(
@@ -623,15 +629,16 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
                 _supporter.firstEgl,
                 _supporter.lastEgl,
                 _voter.releaseDate,
-                now
+                block.timestamp
             );
             _supporter.firstEgl = currentSerializedEgl;
         }        
 
-        balancerPoolToken.transfer(
+        bool success = balancerPoolToken.transfer(
             msg.sender, 
             Math.umin(balancerPoolToken.balanceOf(address(this)), poolTokensDue)
         );        
+        require(success, "EGL:TOKEN_TRANSFER_FAILED");
     }
 
     /**
@@ -696,7 +703,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
                 epochGasLimitSum,
                 epochVoteCount,
                 baselineEgl,
-                now
+                block.timestamp
             );
         } else {
             if (block.timestamp.sub(firstEpochStartDate) >= epochLength.mul(voteThresholdGracePeriod))
@@ -712,7 +719,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
                 initialEgl,
                 block.timestamp.sub(firstEpochStartDate),
                 epochLength.mul(6),
-                now
+                block.timestamp
             );
         }
 
@@ -744,7 +751,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             votePercentage,
             baselineEgl,
             tokensInCirculation,
-            now
+            block.timestamp
         );
     }
 
@@ -760,7 +767,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         require(seeders[_seedAccount] == 0, "EGL:ALREADY_SEEDER");
         require(voters[_seedAccount].tokensLocked == 0, "EGL:ALREADY_HAS_VOTE");
         require(eglToken.balanceOf(_seedAccount) == 0, "EGL:ALREADY_HAS_EGLS");
-        require(now < firstEpochStartDate.add(minLiquidityTokensLockup), "EGL:SEED_PERIOD_PASSED");
+        require(block.timestamp < firstEpochStartDate.add(minLiquidityTokensLockup), "EGL:SEED_PERIOD_PASSED");
         (uint contributorAmount,,,) = eglGenesis.contributors(_seedAccount);
         require(contributorAmount == 0, "EGL:IS_CONTRIBUTOR");
         
@@ -771,7 +778,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             _seedAccount,
             _seedAmount,
             remainingSeederBalance,
-            now
+            block.timestamp
         );
     }
 
@@ -799,8 +806,8 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         uint8 _lockupDuration,
         uint _releaseTime
     ) internal {
-        assert(_voter != address(0));
-
+        require(_voter != address(0), "EGL:VOTER_ADDRESS_0");
+        require(block.timestamp >= firstEpochStartDate, "EGL:VOTING_NOT_STARTED");
         require(voters[_voter].tokensLocked == 0, "EGL:ALREADY_VOTED");
         require(
             Math.udelta(_gasTarget, block.gaslimit) < gasTargetTolerance,
@@ -844,7 +851,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             gasTargetSum[0],
             currentEpoch < WEEKS_IN_YEAR ? voterRewardSums[currentEpoch]: 0,
             votesTotal[0],
-            now
+            block.timestamp
         );
     }
 
@@ -856,8 +863,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
      * @return totalWithdrawn - The original vote amount + the total reward tokens due
      */
     function _internalWithdraw(address _voter) internal returns (uint totalWithdrawn) {
-        assert(_voter != address(0));
-
+        require(_voter != address(0), "EGL:VOTER_ADDRESS_0");
         Voter storage voter = voters[_voter];
         uint16 voterEpoch = voter.voteEpoch;
         uint originalEglAmount = voter.tokensLocked;
@@ -892,7 +898,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             votesTotal[0],
             voteWeightsSum[0],
             gasTargetSum[0],
-            now
+            block.timestamp
         );
         totalWithdrawn = originalEglAmount.add(voterReward);
     }
@@ -912,7 +918,8 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             ? serializedEgl.sub(lastSerializedEgl).umin(remainingCreatorReward)
             : 0;
                 
-        eglToken.transfer(creatorRewardsAddress, creatorRewardForEpoch);
+        bool success = eglToken.transfer(creatorRewardsAddress, creatorRewardForEpoch);
+        require(success, "EGL:TOKEN_TRANSFER_FAILED");
         remainingCreatorReward = remainingCreatorReward.sub(creatorRewardForEpoch);
         tokensInCirculation = tokensInCirculation.add(creatorRewardForEpoch);
 
@@ -923,7 +930,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             lastSerializedEgl,
             remainingCreatorReward,
             currentEpoch,
-            now
+            block.timestamp
         );
         lastSerializedEgl = serializedEgl;
     }
@@ -985,7 +992,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             proximityRewardPercent,
             totalRewardPercent, 
             blockReward,
-            now
+            block.timestamp
         );
     }
 
@@ -1023,7 +1030,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
             timePassedPercentage.mul(100), 
             serializedEgl, 
             _maxEglSupply,
-            now
+            block.timestamp
         );
     }
 
@@ -1046,7 +1053,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         pure
         returns (uint poolTokensDue) 
     {
-        assert(_firstEgl < _lastEgl);
+        require(_firstEgl < _lastEgl, "EGL:INVALID_SERIALIZED_EGLS");
 
         if (_currentEgl < _firstEgl) 
             return 0;
@@ -1074,7 +1081,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         pure     
         returns (uint bonusEglsDue)  
     {
-        assert(_firstEgl < _lastEgl);
+        require(_firstEgl < _lastEgl, "EGL:INVALID_SERIALIZED_EGLS");
 
         bonusEglsDue = (_lastEgl.div(DECIMAL_PRECISION)**4)
             .sub(_firstEgl.div(DECIMAL_PRECISION)**4)
@@ -1104,7 +1111,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
         internal         
         returns(uint rewardsDue) 
     {
-        assert(_voter != address(0));
+        require(_voter != address(0), "EGL:VOTER_ADDRESS_0");
 
         uint rewardEpochs = _voterEpoch.add(_lockupDuration).umin(_currentEpoch).umin(WEEKS_IN_YEAR);
         for (uint16 i = _voterEpoch; i < rewardEpochs; i++) {
@@ -1128,7 +1135,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable {
                 WEEKS_IN_YEAR.sub(i),
                 voterRewardSums[i],
                 remainingVoterReward,
-                now
+                block.timestamp
             );
         }
     }

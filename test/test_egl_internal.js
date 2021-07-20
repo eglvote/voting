@@ -230,6 +230,58 @@ contract("EglInternalFunctionsTests", (accounts) => {
                 "EGL:VOTE_TOO_CLOSE"
             )
         });
+        it.only("should not allow votes before the first epoch has started", async () => {
+            let eglTokenInstance = await EglToken.new();
+            await eglTokenInstance.initialize(_genesisOwner, "EthereumGasLimit", "EGL", web3.utils.toWei("4000000000"));
+    
+            let customMockEglGenesisInstance = await MockEglGenesis.new(_genesisOwner);
+            await customMockEglGenesisInstance.sendTransaction({from: _genesisSupporter1, value: web3.utils.toWei("0.1")});
+    
+            let customBalancerPoolTokenInstance = await MockBalancerPoolToken.new();
+            await customBalancerPoolTokenInstance.initialize("BalancerPoolToken", "BPT", web3.utils.toWei("75000000"));
+            await customBalancerPoolTokenInstance.transfer(
+                _genesisOwner,
+                web3.utils.toWei("75000000"),
+                { from: _deployer }
+            )
+        
+            let customEglContractInstance = await TestableEglContract.new();        
+    
+            let eglContractDeploymentHash = customEglContractInstance.transactionHash;
+            let eglContractDeploymentTransaction = await web3.eth.getTransaction(eglContractDeploymentHash);
+            eglContractDeployBlockNumber = eglContractDeploymentTransaction.blockNumber;
+            let eglContractDeploymentBlock = await web3.eth.getBlock(eglContractDeployBlockNumber);
+            let eglContractDeploymentTimestamp = parseInt(eglContractDeploymentBlock.timestamp) + 86400;
+
+            await customEglContractInstance.initialize(
+                eglTokenInstance.address,
+                customBalancerPoolTokenInstance.address,
+                customMockEglGenesisInstance.address,
+                eglContractDeploymentTimestamp,
+                DefaultVotePauseSeconds,
+                DefaultEpochLengthSeconds,
+                seedAccounts,
+                seedAmounts,
+                _creatorRewardsAccount
+            );        
+    
+            await eglTokenInstance.transfer(_voter1, web3.utils.toWei("250000000"), { from: _genesisOwner })
+            await eglTokenInstance.increaseAllowance(customEglContractInstance.address, web3.utils.toWei("250000000"), { from: _voter1 });
+
+            await eglTokenInstance.transfer(customEglContractInstance.address, web3.utils.toWei("3250000000"), { from: _genesisOwner });
+            await customBalancerPoolTokenInstance.transfer(customEglContractInstance.address, web3.utils.toWei("75000000"), { from: _genesisOwner });
+    
+            await expectRevert(
+                customEglContractInstance.internalVote(
+                    _voter1,
+                    6721975,
+                    web3.utils.toWei("100"),
+                    4,
+                    Math.round(new Date().getTime() / 1000)
+                ),
+                "EGL:VOTING_NOT_STARTED"
+            )
+        });
         it("should add single (and only) vote for a lockup duration of 4 weeks", async () => {
             let currentEpoch = parseInt(await eglContractInstance.currentEpoch());
             await eglContractInstance.internalVote(
@@ -439,7 +491,7 @@ contract("EglInternalFunctionsTests", (accounts) => {
         it("should revert if voter address is 0", async () => {
             await expectRevert(
                 eglContractInstance.internalWithdraw(ZERO_ADDRESS),
-                "invalid opcode"
+                "EGL:VOTER_ADDRESS_0"
             )
         });
     });
@@ -865,7 +917,7 @@ contract("EglInternalFunctionsTests", (accounts) => {
                     supporterLastEgl,
                     totalSupporterPoolTokens
                 ),
-                "invalid opcode"
+                "EGL:INVALID_SERIALIZED_EGLS"
             )
         });
     });
@@ -923,7 +975,7 @@ contract("EglInternalFunctionsTests", (accounts) => {
                     supporterFirstEgl,
                     supporterLastEgl
                 ),
-                "invalid opcode"
+                "EGL:INVALID_SERIALIZED_EGLS"
             )
         });
     });

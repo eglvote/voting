@@ -62,7 +62,6 @@ module.exports = async function (deployer, network, accounts) {
             `Mock Balancer Pool Token deployed to address: ${ConsoleColors.GREEN}`, mockBalancerPoolToken.address
         );
         await mockBalancerPoolToken.transfer(
-            // "0x8742622F3ED0F2a507d3891b2B2a6d313d8C1eC3",
             accounts[1],
             mockBalancerPoolTokenSupply
         );
@@ -70,7 +69,6 @@ module.exports = async function (deployer, network, accounts) {
             `Mock Balancer Pool Token transferred to Genesis owner address: ${ConsoleColors.YELLOW}\n`, accounts[1]
         );
 
-        // eglOwner = "0x8742622F3ED0F2a507d3891b2B2a6d313d8C1eC3"; // Gnosis multisig (https://wallet.gnosis.pm/#/wallets)
         eglOwner = accounts[1]
         eglProxyAdmin = accounts[9]; // TODO: SET PROXY ADMIN
         eglGenesisAddress = "0xf58399948E9636959Cb6bCD2Ec9eE651848c581f"; // TODO: SET DEPLOYED GENESIS ADDRESS
