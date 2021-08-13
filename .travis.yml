@@ -10,7 +10,7 @@ install:
   - yarn install
 
 script:
-  - ganache-cli -p 7545 -i 5777 > /dev/null &
+  - ganache-cli -e 1000 -p 7545 -i 5777 > /dev/null &
   - sleep 5
   - yarn compile 
   - yarn mig-ganache
