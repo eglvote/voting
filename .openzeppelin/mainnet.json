@@ -1,0 +1,549 @@
+{
+  "manifestVersion": "3.2",
+  "admin": {
+    "address": "0xB911a7BED2C1abc0231000e2948D0E0321F7A28E",
+    "txHash": "0xf1b496f04a2e07129af1a4810b9458a69b535b60dc828da9296d31a916a4d96a"
+  },
+  "proxies": [
+    {
+      "address": "0x1e83916Ea2EF2D7a6064775662E163b2D4C330a7",
+      "txHash": "0x055ee87a509d82409f5b63c49a7b012785eb2251c16f1023356a76897a7a3aee",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xE9a09e0032D1aB5Ce4bF09149ef746258252Bd0B",
+      "txHash": "0x24451e5f0e2d59d682c8a4e24fbb8cf88f9dffc4ab51c2098e3719dab87e9dc9",
+      "kind": "transparent"
+    }
+  ],
+  "impls": {
+    "530af72875aad6f72f3e6b1358edb687f13f3fe54185dca6cb855753bb899da6": {
+      "address": "0x5be54C120A9D88d8a8EF7217f79219D72725E91e",
+      "txHash": "0x17475ce8ea6ce99e12e4bbaaec9a21a1d9fe29dfe3cecc08ee7bbc8731771904",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "../@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:24"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "../@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:29"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/GSN/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "ERC20Upgradeable",
+            "label": "_balances",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "../@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:37"
+          },
+          {
+            "contract": "ERC20Upgradeable",
+            "label": "_allowances",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "src": "../@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:39"
+          },
+          {
+            "contract": "ERC20Upgradeable",
+            "label": "_totalSupply",
+            "type": "t_uint256",
+            "src": "../@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:41"
+          },
+          {
+            "contract": "ERC20Upgradeable",
+            "label": "_name",
+            "type": "t_string_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:43"
+          },
+          {
+            "contract": "ERC20Upgradeable",
+            "label": "_symbol",
+            "type": "t_string_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:44"
+          },
+          {
+            "contract": "ERC20Upgradeable",
+            "label": "_decimals",
+            "type": "t_uint8",
+            "src": "../@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:45"
+          },
+          {
+            "contract": "ERC20Upgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)44_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:312"
+          },
+          {
+            "contract": "ERC20CappedUpgradeable",
+            "label": "_cap",
+            "type": "t_uint256",
+            "src": "../@openzeppelin/contracts-upgradeable/token/ERC20/ERC20CappedUpgradeable.sol:14"
+          },
+          {
+            "contract": "ERC20CappedUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/token/ERC20/ERC20CappedUpgradeable.sol:51"
+          }
+        ],
+        "types": {
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))"
+          },
+          "t_string_storage": {
+            "label": "string"
+          },
+          "t_uint8": {
+            "label": "uint8"
+          },
+          "t_array(t_uint256)44_storage": {
+            "label": "uint256[44]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        }
+      }
+    },
+    "71832e9b146137a21a2d62d645ecfd421ffb1724848bc65d88d160c4172dd337": {
+      "address": "0xff6C438BDA944a3330E26F494cC7DC9365D601b4",
+      "txHash": "0xd3eb7d3ec943a4355ccd847e67116ec2c68738e2623182c2ab2395a4e7d7089f",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "../@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:24"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "../@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:29"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/GSN/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "../@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:20"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:74"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "../@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol:28"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol:96"
+          },
+          {
+            "contract": "ReentrancyGuardUpgradeable",
+            "label": "_status",
+            "type": "t_uint256",
+            "src": "../@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol:37"
+          },
+          {
+            "contract": "ReentrancyGuardUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "../@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol:67"
+          },
+          {
+            "contract": "EglContract",
+            "label": "desiredEgl",
+            "type": "t_int256",
+            "src": "EglContract.sol:28"
+          },
+          {
+            "contract": "EglContract",
+            "label": "baselineEgl",
+            "type": "t_int256",
+            "src": "EglContract.sol:29"
+          },
+          {
+            "contract": "EglContract",
+            "label": "initialEgl",
+            "type": "t_int256",
+            "src": "EglContract.sol:30"
+          },
+          {
+            "contract": "EglContract",
+            "label": "tallyVotesGasLimit",
+            "type": "t_int256",
+            "src": "EglContract.sol:31"
+          },
+          {
+            "contract": "EglContract",
+            "label": "creatorEglsTotal",
+            "type": "t_uint256",
+            "src": "EglContract.sol:33"
+          },
+          {
+            "contract": "EglContract",
+            "label": "liquidityEglMatchingTotal",
+            "type": "t_uint256",
+            "src": "EglContract.sol:34"
+          },
+          {
+            "contract": "EglContract",
+            "label": "currentEpoch",
+            "type": "t_uint16",
+            "src": "EglContract.sol:36"
+          },
+          {
+            "contract": "EglContract",
+            "label": "currentEpochStartDate",
+            "type": "t_uint256",
+            "src": "EglContract.sol:37"
+          },
+          {
+            "contract": "EglContract",
+            "label": "tokensInCirculation",
+            "type": "t_uint256",
+            "src": "EglContract.sol:38"
+          },
+          {
+            "contract": "EglContract",
+            "label": "voterRewardSums",
+            "type": "t_array(t_uint256)52_storage",
+            "src": "EglContract.sol:40"
+          },
+          {
+            "contract": "EglContract",
+            "label": "votesTotal",
+            "type": "t_array(t_uint256)8_storage",
+            "src": "EglContract.sol:41"
+          },
+          {
+            "contract": "EglContract",
+            "label": "voteWeightsSum",
+            "type": "t_array(t_uint256)8_storage",
+            "src": "EglContract.sol:42"
+          },
+          {
+            "contract": "EglContract",
+            "label": "gasTargetSum",
+            "type": "t_array(t_uint256)8_storage",
+            "src": "EglContract.sol:43"
+          },
+          {
+            "contract": "EglContract",
+            "label": "voters",
+            "type": "t_mapping(t_address,t_struct(Voter)92_storage)",
+            "src": "EglContract.sol:45"
+          },
+          {
+            "contract": "EglContract",
+            "label": "supporters",
+            "type": "t_mapping(t_address,t_struct(Supporter)101_storage)",
+            "src": "EglContract.sol:46"
+          },
+          {
+            "contract": "EglContract",
+            "label": "seeders",
+            "type": "t_mapping(t_address,t_uint256)",
+            "src": "EglContract.sol:47"
+          },
+          {
+            "contract": "EglContract",
+            "label": "eglToken",
+            "type": "t_contract(EglToken)3176",
+            "src": "EglContract.sol:65"
+          },
+          {
+            "contract": "EglContract",
+            "label": "balancerPoolToken",
+            "type": "t_contract(IERC20Upgradeable)5026",
+            "src": "EglContract.sol:66"
+          },
+          {
+            "contract": "EglContract",
+            "label": "eglGenesis",
+            "type": "t_contract(IEglGenesis)3578",
+            "src": "EglContract.sol:67"
+          },
+          {
+            "contract": "EglContract",
+            "label": "creatorRewardsAddress",
+            "type": "t_address",
+            "src": "EglContract.sol:69"
+          },
+          {
+            "contract": "EglContract",
+            "label": "epochGasLimitSum",
+            "type": "t_int256",
+            "src": "EglContract.sol:71"
+          },
+          {
+            "contract": "EglContract",
+            "label": "epochVoteCount",
+            "type": "t_int256",
+            "src": "EglContract.sol:72"
+          },
+          {
+            "contract": "EglContract",
+            "label": "desiredEglThreshold",
+            "type": "t_int256",
+            "src": "EglContract.sol:73"
+          },
+          {
+            "contract": "EglContract",
+            "label": "votingPauseSeconds",
+            "type": "t_uint24",
+            "src": "EglContract.sol:75"
+          },
+          {
+            "contract": "EglContract",
+            "label": "epochLength",
+            "type": "t_uint32",
+            "src": "EglContract.sol:76"
+          },
+          {
+            "contract": "EglContract",
+            "label": "firstEpochStartDate",
+            "type": "t_uint256",
+            "src": "EglContract.sol:77"
+          },
+          {
+            "contract": "EglContract",
+            "label": "latestRewardSwept",
+            "type": "t_uint256",
+            "src": "EglContract.sol:78"
+          },
+          {
+            "contract": "EglContract",
+            "label": "minLiquidityTokensLockup",
+            "type": "t_uint256",
+            "src": "EglContract.sol:79"
+          },
+          {
+            "contract": "EglContract",
+            "label": "creatorRewardFirstEpoch",
+            "type": "t_uint256",
+            "src": "EglContract.sol:80"
+          },
+          {
+            "contract": "EglContract",
+            "label": "remainingPoolReward",
+            "type": "t_uint256",
+            "src": "EglContract.sol:81"
+          },
+          {
+            "contract": "EglContract",
+            "label": "remainingCreatorReward",
+            "type": "t_uint256",
+            "src": "EglContract.sol:82"
+          },
+          {
+            "contract": "EglContract",
+            "label": "remainingDaoBalance",
+            "type": "t_uint256",
+            "src": "EglContract.sol:83"
+          },
+          {
+            "contract": "EglContract",
+            "label": "remainingSeederBalance",
+            "type": "t_uint256",
+            "src": "EglContract.sol:84"
+          },
+          {
+            "contract": "EglContract",
+            "label": "remainingSupporterBalance",
+            "type": "t_uint256",
+            "src": "EglContract.sol:85"
+          },
+          {
+            "contract": "EglContract",
+            "label": "remainingBptBalance",
+            "type": "t_uint256",
+            "src": "EglContract.sol:86"
+          },
+          {
+            "contract": "EglContract",
+            "label": "remainingVoterReward",
+            "type": "t_uint256",
+            "src": "EglContract.sol:87"
+          },
+          {
+            "contract": "EglContract",
+            "label": "lastSerializedEgl",
+            "type": "t_uint256",
+            "src": "EglContract.sol:88"
+          },
+          {
+            "contract": "EglContract",
+            "label": "ethEglRatio",
+            "type": "t_uint256",
+            "src": "EglContract.sol:89"
+          },
+          {
+            "contract": "EglContract",
+            "label": "ethBptRatio",
+            "type": "t_uint256",
+            "src": "EglContract.sol:90"
+          },
+          {
+            "contract": "EglContract",
+            "label": "voterRewardMultiplier",
+            "type": "t_uint256",
+            "src": "EglContract.sol:91"
+          },
+          {
+            "contract": "EglContract",
+            "label": "gasTargetTolerance",
+            "type": "t_uint256",
+            "src": "EglContract.sol:92"
+          },
+          {
+            "contract": "EglContract",
+            "label": "voteThresholdGracePeriod",
+            "type": "t_uint16",
+            "src": "EglContract.sol:93"
+          }
+        ],
+        "types": {
+          "t_int256": {
+            "label": "int256"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_uint16": {
+            "label": "uint16"
+          },
+          "t_array(t_uint256)52_storage": {
+            "label": "uint256[52]"
+          },
+          "t_array(t_uint256)8_storage": {
+            "label": "uint256[8]"
+          },
+          "t_mapping(t_address,t_struct(Voter)92_storage)": {
+            "label": "mapping(address => struct EglContract.Voter)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_struct(Voter)92_storage": {
+            "label": "struct EglContract.Voter",
+            "members": [
+              {
+                "label": "lockupDuration",
+                "type": "t_uint8"
+              },
+              {
+                "label": "voteEpoch",
+                "type": "t_uint16"
+              },
+              {
+                "label": "releaseDate",
+                "type": "t_uint256"
+              },
+              {
+                "label": "tokensLocked",
+                "type": "t_uint256"
+              },
+              {
+                "label": "gasTarget",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_uint8": {
+            "label": "uint8"
+          },
+          "t_mapping(t_address,t_struct(Supporter)101_storage)": {
+            "label": "mapping(address => struct EglContract.Supporter)"
+          },
+          "t_struct(Supporter)101_storage": {
+            "label": "struct EglContract.Supporter",
+            "members": [
+              {
+                "label": "claimed",
+                "type": "t_uint32"
+              },
+              {
+                "label": "poolTokens",
+                "type": "t_uint256"
+              },
+              {
+                "label": "firstEgl",
+                "type": "t_uint256"
+              },
+              {
+                "label": "lastEgl",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_uint32": {
+            "label": "uint32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)"
+          },
+          "t_contract(EglToken)3176": {
+            "label": "contract EglToken"
+          },
+          "t_contract(IERC20Upgradeable)5026": {
+            "label": "contract IERC20Upgradeable"
+          },
+          "t_contract(IEglGenesis)3578": {
+            "label": "contract IEglGenesis"
+          },
+          "t_uint24": {
+            "label": "uint24"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    }
+  }
+}

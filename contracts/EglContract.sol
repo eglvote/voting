@@ -978,7 +978,7 @@ contract EglContract is Initializable, OwnableUpgradeable, PausableUpgradeable, 
             totalRewardPercent = proximityRewardPercent.add(DECIMAL_PRECISION.mul(25));
         }
 
-        blockReward = totalRewardPercent.mul(remainingPoolReward.div(5000000))
+        blockReward = totalRewardPercent.mul(remainingPoolReward.div(2500000))
             .div(DECIMAL_PRECISION)
             .div(100);
 

@@ -23,7 +23,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [],
@@ -36,7 +37,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -70,7 +72,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -89,7 +92,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [],
@@ -102,7 +106,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [],
@@ -115,11 +120,13 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "stateMutability": "payable",
-      "type": "receive"
+      "type": "receive",
+      "payable": true
     },
     {
       "inputs": [
@@ -160,14 +167,14 @@
     "absolutePath": "/Users/svancoller/Development/bloXroute/egl/contracts/helpers/MockEglGenesis.sol",
     "exportedSymbols": {
       "MockEglGenesis": [
-        3267
+        3352
       ]
     },
-    "id": 3268,
+    "id": 3353,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 3161,
+        "id": 3246,
         "literals": [
           "solidity",
           "0.6",
@@ -183,9 +190,9 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 3267,
+        "id": 3352,
         "linearizedBaseContracts": [
-          3267
+          3352
         ],
         "name": "MockEglGenesis",
         "nodeType": "ContractDefinition",
@@ -193,12 +200,12 @@
           {
             "constant": false,
             "functionSelector": "4b472d45",
-            "id": 3163,
+            "id": 3248,
             "mutability": "mutable",
             "name": "cumulativeBalance",
             "nodeType": "VariableDeclaration",
             "overrides": null,
-            "scope": 3267,
+            "scope": 3352,
             "src": "54:29:4",
             "stateVariable": true,
             "storageLocation": "default",
@@ -207,7 +214,7 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 3162,
+              "id": 3247,
               "name": "uint",
               "nodeType": "ElementaryTypeName",
               "src": "54:4:4",
@@ -222,12 +229,12 @@
           {
             "constant": false,
             "functionSelector": "40b98253",
-            "id": 3165,
+            "id": 3250,
             "mutability": "mutable",
             "name": "canContribute",
             "nodeType": "VariableDeclaration",
             "overrides": null,
-            "scope": 3267,
+            "scope": 3352,
             "src": "89:25:4",
             "stateVariable": true,
             "storageLocation": "default",
@@ -236,7 +243,7 @@
               "typeString": "bool"
             },
             "typeName": {
-              "id": 3164,
+              "id": 3249,
               "name": "bool",
               "nodeType": "ElementaryTypeName",
               "src": "89:4:4",
@@ -251,12 +258,12 @@
           {
             "constant": false,
             "functionSelector": "b51459fe",
-            "id": 3167,
+            "id": 3252,
             "mutability": "mutable",
             "name": "canWithdraw",
             "nodeType": "VariableDeclaration",
             "overrides": null,
-            "scope": 3267,
+            "scope": 3352,
             "src": "120:23:4",
             "stateVariable": true,
             "storageLocation": "default",
@@ -265,7 +272,7 @@
               "typeString": "bool"
             },
             "typeName": {
-              "id": 3166,
+              "id": 3251,
               "name": "bool",
               "nodeType": "ElementaryTypeName",
               "src": "120:4:4",
@@ -280,12 +287,12 @@
           {
             "constant": false,
             "functionSelector": "8da5cb5b",
-            "id": 3169,
+            "id": 3254,
             "mutability": "mutable",
             "name": "owner",
             "nodeType": "VariableDeclaration",
             "overrides": null,
-            "scope": 3267,
+            "scope": 3352,
             "src": "149:20:4",
             "stateVariable": true,
             "storageLocation": "default",
@@ -294,7 +301,7 @@
               "typeString": "address"
             },
             "typeName": {
-              "id": 3168,
+              "id": 3253,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "149:7:4",
@@ -310,12 +317,12 @@
           {
             "constant": false,
             "functionSelector": "0b9f2c4a",
-            "id": 3172,
+            "id": 3257,
             "mutability": "mutable",
             "name": "contributorsList",
             "nodeType": "VariableDeclaration",
             "overrides": null,
-            "scope": 3267,
+            "scope": 3352,
             "src": "175:33:4",
             "stateVariable": true,
             "storageLocation": "default",
@@ -325,7 +332,7 @@
             },
             "typeName": {
               "baseType": {
-                "id": 3170,
+                "id": 3255,
                 "name": "address",
                 "nodeType": "ElementaryTypeName",
                 "src": "175:7:4",
@@ -335,7 +342,7 @@
                   "typeString": "address"
                 }
               },
-              "id": 3171,
+              "id": 3256,
               "length": null,
               "nodeType": "ArrayTypeName",
               "src": "175:9:4",
@@ -350,23 +357,23 @@
           {
             "constant": false,
             "functionSelector": "1f6d4942",
-            "id": 3176,
+            "id": 3261,
             "mutability": "mutable",
             "name": "contributors",
             "nodeType": "VariableDeclaration",
             "overrides": null,
-            "scope": 3267,
+            "scope": 3352,
             "src": "218:51:4",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_mapping$_t_address_$_t_struct$_Contributor_$3185_storage_$",
+              "typeIdentifier": "t_mapping$_t_address_$_t_struct$_Contributor_$3270_storage_$",
               "typeString": "mapping(address => struct MockEglGenesis.Contributor)"
             },
             "typeName": {
-              "id": 3175,
+              "id": 3260,
               "keyType": {
-                "id": 3173,
+                "id": 3258,
                 "name": "address",
                 "nodeType": "ElementaryTypeName",
                 "src": "226:7:4",
@@ -378,18 +385,18 @@
               "nodeType": "Mapping",
               "src": "218:31:4",
               "typeDescriptions": {
-                "typeIdentifier": "t_mapping$_t_address_$_t_struct$_Contributor_$3185_storage_$",
+                "typeIdentifier": "t_mapping$_t_address_$_t_struct$_Contributor_$3270_storage_$",
                 "typeString": "mapping(address => struct MockEglGenesis.Contributor)"
               },
               "valueType": {
                 "contractScope": null,
-                "id": 3174,
+                "id": 3259,
                 "name": "Contributor",
                 "nodeType": "UserDefinedTypeName",
-                "referencedDeclaration": 3185,
+                "referencedDeclaration": 3270,
                 "src": "237:11:4",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_struct$_Contributor_$3185_storage_ptr",
+                  "typeIdentifier": "t_struct$_Contributor_$3270_storage_ptr",
                   "typeString": "struct MockEglGenesis.Contributor"
                 }
               }
@@ -399,16 +406,16 @@
           },
           {
             "canonicalName": "MockEglGenesis.Contributor",
-            "id": 3185,
+            "id": 3270,
             "members": [
               {
                 "constant": false,
-                "id": 3178,
+                "id": 3263,
                 "mutability": "mutable",
                 "name": "amount",
                 "nodeType": "VariableDeclaration",
                 "overrides": null,
-                "scope": 3185,
+                "scope": 3270,
                 "src": "305:11:4",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -417,7 +424,7 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 3177,
+                  "id": 3262,
                   "name": "uint",
                   "nodeType": "ElementaryTypeName",
                   "src": "305:4:4",
@@ -431,12 +438,12 @@
               },
               {
                 "constant": false,
-                "id": 3180,
+                "id": 3265,
                 "mutability": "mutable",
                 "name": "cumulativeBalance",
                 "nodeType": "VariableDeclaration",
                 "overrides": null,
-                "scope": 3185,
+                "scope": 3270,
                 "src": "326:22:4",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -445,7 +452,7 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 3179,
+                  "id": 3264,
                   "name": "uint",
                   "nodeType": "ElementaryTypeName",
                   "src": "326:4:4",
@@ -459,12 +466,12 @@
               },
               {
                 "constant": false,
-                "id": 3182,
+                "id": 3267,
                 "mutability": "mutable",
                 "name": "idx",
                 "nodeType": "VariableDeclaration",
                 "overrides": null,
-                "scope": 3185,
+                "scope": 3270,
                 "src": "358:8:4",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -473,7 +480,7 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 3181,
+                  "id": 3266,
                   "name": "uint",
                   "nodeType": "ElementaryTypeName",
                   "src": "358:4:4",
@@ -487,12 +494,12 @@
               },
               {
                 "constant": false,
-                "id": 3184,
+                "id": 3269,
                 "mutability": "mutable",
                 "name": "date",
                 "nodeType": "VariableDeclaration",
                 "overrides": null,
-                "scope": 3185,
+                "scope": 3270,
                 "src": "376:9:4",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -501,7 +508,7 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 3183,
+                  "id": 3268,
                   "name": "uint",
                   "nodeType": "ElementaryTypeName",
                   "src": "376:4:4",
@@ -516,31 +523,31 @@
             ],
             "name": "Contributor",
             "nodeType": "StructDefinition",
-            "scope": 3267,
+            "scope": 3352,
             "src": "276:116:4",
             "visibility": "public"
           },
           {
             "body": {
-              "id": 3194,
+              "id": 3279,
               "nodeType": "Block",
               "src": "433:31:4",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3192,
+                    "id": 3277,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 3190,
+                      "id": 3275,
                       "name": "owner",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3169,
+                      "referencedDeclaration": 3254,
                       "src": "443:5:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
@@ -551,11 +558,11 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 3191,
+                      "id": 3276,
                       "name": "_owner",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3187,
+                      "referencedDeclaration": 3272,
                       "src": "451:6:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
@@ -568,14 +575,14 @@
                       "typeString": "address"
                     }
                   },
-                  "id": 3193,
+                  "id": 3278,
                   "nodeType": "ExpressionStatement",
                   "src": "443:14:4"
                 }
               ]
             },
             "documentation": null,
-            "id": 3195,
+            "id": 3280,
             "implemented": true,
             "kind": "constructor",
             "modifiers": [],
@@ -583,17 +590,17 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 3188,
+              "id": 3273,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3187,
+                  "id": 3272,
                   "mutability": "mutable",
                   "name": "_owner",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3195,
+                  "scope": 3280,
                   "src": "410:14:4",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -602,7 +609,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3186,
+                    "id": 3271,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "410:7:4",
@@ -619,12 +626,12 @@
               "src": "409:16:4"
             },
             "returnParameters": {
-              "id": 3189,
+              "id": 3274,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "433:0:4"
             },
-            "scope": 3267,
+            "scope": 3352,
             "src": "398:66:4",
             "stateMutability": "nonpayable",
             "virtual": false,
@@ -632,25 +639,25 @@
           },
           {
             "body": {
-              "id": 3245,
+              "id": 3330,
               "nodeType": "Block",
               "src": "497:360:4",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3203,
+                    "id": 3288,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 3198,
+                      "id": 3283,
                       "name": "cumulativeBalance",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3163,
+                      "referencedDeclaration": 3248,
                       "src": "507:17:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -665,18 +672,18 @@
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       },
-                      "id": 3202,
+                      "id": 3287,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 3199,
+                        "id": 3284,
                         "name": "cumulativeBalance",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3163,
+                        "referencedDeclaration": 3248,
                         "src": "527:17:4",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -689,7 +696,7 @@
                         "argumentTypes": null,
                         "expression": {
                           "argumentTypes": null,
-                          "id": 3200,
+                          "id": 3285,
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
@@ -700,7 +707,7 @@
                             "typeString": "msg"
                           }
                         },
-                        "id": 3201,
+                        "id": 3286,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -726,7 +733,7 @@
                       "typeString": "uint256"
                     }
                   },
-                  "id": 3204,
+                  "id": 3289,
                   "nodeType": "ExpressionStatement",
                   "src": "507:49:4"
                 },
@@ -738,7 +745,7 @@
                         "argumentTypes": null,
                         "expression": {
                           "argumentTypes": null,
-                          "id": 3208,
+                          "id": 3293,
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
@@ -749,7 +756,7 @@
                             "typeString": "msg"
                           }
                         },
-                        "id": 3209,
+                        "id": 3294,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -773,18 +780,18 @@
                       ],
                       "expression": {
                         "argumentTypes": null,
-                        "id": 3205,
+                        "id": 3290,
                         "name": "contributorsList",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3172,
+                        "referencedDeclaration": 3257,
                         "src": "566:16:4",
                         "typeDescriptions": {
                           "typeIdentifier": "t_array$_t_address_$dyn_storage",
                           "typeString": "address[] storage ref"
                         }
                       },
-                      "id": 3207,
+                      "id": 3292,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -798,7 +805,7 @@
                         "typeString": "function (address)"
                       }
                     },
-                    "id": 3210,
+                    "id": 3295,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -813,39 +820,39 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 3211,
+                  "id": 3296,
                   "nodeType": "ExpressionStatement",
                   "src": "566:33:4"
                 },
                 {
                   "assignments": [
-                    3213
+                    3298
                   ],
                   "declarations": [
                     {
                       "constant": false,
-                      "id": 3213,
+                      "id": 3298,
                       "mutability": "mutable",
                       "name": "contributor",
                       "nodeType": "VariableDeclaration",
                       "overrides": null,
-                      "scope": 3245,
+                      "scope": 3330,
                       "src": "610:31:4",
                       "stateVariable": false,
                       "storageLocation": "storage",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_struct$_Contributor_$3185_storage_ptr",
+                        "typeIdentifier": "t_struct$_Contributor_$3270_storage_ptr",
                         "typeString": "struct MockEglGenesis.Contributor"
                       },
                       "typeName": {
                         "contractScope": null,
-                        "id": 3212,
+                        "id": 3297,
                         "name": "Contributor",
                         "nodeType": "UserDefinedTypeName",
-                        "referencedDeclaration": 3185,
+                        "referencedDeclaration": 3270,
                         "src": "610:11:4",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_Contributor_$3185_storage_ptr",
+                          "typeIdentifier": "t_struct$_Contributor_$3270_storage_ptr",
                           "typeString": "struct MockEglGenesis.Contributor"
                         }
                       },
@@ -853,28 +860,28 @@
                       "visibility": "internal"
                     }
                   ],
-                  "id": 3218,
+                  "id": 3303,
                   "initialValue": {
                     "argumentTypes": null,
                     "baseExpression": {
                       "argumentTypes": null,
-                      "id": 3214,
+                      "id": 3299,
                       "name": "contributors",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3176,
+                      "referencedDeclaration": 3261,
                       "src": "644:12:4",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_mapping$_t_address_$_t_struct$_Contributor_$3185_storage_$",
+                        "typeIdentifier": "t_mapping$_t_address_$_t_struct$_Contributor_$3270_storage_$",
                         "typeString": "mapping(address => struct MockEglGenesis.Contributor storage ref)"
                       }
                     },
-                    "id": 3217,
+                    "id": 3302,
                     "indexExpression": {
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 3215,
+                        "id": 3300,
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
@@ -885,7 +892,7 @@
                           "typeString": "msg"
                         }
                       },
-                      "id": 3216,
+                      "id": 3301,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -906,7 +913,7 @@
                     "nodeType": "IndexAccess",
                     "src": "644:24:4",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_Contributor_$3185_storage",
+                      "typeIdentifier": "t_struct$_Contributor_$3270_storage",
                       "typeString": "struct MockEglGenesis.Contributor storage ref"
                     }
                   },
@@ -916,7 +923,7 @@
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3224,
+                    "id": 3309,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -925,25 +932,25 @@
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 3219,
+                        "id": 3304,
                         "name": "contributor",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3213,
+                        "referencedDeclaration": 3298,
                         "src": "678:11:4",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_Contributor_$3185_storage_ptr",
+                          "typeIdentifier": "t_struct$_Contributor_$3270_storage_ptr",
                           "typeString": "struct MockEglGenesis.Contributor storage pointer"
                         }
                       },
-                      "id": 3221,
+                      "id": 3306,
                       "isConstant": false,
                       "isLValue": true,
                       "isPure": false,
                       "lValueRequested": true,
                       "memberName": "amount",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 3178,
+                      "referencedDeclaration": 3263,
                       "src": "678:18:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -956,7 +963,7 @@
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 3222,
+                        "id": 3307,
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
@@ -967,7 +974,7 @@
                           "typeString": "msg"
                         }
                       },
-                      "id": 3223,
+                      "id": 3308,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -987,14 +994,14 @@
                       "typeString": "uint256"
                     }
                   },
-                  "id": 3225,
+                  "id": 3310,
                   "nodeType": "ExpressionStatement",
                   "src": "678:30:4"
                 },
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3230,
+                    "id": 3315,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1003,25 +1010,25 @@
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 3226,
+                        "id": 3311,
                         "name": "contributor",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3213,
+                        "referencedDeclaration": 3298,
                         "src": "718:11:4",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_Contributor_$3185_storage_ptr",
+                          "typeIdentifier": "t_struct$_Contributor_$3270_storage_ptr",
                           "typeString": "struct MockEglGenesis.Contributor storage pointer"
                         }
                       },
-                      "id": 3228,
+                      "id": 3313,
                       "isConstant": false,
                       "isLValue": true,
                       "isPure": false,
                       "lValueRequested": true,
                       "memberName": "cumulativeBalance",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 3180,
+                      "referencedDeclaration": 3265,
                       "src": "718:29:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -1032,11 +1039,11 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 3229,
+                      "id": 3314,
                       "name": "cumulativeBalance",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3163,
+                      "referencedDeclaration": 3248,
                       "src": "750:17:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -1049,14 +1056,14 @@
                       "typeString": "uint256"
                     }
                   },
-                  "id": 3231,
+                  "id": 3316,
                   "nodeType": "ExpressionStatement",
                   "src": "718:49:4"
                 },
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3237,
+                    "id": 3322,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1065,25 +1072,25 @@
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 3232,
+                        "id": 3317,
                         "name": "contributor",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3213,
+                        "referencedDeclaration": 3298,
                         "src": "777:11:4",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_Contributor_$3185_storage_ptr",
+                          "typeIdentifier": "t_struct$_Contributor_$3270_storage_ptr",
                           "typeString": "struct MockEglGenesis.Contributor storage pointer"
                         }
                       },
-                      "id": 3234,
+                      "id": 3319,
                       "isConstant": false,
                       "isLValue": true,
                       "isPure": false,
                       "lValueRequested": true,
                       "memberName": "idx",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 3182,
+                      "referencedDeclaration": 3267,
                       "src": "777:15:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -1096,18 +1103,18 @@
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 3235,
+                        "id": 3320,
                         "name": "contributorsList",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3172,
+                        "referencedDeclaration": 3257,
                         "src": "795:16:4",
                         "typeDescriptions": {
                           "typeIdentifier": "t_array$_t_address_$dyn_storage",
                           "typeString": "address[] storage ref"
                         }
                       },
-                      "id": 3236,
+                      "id": 3321,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -1127,14 +1134,14 @@
                       "typeString": "uint256"
                     }
                   },
-                  "id": 3238,
+                  "id": 3323,
                   "nodeType": "ExpressionStatement",
                   "src": "777:41:4"
                 },
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3243,
+                    "id": 3328,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1143,25 +1150,25 @@
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 3239,
+                        "id": 3324,
                         "name": "contributor",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3213,
+                        "referencedDeclaration": 3298,
                         "src": "828:11:4",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_Contributor_$3185_storage_ptr",
+                          "typeIdentifier": "t_struct$_Contributor_$3270_storage_ptr",
                           "typeString": "struct MockEglGenesis.Contributor storage pointer"
                         }
                       },
-                      "id": 3241,
+                      "id": 3326,
                       "isConstant": false,
                       "isLValue": true,
                       "isPure": false,
                       "lValueRequested": true,
                       "memberName": "date",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 3184,
+                      "referencedDeclaration": 3269,
                       "src": "828:16:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -1172,7 +1179,7 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 3242,
+                      "id": 3327,
                       "name": "now",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
@@ -1189,14 +1196,14 @@
                       "typeString": "uint256"
                     }
                   },
-                  "id": 3244,
+                  "id": 3329,
                   "nodeType": "ExpressionStatement",
                   "src": "828:22:4"
                 }
               ]
             },
             "documentation": null,
-            "id": 3246,
+            "id": 3331,
             "implemented": true,
             "kind": "receive",
             "modifiers": [],
@@ -1204,18 +1211,18 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 3196,
+              "id": 3281,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "477:2:4"
             },
             "returnParameters": {
-              "id": 3197,
+              "id": 3282,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "497:0:4"
             },
-            "scope": 3267,
+            "scope": 3352,
             "src": "470:387:4",
             "stateMutability": "payable",
             "virtual": false,
@@ -1223,25 +1230,25 @@
           },
           {
             "body": {
-              "id": 3255,
+              "id": 3340,
               "nodeType": "Block",
               "src": "919:47:4",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3253,
+                    "id": 3338,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 3251,
+                      "id": 3336,
                       "name": "canContribute",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3165,
+                      "referencedDeclaration": 3250,
                       "src": "929:13:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
@@ -1252,11 +1259,11 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 3252,
+                      "id": 3337,
                       "name": "_canContribute",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3248,
+                      "referencedDeclaration": 3333,
                       "src": "945:14:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
@@ -1269,7 +1276,7 @@
                       "typeString": "bool"
                     }
                   },
-                  "id": 3254,
+                  "id": 3339,
                   "nodeType": "ExpressionStatement",
                   "src": "929:30:4"
                 }
@@ -1277,7 +1284,7 @@
             },
             "documentation": null,
             "functionSelector": "cc295fe6",
-            "id": 3256,
+            "id": 3341,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
@@ -1285,17 +1292,17 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 3249,
+              "id": 3334,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3248,
+                  "id": 3333,
                   "mutability": "mutable",
                   "name": "_canContribute",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3256,
+                  "scope": 3341,
                   "src": "889:19:4",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1304,7 +1311,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3247,
+                    "id": 3332,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "889:4:4",
@@ -1320,12 +1327,12 @@
               "src": "888:21:4"
             },
             "returnParameters": {
-              "id": 3250,
+              "id": 3335,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "919:0:4"
             },
-            "scope": 3267,
+            "scope": 3352,
             "src": "863:103:4",
             "stateMutability": "nonpayable",
             "virtual": false,
@@ -1333,25 +1340,25 @@
           },
           {
             "body": {
-              "id": 3265,
+              "id": 3350,
               "nodeType": "Block",
               "src": "1024:43:4",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3263,
+                    "id": 3348,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 3261,
+                      "id": 3346,
                       "name": "canWithdraw",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3167,
+                      "referencedDeclaration": 3252,
                       "src": "1034:11:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
@@ -1362,11 +1369,11 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 3262,
+                      "id": 3347,
                       "name": "_canWithdraw",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3258,
+                      "referencedDeclaration": 3343,
                       "src": "1048:12:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
@@ -1379,7 +1386,7 @@
                       "typeString": "bool"
                     }
                   },
-                  "id": 3264,
+                  "id": 3349,
                   "nodeType": "ExpressionStatement",
                   "src": "1034:26:4"
                 }
@@ -1387,7 +1394,7 @@
             },
             "documentation": null,
             "functionSelector": "326e5540",
-            "id": 3266,
+            "id": 3351,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
@@ -1395,17 +1402,17 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 3259,
+              "id": 3344,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3258,
+                  "id": 3343,
                   "mutability": "mutable",
                   "name": "_canWithdraw",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3266,
+                  "scope": 3351,
                   "src": "996:17:4",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1414,7 +1421,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3257,
+                    "id": 3342,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "996:4:4",
@@ -1430,19 +1437,19 @@
               "src": "995:19:4"
             },
             "returnParameters": {
-              "id": 3260,
+              "id": 3345,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "1024:0:4"
             },
-            "scope": 3267,
+            "scope": 3352,
             "src": "972:95:4",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 3268,
+        "scope": 3353,
         "src": "24:1045:4"
       }
     ],
@@ -1452,14 +1459,14 @@
     "absolutePath": "/Users/svancoller/Development/bloXroute/egl/contracts/helpers/MockEglGenesis.sol",
     "exportedSymbols": {
       "MockEglGenesis": [
-        3267
+        3352
       ]
     },
-    "id": 3268,
+    "id": 3353,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 3161,
+        "id": 3246,
         "literals": [
           "solidity",
           "0.6",
@@ -1475,9 +1482,9 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": true,
-        "id": 3267,
+        "id": 3352,
         "linearizedBaseContracts": [
-          3267
+          3352
         ],
         "name": "MockEglGenesis",
         "nodeType": "ContractDefinition",
@@ -1485,12 +1492,12 @@
           {
             "constant": false,
             "functionSelector": "4b472d45",
-            "id": 3163,
+            "id": 3248,
             "mutability": "mutable",
             "name": "cumulativeBalance",
             "nodeType": "VariableDeclaration",
             "overrides": null,
-            "scope": 3267,
+            "scope": 3352,
             "src": "54:29:4",
             "stateVariable": true,
             "storageLocation": "default",
@@ -1499,7 +1506,7 @@
               "typeString": "uint256"
             },
             "typeName": {
-              "id": 3162,
+              "id": 3247,
               "name": "uint",
               "nodeType": "ElementaryTypeName",
               "src": "54:4:4",
@@ -1514,12 +1521,12 @@
           {
             "constant": false,
             "functionSelector": "40b98253",
-            "id": 3165,
+            "id": 3250,
             "mutability": "mutable",
             "name": "canContribute",
             "nodeType": "VariableDeclaration",
             "overrides": null,
-            "scope": 3267,
+            "scope": 3352,
             "src": "89:25:4",
             "stateVariable": true,
             "storageLocation": "default",
@@ -1528,7 +1535,7 @@
               "typeString": "bool"
             },
             "typeName": {
-              "id": 3164,
+              "id": 3249,
               "name": "bool",
               "nodeType": "ElementaryTypeName",
               "src": "89:4:4",
@@ -1543,12 +1550,12 @@
           {
             "constant": false,
             "functionSelector": "b51459fe",
-            "id": 3167,
+            "id": 3252,
             "mutability": "mutable",
             "name": "canWithdraw",
             "nodeType": "VariableDeclaration",
             "overrides": null,
-            "scope": 3267,
+            "scope": 3352,
             "src": "120:23:4",
             "stateVariable": true,
             "storageLocation": "default",
@@ -1557,7 +1564,7 @@
               "typeString": "bool"
             },
             "typeName": {
-              "id": 3166,
+              "id": 3251,
               "name": "bool",
               "nodeType": "ElementaryTypeName",
               "src": "120:4:4",
@@ -1572,12 +1579,12 @@
           {
             "constant": false,
             "functionSelector": "8da5cb5b",
-            "id": 3169,
+            "id": 3254,
             "mutability": "mutable",
             "name": "owner",
             "nodeType": "VariableDeclaration",
             "overrides": null,
-            "scope": 3267,
+            "scope": 3352,
             "src": "149:20:4",
             "stateVariable": true,
             "storageLocation": "default",
@@ -1586,7 +1593,7 @@
               "typeString": "address"
             },
             "typeName": {
-              "id": 3168,
+              "id": 3253,
               "name": "address",
               "nodeType": "ElementaryTypeName",
               "src": "149:7:4",
@@ -1602,12 +1609,12 @@
           {
             "constant": false,
             "functionSelector": "0b9f2c4a",
-            "id": 3172,
+            "id": 3257,
             "mutability": "mutable",
             "name": "contributorsList",
             "nodeType": "VariableDeclaration",
             "overrides": null,
-            "scope": 3267,
+            "scope": 3352,
             "src": "175:33:4",
             "stateVariable": true,
             "storageLocation": "default",
@@ -1617,7 +1624,7 @@
             },
             "typeName": {
               "baseType": {
-                "id": 3170,
+                "id": 3255,
                 "name": "address",
                 "nodeType": "ElementaryTypeName",
                 "src": "175:7:4",
@@ -1627,7 +1634,7 @@
                   "typeString": "address"
                 }
               },
-              "id": 3171,
+              "id": 3256,
               "length": null,
               "nodeType": "ArrayTypeName",
               "src": "175:9:4",
@@ -1642,23 +1649,23 @@
           {
             "constant": false,
             "functionSelector": "1f6d4942",
-            "id": 3176,
+            "id": 3261,
             "mutability": "mutable",
             "name": "contributors",
             "nodeType": "VariableDeclaration",
             "overrides": null,
-            "scope": 3267,
+            "scope": 3352,
             "src": "218:51:4",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_mapping$_t_address_$_t_struct$_Contributor_$3185_storage_$",
+              "typeIdentifier": "t_mapping$_t_address_$_t_struct$_Contributor_$3270_storage_$",
               "typeString": "mapping(address => struct MockEglGenesis.Contributor)"
             },
             "typeName": {
-              "id": 3175,
+              "id": 3260,
               "keyType": {
-                "id": 3173,
+                "id": 3258,
                 "name": "address",
                 "nodeType": "ElementaryTypeName",
                 "src": "226:7:4",
@@ -1670,18 +1677,18 @@
               "nodeType": "Mapping",
               "src": "218:31:4",
               "typeDescriptions": {
-                "typeIdentifier": "t_mapping$_t_address_$_t_struct$_Contributor_$3185_storage_$",
+                "typeIdentifier": "t_mapping$_t_address_$_t_struct$_Contributor_$3270_storage_$",
                 "typeString": "mapping(address => struct MockEglGenesis.Contributor)"
               },
               "valueType": {
                 "contractScope": null,
-                "id": 3174,
+                "id": 3259,
                 "name": "Contributor",
                 "nodeType": "UserDefinedTypeName",
-                "referencedDeclaration": 3185,
+                "referencedDeclaration": 3270,
                 "src": "237:11:4",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_struct$_Contributor_$3185_storage_ptr",
+                  "typeIdentifier": "t_struct$_Contributor_$3270_storage_ptr",
                   "typeString": "struct MockEglGenesis.Contributor"
                 }
               }
@@ -1691,16 +1698,16 @@
           },
           {
             "canonicalName": "MockEglGenesis.Contributor",
-            "id": 3185,
+            "id": 3270,
             "members": [
               {
                 "constant": false,
-                "id": 3178,
+                "id": 3263,
                 "mutability": "mutable",
                 "name": "amount",
                 "nodeType": "VariableDeclaration",
                 "overrides": null,
-                "scope": 3185,
+                "scope": 3270,
                 "src": "305:11:4",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -1709,7 +1716,7 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 3177,
+                  "id": 3262,
                   "name": "uint",
                   "nodeType": "ElementaryTypeName",
                   "src": "305:4:4",
@@ -1723,12 +1730,12 @@
               },
               {
                 "constant": false,
-                "id": 3180,
+                "id": 3265,
                 "mutability": "mutable",
                 "name": "cumulativeBalance",
                 "nodeType": "VariableDeclaration",
                 "overrides": null,
-                "scope": 3185,
+                "scope": 3270,
                 "src": "326:22:4",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -1737,7 +1744,7 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 3179,
+                  "id": 3264,
                   "name": "uint",
                   "nodeType": "ElementaryTypeName",
                   "src": "326:4:4",
@@ -1751,12 +1758,12 @@
               },
               {
                 "constant": false,
-                "id": 3182,
+                "id": 3267,
                 "mutability": "mutable",
                 "name": "idx",
                 "nodeType": "VariableDeclaration",
                 "overrides": null,
-                "scope": 3185,
+                "scope": 3270,
                 "src": "358:8:4",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -1765,7 +1772,7 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 3181,
+                  "id": 3266,
                   "name": "uint",
                   "nodeType": "ElementaryTypeName",
                   "src": "358:4:4",
@@ -1779,12 +1786,12 @@
               },
               {
                 "constant": false,
-                "id": 3184,
+                "id": 3269,
                 "mutability": "mutable",
                 "name": "date",
                 "nodeType": "VariableDeclaration",
                 "overrides": null,
-                "scope": 3185,
+                "scope": 3270,
                 "src": "376:9:4",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -1793,7 +1800,7 @@
                   "typeString": "uint256"
                 },
                 "typeName": {
-                  "id": 3183,
+                  "id": 3268,
                   "name": "uint",
                   "nodeType": "ElementaryTypeName",
                   "src": "376:4:4",
@@ -1808,31 +1815,31 @@
             ],
             "name": "Contributor",
             "nodeType": "StructDefinition",
-            "scope": 3267,
+            "scope": 3352,
             "src": "276:116:4",
             "visibility": "public"
           },
           {
             "body": {
-              "id": 3194,
+              "id": 3279,
               "nodeType": "Block",
               "src": "433:31:4",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3192,
+                    "id": 3277,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 3190,
+                      "id": 3275,
                       "name": "owner",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3169,
+                      "referencedDeclaration": 3254,
                       "src": "443:5:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
@@ -1843,11 +1850,11 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 3191,
+                      "id": 3276,
                       "name": "_owner",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3187,
+                      "referencedDeclaration": 3272,
                       "src": "451:6:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
@@ -1860,14 +1867,14 @@
                       "typeString": "address"
                     }
                   },
-                  "id": 3193,
+                  "id": 3278,
                   "nodeType": "ExpressionStatement",
                   "src": "443:14:4"
                 }
               ]
             },
             "documentation": null,
-            "id": 3195,
+            "id": 3280,
             "implemented": true,
             "kind": "constructor",
             "modifiers": [],
@@ -1875,17 +1882,17 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 3188,
+              "id": 3273,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3187,
+                  "id": 3272,
                   "mutability": "mutable",
                   "name": "_owner",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3195,
+                  "scope": 3280,
                   "src": "410:14:4",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1894,7 +1901,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 3186,
+                    "id": 3271,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "410:7:4",
@@ -1911,12 +1918,12 @@
               "src": "409:16:4"
             },
             "returnParameters": {
-              "id": 3189,
+              "id": 3274,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "433:0:4"
             },
-            "scope": 3267,
+            "scope": 3352,
             "src": "398:66:4",
             "stateMutability": "nonpayable",
             "virtual": false,
@@ -1924,25 +1931,25 @@
           },
           {
             "body": {
-              "id": 3245,
+              "id": 3330,
               "nodeType": "Block",
               "src": "497:360:4",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3203,
+                    "id": 3288,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 3198,
+                      "id": 3283,
                       "name": "cumulativeBalance",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3163,
+                      "referencedDeclaration": 3248,
                       "src": "507:17:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -1957,18 +1964,18 @@
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       },
-                      "id": 3202,
+                      "id": 3287,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 3199,
+                        "id": 3284,
                         "name": "cumulativeBalance",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3163,
+                        "referencedDeclaration": 3248,
                         "src": "527:17:4",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -1981,7 +1988,7 @@
                         "argumentTypes": null,
                         "expression": {
                           "argumentTypes": null,
-                          "id": 3200,
+                          "id": 3285,
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
@@ -1992,7 +1999,7 @@
                             "typeString": "msg"
                           }
                         },
-                        "id": 3201,
+                        "id": 3286,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -2018,7 +2025,7 @@
                       "typeString": "uint256"
                     }
                   },
-                  "id": 3204,
+                  "id": 3289,
                   "nodeType": "ExpressionStatement",
                   "src": "507:49:4"
                 },
@@ -2030,7 +2037,7 @@
                         "argumentTypes": null,
                         "expression": {
                           "argumentTypes": null,
-                          "id": 3208,
+                          "id": 3293,
                           "name": "msg",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
@@ -2041,7 +2048,7 @@
                             "typeString": "msg"
                           }
                         },
-                        "id": 3209,
+                        "id": 3294,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -2065,18 +2072,18 @@
                       ],
                       "expression": {
                         "argumentTypes": null,
-                        "id": 3205,
+                        "id": 3290,
                         "name": "contributorsList",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3172,
+                        "referencedDeclaration": 3257,
                         "src": "566:16:4",
                         "typeDescriptions": {
                           "typeIdentifier": "t_array$_t_address_$dyn_storage",
                           "typeString": "address[] storage ref"
                         }
                       },
-                      "id": 3207,
+                      "id": 3292,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -2090,7 +2097,7 @@
                         "typeString": "function (address)"
                       }
                     },
-                    "id": 3210,
+                    "id": 3295,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2105,39 +2112,39 @@
                       "typeString": "tuple()"
                     }
                   },
-                  "id": 3211,
+                  "id": 3296,
                   "nodeType": "ExpressionStatement",
                   "src": "566:33:4"
                 },
                 {
                   "assignments": [
-                    3213
+                    3298
                   ],
                   "declarations": [
                     {
                       "constant": false,
-                      "id": 3213,
+                      "id": 3298,
                       "mutability": "mutable",
                       "name": "contributor",
                       "nodeType": "VariableDeclaration",
                       "overrides": null,
-                      "scope": 3245,
+                      "scope": 3330,
                       "src": "610:31:4",
                       "stateVariable": false,
                       "storageLocation": "storage",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_struct$_Contributor_$3185_storage_ptr",
+                        "typeIdentifier": "t_struct$_Contributor_$3270_storage_ptr",
                         "typeString": "struct MockEglGenesis.Contributor"
                       },
                       "typeName": {
                         "contractScope": null,
-                        "id": 3212,
+                        "id": 3297,
                         "name": "Contributor",
                         "nodeType": "UserDefinedTypeName",
-                        "referencedDeclaration": 3185,
+                        "referencedDeclaration": 3270,
                         "src": "610:11:4",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_Contributor_$3185_storage_ptr",
+                          "typeIdentifier": "t_struct$_Contributor_$3270_storage_ptr",
                           "typeString": "struct MockEglGenesis.Contributor"
                         }
                       },
@@ -2145,28 +2152,28 @@
                       "visibility": "internal"
                     }
                   ],
-                  "id": 3218,
+                  "id": 3303,
                   "initialValue": {
                     "argumentTypes": null,
                     "baseExpression": {
                       "argumentTypes": null,
-                      "id": 3214,
+                      "id": 3299,
                       "name": "contributors",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3176,
+                      "referencedDeclaration": 3261,
                       "src": "644:12:4",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_mapping$_t_address_$_t_struct$_Contributor_$3185_storage_$",
+                        "typeIdentifier": "t_mapping$_t_address_$_t_struct$_Contributor_$3270_storage_$",
                         "typeString": "mapping(address => struct MockEglGenesis.Contributor storage ref)"
                       }
                     },
-                    "id": 3217,
+                    "id": 3302,
                     "indexExpression": {
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 3215,
+                        "id": 3300,
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
@@ -2177,7 +2184,7 @@
                           "typeString": "msg"
                         }
                       },
-                      "id": 3216,
+                      "id": 3301,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -2198,7 +2205,7 @@
                     "nodeType": "IndexAccess",
                     "src": "644:24:4",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_Contributor_$3185_storage",
+                      "typeIdentifier": "t_struct$_Contributor_$3270_storage",
                       "typeString": "struct MockEglGenesis.Contributor storage ref"
                     }
                   },
@@ -2208,7 +2215,7 @@
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3224,
+                    "id": 3309,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2217,25 +2224,25 @@
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 3219,
+                        "id": 3304,
                         "name": "contributor",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3213,
+                        "referencedDeclaration": 3298,
                         "src": "678:11:4",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_Contributor_$3185_storage_ptr",
+                          "typeIdentifier": "t_struct$_Contributor_$3270_storage_ptr",
                           "typeString": "struct MockEglGenesis.Contributor storage pointer"
                         }
                       },
-                      "id": 3221,
+                      "id": 3306,
                       "isConstant": false,
                       "isLValue": true,
                       "isPure": false,
                       "lValueRequested": true,
                       "memberName": "amount",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 3178,
+                      "referencedDeclaration": 3263,
                       "src": "678:18:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -2248,7 +2255,7 @@
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 3222,
+                        "id": 3307,
                         "name": "msg",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
@@ -2259,7 +2266,7 @@
                           "typeString": "msg"
                         }
                       },
-                      "id": 3223,
+                      "id": 3308,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -2279,14 +2286,14 @@
                       "typeString": "uint256"
                     }
                   },
-                  "id": 3225,
+                  "id": 3310,
                   "nodeType": "ExpressionStatement",
                   "src": "678:30:4"
                 },
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3230,
+                    "id": 3315,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2295,25 +2302,25 @@
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 3226,
+                        "id": 3311,
                         "name": "contributor",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3213,
+                        "referencedDeclaration": 3298,
                         "src": "718:11:4",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_Contributor_$3185_storage_ptr",
+                          "typeIdentifier": "t_struct$_Contributor_$3270_storage_ptr",
                           "typeString": "struct MockEglGenesis.Contributor storage pointer"
                         }
                       },
-                      "id": 3228,
+                      "id": 3313,
                       "isConstant": false,
                       "isLValue": true,
                       "isPure": false,
                       "lValueRequested": true,
                       "memberName": "cumulativeBalance",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 3180,
+                      "referencedDeclaration": 3265,
                       "src": "718:29:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -2324,11 +2331,11 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 3229,
+                      "id": 3314,
                       "name": "cumulativeBalance",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3163,
+                      "referencedDeclaration": 3248,
                       "src": "750:17:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -2341,14 +2348,14 @@
                       "typeString": "uint256"
                     }
                   },
-                  "id": 3231,
+                  "id": 3316,
                   "nodeType": "ExpressionStatement",
                   "src": "718:49:4"
                 },
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3237,
+                    "id": 3322,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2357,25 +2364,25 @@
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 3232,
+                        "id": 3317,
                         "name": "contributor",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3213,
+                        "referencedDeclaration": 3298,
                         "src": "777:11:4",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_Contributor_$3185_storage_ptr",
+                          "typeIdentifier": "t_struct$_Contributor_$3270_storage_ptr",
                           "typeString": "struct MockEglGenesis.Contributor storage pointer"
                         }
                       },
-                      "id": 3234,
+                      "id": 3319,
                       "isConstant": false,
                       "isLValue": true,
                       "isPure": false,
                       "lValueRequested": true,
                       "memberName": "idx",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 3182,
+                      "referencedDeclaration": 3267,
                       "src": "777:15:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -2388,18 +2395,18 @@
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 3235,
+                        "id": 3320,
                         "name": "contributorsList",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3172,
+                        "referencedDeclaration": 3257,
                         "src": "795:16:4",
                         "typeDescriptions": {
                           "typeIdentifier": "t_array$_t_address_$dyn_storage",
                           "typeString": "address[] storage ref"
                         }
                       },
-                      "id": 3236,
+                      "id": 3321,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -2419,14 +2426,14 @@
                       "typeString": "uint256"
                     }
                   },
-                  "id": 3238,
+                  "id": 3323,
                   "nodeType": "ExpressionStatement",
                   "src": "777:41:4"
                 },
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3243,
+                    "id": 3328,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2435,25 +2442,25 @@
                       "argumentTypes": null,
                       "expression": {
                         "argumentTypes": null,
-                        "id": 3239,
+                        "id": 3324,
                         "name": "contributor",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 3213,
+                        "referencedDeclaration": 3298,
                         "src": "828:11:4",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_Contributor_$3185_storage_ptr",
+                          "typeIdentifier": "t_struct$_Contributor_$3270_storage_ptr",
                           "typeString": "struct MockEglGenesis.Contributor storage pointer"
                         }
                       },
-                      "id": 3241,
+                      "id": 3326,
                       "isConstant": false,
                       "isLValue": true,
                       "isPure": false,
                       "lValueRequested": true,
                       "memberName": "date",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 3184,
+                      "referencedDeclaration": 3269,
                       "src": "828:16:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
@@ -2464,7 +2471,7 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 3242,
+                      "id": 3327,
                       "name": "now",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
@@ -2481,14 +2488,14 @@
                       "typeString": "uint256"
                     }
                   },
-                  "id": 3244,
+                  "id": 3329,
                   "nodeType": "ExpressionStatement",
                   "src": "828:22:4"
                 }
               ]
             },
             "documentation": null,
-            "id": 3246,
+            "id": 3331,
             "implemented": true,
             "kind": "receive",
             "modifiers": [],
@@ -2496,18 +2503,18 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 3196,
+              "id": 3281,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "477:2:4"
             },
             "returnParameters": {
-              "id": 3197,
+              "id": 3282,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "497:0:4"
             },
-            "scope": 3267,
+            "scope": 3352,
             "src": "470:387:4",
             "stateMutability": "payable",
             "virtual": false,
@@ -2515,25 +2522,25 @@
           },
           {
             "body": {
-              "id": 3255,
+              "id": 3340,
               "nodeType": "Block",
               "src": "919:47:4",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3253,
+                    "id": 3338,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 3251,
+                      "id": 3336,
                       "name": "canContribute",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3165,
+                      "referencedDeclaration": 3250,
                       "src": "929:13:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
@@ -2544,11 +2551,11 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 3252,
+                      "id": 3337,
                       "name": "_canContribute",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3248,
+                      "referencedDeclaration": 3333,
                       "src": "945:14:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
@@ -2561,7 +2568,7 @@
                       "typeString": "bool"
                     }
                   },
-                  "id": 3254,
+                  "id": 3339,
                   "nodeType": "ExpressionStatement",
                   "src": "929:30:4"
                 }
@@ -2569,7 +2576,7 @@
             },
             "documentation": null,
             "functionSelector": "cc295fe6",
-            "id": 3256,
+            "id": 3341,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
@@ -2577,17 +2584,17 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 3249,
+              "id": 3334,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3248,
+                  "id": 3333,
                   "mutability": "mutable",
                   "name": "_canContribute",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3256,
+                  "scope": 3341,
                   "src": "889:19:4",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2596,7 +2603,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3247,
+                    "id": 3332,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "889:4:4",
@@ -2612,12 +2619,12 @@
               "src": "888:21:4"
             },
             "returnParameters": {
-              "id": 3250,
+              "id": 3335,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "919:0:4"
             },
-            "scope": 3267,
+            "scope": 3352,
             "src": "863:103:4",
             "stateMutability": "nonpayable",
             "virtual": false,
@@ -2625,25 +2632,25 @@
           },
           {
             "body": {
-              "id": 3265,
+              "id": 3350,
               "nodeType": "Block",
               "src": "1024:43:4",
               "statements": [
                 {
                   "expression": {
                     "argumentTypes": null,
-                    "id": 3263,
+                    "id": 3348,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
                     "lValueRequested": false,
                     "leftHandSide": {
                       "argumentTypes": null,
-                      "id": 3261,
+                      "id": 3346,
                       "name": "canWithdraw",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3167,
+                      "referencedDeclaration": 3252,
                       "src": "1034:11:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
@@ -2654,11 +2661,11 @@
                     "operator": "=",
                     "rightHandSide": {
                       "argumentTypes": null,
-                      "id": 3262,
+                      "id": 3347,
                       "name": "_canWithdraw",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 3258,
+                      "referencedDeclaration": 3343,
                       "src": "1048:12:4",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
@@ -2671,7 +2678,7 @@
                       "typeString": "bool"
                     }
                   },
-                  "id": 3264,
+                  "id": 3349,
                   "nodeType": "ExpressionStatement",
                   "src": "1034:26:4"
                 }
@@ -2679,7 +2686,7 @@
             },
             "documentation": null,
             "functionSelector": "326e5540",
-            "id": 3266,
+            "id": 3351,
             "implemented": true,
             "kind": "function",
             "modifiers": [],
@@ -2687,17 +2694,17 @@
             "nodeType": "FunctionDefinition",
             "overrides": null,
             "parameters": {
-              "id": 3259,
+              "id": 3344,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3258,
+                  "id": 3343,
                   "mutability": "mutable",
                   "name": "_canWithdraw",
                   "nodeType": "VariableDeclaration",
                   "overrides": null,
-                  "scope": 3266,
+                  "scope": 3351,
                   "src": "996:17:4",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2706,7 +2713,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3257,
+                    "id": 3342,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "996:4:4",
@@ -2722,19 +2729,19 @@
               "src": "995:19:4"
             },
             "returnParameters": {
-              "id": 3260,
+              "id": 3345,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "1024:0:4"
             },
-            "scope": 3267,
+            "scope": 3352,
             "src": "972:95:4",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 3268,
+        "scope": 3353,
         "src": "24:1045:4"
       }
     ],
@@ -2748,12 +2755,13 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0x3F9196b26941843C40bc80d4Fc4C0433F68dF57f",
-      "transactionHash": "0x456a8a69ff18ce940e4083c98af792df1b669438a2e28a819c12f29b096c2ae2"
+      "address": "0xd662805087190B489929103F28611dDb19B90168",
+      "transactionHash": "0x1a19216e2f7fc78ae2b0b1c39d06902c8e84efa5167c1f72d0987bb6f7a7327d"
     }
   },
   "schemaVersion": "3.2.5",
-  "updatedAt": "2021-06-25T19:40:12.733Z",
+  "updatedAt": "2021-08-13T15:12:39.966Z",
+  "networkType": "ethereum",
   "devdoc": {
     "methods": {}
   },

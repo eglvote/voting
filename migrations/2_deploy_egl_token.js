@@ -1,45 +1,43 @@
-const { deployProxy, admin } = require("@openzeppelin/truffle-upgrades");
+const { deployProxy } = require("@openzeppelin/truffle-upgrades");
 const { ConsoleColors } = require("../test/helpers/constants");
 const EglToken = artifacts.require("./EglToken.sol");
 
 const totalEglSupply = web3.utils.toWei("4000000000"); // 4 billion
-let genesisOwner, eglProxyAdmin;
+let tokenRecipient;
 
 module.exports = async function (deployer, network, accounts) {
     console.log(
-        `Deploying to ${ConsoleColors.MAGENTA} \n`, network.toUpperCase()
+        `Deploying ${ConsoleColors.MAGENTA} to ${ConsoleColors.MAGENTA} \n`, "EGL TOKEN", network.toUpperCase()
     );    
 
     if (network === "mainnet") {
-        throw "Confirm Contract Parameters";
-        genesisOwner = "";
-        eglProxyAdmin = "";
-        }
+        tokenRecipient = "0x72E995cb1148b6BF4C27484824AB5D08B2b6Ca7d";
+    }
     if (network === "ropsten") {
-        genesisOwner = accounts[1];
-        eglProxyAdmin = accounts[9];    
+        tokenRecipient = accounts[1];
     }
     if (network === "kovan") {
-        genesisOwner = accounts[1];
-        eglProxyAdmin = accounts[9];    
+        tokenRecipient = accounts[1];
+    }
+    if (network === "rinkeby") {
+        tokenRecipient = "0x85f75AC5f1beFbdC6954Ed9D77b75b74469fB554";
     }
     if (network === "ganache") {
-        genesisOwner = accounts[1];
-        eglProxyAdmin = accounts[9];    
+        tokenRecipient = accounts[1];
     }
 
     let eglToken = await deployProxy(
         EglToken,
-        [genesisOwner, "EthereumGasLimit", "EGL", totalEglSupply.toString()],
+        [tokenRecipient, "EthereumGasLimit", "EGL", totalEglSupply.toString()],
         { deployer }
     );
     console.log(
         `EGL Token deployed to address: ${ConsoleColors.GREEN}`, eglToken.address
     );
     console.log(
-        `Initial EGL token recipient: ${ConsoleColors.YELLOW}`, genesisOwner
+        `Initial EGL token recipient: ${ConsoleColors.YELLOW}`, tokenRecipient
     );
-    let ownerEglBalance = web3.utils.fromWei(await eglToken.balanceOf(genesisOwner));
+    let ownerEglBalance = web3.utils.fromWei(await eglToken.balanceOf(tokenRecipient));
     console.log(
         `EGL balance of initial token recipient: ${ConsoleColors.YELLOW} \n`, 
         parseFloat(ownerEglBalance).toLocaleString(
@@ -49,10 +47,5 @@ module.exports = async function (deployer, network, accounts) {
                 maximumFractionDigits: 18,
             }
         )        
-    );
-
-    admin.changeProxyAdmin(eglToken.address, eglProxyAdmin);
-    console.log(
-        `EGL Token admin set to account: ${ConsoleColors.YELLOW} \n`, eglProxyAdmin
     );
 };

@@ -1,12 +1,21 @@
-node_modules
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# IDE files
 .idea
 .env
 .history
 
+# Openzeppelin proxy information - only commit mainnet info
 .openzeppelin
-.openzeppelin/.session
-package-lock.json
-yarn.lock
+!.openzeppelin/mainnet.json
+
+# Mac OS specific 
 .DS_Store
 
-abi-versions
+# Dependencies
+package-lock.json
+yarn.lock
+node_modules/
+
+# Backup ABI's
+abi-versions/

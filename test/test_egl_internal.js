@@ -230,7 +230,7 @@ contract("EglInternalFunctionsTests", (accounts) => {
                 "EGL:VOTE_TOO_CLOSE"
             )
         });
-        it.only("should not allow votes before the first epoch has started", async () => {
+        it("should not allow votes before the first epoch has started", async () => {
             let eglTokenInstance = await EglToken.new();
             await eglTokenInstance.initialize(_genesisOwner, "EthereumGasLimit", "EGL", web3.utils.toWei("4000000000"));
     
@@ -679,7 +679,7 @@ contract("EglInternalFunctionsTests", (accounts) => {
             assert.equal(web3.utils.fromWei(blockRewardEvent.totalRewardPercent.toString()), "62.5", "Incorrect total reward %")
             assert.approximately(
                 parseFloat(web3.utils.fromWei(blockRewardEvent.blockReward.toString())), 
-                156.250, 
+                312.5, 
                 0.001, 
                 "Incorrect total % calculated"
             );
@@ -696,7 +696,7 @@ contract("EglInternalFunctionsTests", (accounts) => {
             assert.equal(web3.utils.fromWei(blockRewardEvent.totalRewardPercent.toString()), "92.49925", "Incorrect total reward %")
             assert.approximately(
                 parseFloat(web3.utils.fromWei(blockRewardEvent.blockReward.toString())), 
-                231.248, 
+                462.496, 
                 0.001, 
                 "Incorrect total % calculated"
             );                
@@ -713,7 +713,7 @@ contract("EglInternalFunctionsTests", (accounts) => {
             assert.equal(web3.utils.fromWei(blockRewardEvent.totalRewardPercent.toString()), "25.00075", "Incorrect total reward %")
             assert.approximately(
                 parseFloat(web3.utils.fromWei(blockRewardEvent.blockReward.toString())), 
-                62.501, 
+                125.004, 
                 0.001, 
                 "Incorrect total % calculated"
             );                
