@@ -1,6 +1,6 @@
 ![EGL Logo][logo]
 
-[![Build Status](https://travis-ci.com/bloXroute-Labs/egl.svg?token=7P16gQwBsynsaBwrjxuH&branch=develop)](https://travis-ci.com/bloXroute-Labs/egl)
+[![Build Status](https://travis-ci.com/eglvote/voting.svg?branch=master)](https://travis-ci.com/eglvote/voting)
 
 # Overview
 The Ethereum Eagle project ($EGL) introduces a coordination utility for the Ethereum 1.x ecosystem to express its desired gas limit. While initially focused on influencing the ETH Gas Limit (EGL), it can be extended to affect other on-chain properties in the future.
