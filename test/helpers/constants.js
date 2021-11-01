@@ -10,6 +10,7 @@ const EventType = {
     VOTE_THRESHOLD_MET: "VoteThresholdMet",
     VOTE_THRESHOLD_FAILED: "VoteThresholdFailed",
     POOL_REWARDS_SWEPT: "PoolRewardsSwept",
+    POOL_REWARDS_SWEPT_V2: "PoolRewardsSweptV2",
     BLOCK_REWARD_CALCULATED: "BlockRewardCalculated",
     SEED_ACCOUNT_CLAIMED: "SeedAccountClaimed",
     VOTER_REWARD_CALCULATED: "VoterRewardCalculated",

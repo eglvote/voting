@@ -16,7 +16,7 @@ import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol
  * @title EGL Voting Smart Contract
  * @author Shane van Coller
  */
-contract EglContractV1b is Initializable, OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
+contract EglContractV2 is Initializable, OwnableUpgradeable, PausableUpgradeable, ReentrancyGuardUpgradeable {
     using Math for *;
     using SafeMathUpgradeable for *;
     using SignedSafeMathUpgradeable for int;
@@ -185,7 +185,6 @@ contract EglContractV1b is Initializable, OwnableUpgradeable, PausableUpgradeabl
     event PoolRewardsSwept(
         address caller, 
         address coinbaseAddress,
-        address recipient,
         uint blockNumber, 
         int blockGasLimit, 
         uint blockReward, 
@@ -260,13 +259,30 @@ contract EglContractV1b is Initializable, OwnableUpgradeable, PausableUpgradeabl
     );
 
     /* New variables */
-    mapping(address => address) public minerAddresses;    
+    mapping(address => address) public minerAddresses;
+    mapping(address => uint) public minerBalances;
 
     /* New events */
+    event PoolRewardsSweptV2(
+        address caller, 
+        address coinbaseAddress,
+        address recipient,
+        uint blockNumber, 
+        int blockGasLimit, 
+        uint blockReward, 
+        uint remainingPoolReward,
+        uint date
+    );
+
     event MinerAddressMapped(
         address coinbaseAddress,
         address designatedAddress,
         uint date
+    );
+    event CollectedSweptEgls(
+        address caller,
+        address designatedAddress,
+        uint balance
     );
 
     /**
@@ -564,31 +580,49 @@ contract EglContractV1b is Initializable, OwnableUpgradeable, PausableUpgradeabl
     /**
      * @notice Send EGL reward to miner of the block. Reward caclulated based on how close the block gas limit
      * is to the desired EGL. The closer it is, the higher the reward
+     *
+     * @param _expectedCoinbase Expected coinbase for the the transaction
      */
-    function sweepPoolRewards() external whenNotPaused {
+    function sweepPoolRewards(address _expectedCoinbase) external whenNotPaused {
+        require(_expectedCoinbase == block.coinbase, "EGL:COINBASE_MISMATCH");
         require(block.number > latestRewardSwept, "EGL:ALREADY_SWEPT");
         latestRewardSwept = block.number;
         int blockGasLimit = int(block.gaslimit);
-        address recipient = minerAddresses[block.coinbase] != address(0)
-            ? minerAddresses[block.coinbase]
-            : block.coinbase;
-        uint blockReward = _calculateBlockReward(blockGasLimit, desiredEgl, tallyVotesGasLimit);
+
+        address recipient = minerAddresses[_expectedCoinbase] != address(0)
+            ? minerAddresses[_expectedCoinbase]
+            : _expectedCoinbase;
+        uint blockReward = _calculateBlockReward(blockGasLimit, desiredEgl);        
         if (blockReward > 0) {
             remainingPoolReward = remainingPoolReward.sub(blockReward);
-            tokensInCirculation = tokensInCirculation.add(blockReward);
-            bool success = eglToken.transfer(recipient, Math.umin(eglToken.balanceOf(address(this)), blockReward));
-            require(success, "EGL:TOKEN_TRANSFER_FAILED");
+            tokensInCirculation = tokensInCirculation.add(blockReward);            
+            minerBalances[recipient] = minerBalances[recipient].add(blockReward);
         }
 
-        emit PoolRewardsSwept(
+        emit PoolRewardsSweptV2(
             msg.sender, 
-            block.coinbase,
+            _expectedCoinbase,
             recipient,
             latestRewardSwept, 
             blockGasLimit, 
             blockReward,
+            remainingPoolReward,
             block.timestamp
         );
+    }
+
+    function collectSweptEgls(address _designatedAddress) external {
+        uint balance = minerBalances[_designatedAddress];
+        require(balance > 0, "EGL:NO_REWARD_BALANCE");
+
+        minerBalances[_designatedAddress] = 0;
+        bool success = eglToken.transfer(
+            _designatedAddress, 
+            Math.umin(eglToken.balanceOf(address(this)), balance)
+        );
+        require(success, "EGL:TOKEN_TRANSFER_FAILED");
+
+        emit CollectedSweptEgls(msg.sender, _designatedAddress, balance);
     }
 
     /**
@@ -671,12 +705,12 @@ contract EglContractV1b is Initializable, OwnableUpgradeable, PausableUpgradeabl
     }
 
     /**
-     * @notice Maps miner coinbase addresse to an address they wish to collect EGL's to
+     * @notice Maps miner coinbase address to an address they wish to collect EGL's to
      * 
      * @param _designatedAddress Address to accumulate EGLs to
      */
     function mapMinerAddress(address _designatedAddress) public {
-        // require(_designatedAddress != address(0), "EGL:INVALID_DESIGNATED_ADDR");
+        require(_designatedAddress != address(0), "EGL:INVALID_DESIGNATED_ADDR");
         minerAddresses[msg.sender] = _designatedAddress;
         emit MinerAddressMapped(msg.sender, _designatedAddress, block.timestamp);
     }
@@ -966,43 +1000,23 @@ contract EglContractV1b is Initializable, OwnableUpgradeable, PausableUpgradeabl
      *
      * @param _blockGasLimit Gas limit of the currently mined block
      * @param _desiredEgl Current desired EGL value
-     * @param _tallyVotesGasLimit Gas limit of the block that contained the tally votes tx
      * @return blockReward The calculated block reward
      */
     function _calculateBlockReward(
         int _blockGasLimit, 
-        int _desiredEgl, 
-        int _tallyVotesGasLimit
+        int _desiredEgl        
     ) 
         internal 
         returns (uint blockReward) 
     {
         uint totalRewardPercent;
-        uint proximityRewardPercent;
-        int eglDelta = Math.delta(_tallyVotesGasLimit, _desiredEgl);
-        int actualDelta = Math.delta(_tallyVotesGasLimit, _blockGasLimit);
-        int ceiling = _desiredEgl.add(10000);
-        int floor = _desiredEgl.sub(10000);
-
-        if (_blockGasLimit >= floor && _blockGasLimit <= ceiling) {
+        int delta = Math.delta(_blockGasLimit, _desiredEgl);
+        if (delta <= 100000)
             totalRewardPercent = DECIMAL_PRECISION.mul(100);
-        } else if (eglDelta > 0 && (
-                (
-                    _desiredEgl > _tallyVotesGasLimit 
-                    && _blockGasLimit > _tallyVotesGasLimit 
-                    && _blockGasLimit <= ceiling
-                ) || (
-                    _desiredEgl < _tallyVotesGasLimit 
-                    && _blockGasLimit < _tallyVotesGasLimit 
-                    && _blockGasLimit >= floor
-                )
-            )            
-        ) {
-            proximityRewardPercent = uint(actualDelta.mul(int(DECIMAL_PRECISION))
-                .div(eglDelta))
-                .mul(75);                
-            totalRewardPercent = proximityRewardPercent.add(DECIMAL_PRECISION.mul(25));
-        }
+        else if (delta <= 500000)
+            totalRewardPercent = DECIMAL_PRECISION.mul(75);
+        else if (delta <= 1000000)
+            totalRewardPercent = DECIMAL_PRECISION.mul(25);
 
         blockReward = totalRewardPercent.mul(remainingPoolReward.div(2500000))
             .div(DECIMAL_PRECISION)
@@ -1014,8 +1028,8 @@ contract EglContractV1b is Initializable, OwnableUpgradeable, PausableUpgradeabl
             remainingPoolReward,
             _blockGasLimit,
             _desiredEgl,
-            _tallyVotesGasLimit,
-            proximityRewardPercent,
+            0,
+            0,
             totalRewardPercent, 
             blockReward,
             block.timestamp
