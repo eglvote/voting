@@ -259,8 +259,16 @@ contract EglContractV2 is Initializable, OwnableUpgradeable, PausableUpgradeable
     );
 
     /* New variables */
-    mapping(address => address) public minerAddresses;
+    uint private lastTallyVoteBlockNo;
+    address[] public minerAddressList;
+    mapping(address => address) public minerDelegateAddress;
     mapping(address => uint) public minerBalances;
+    mapping(address => MinerSample) public minerSamples;
+
+    struct MinerSample {
+        uint sampleCount;
+        uint totalDelta;
+    }
 
     /* New events */
     event PoolRewardsSweptV2(
@@ -283,6 +291,16 @@ contract EglContractV2 is Initializable, OwnableUpgradeable, PausableUpgradeable
         address caller,
         address designatedAddress,
         uint balance
+    );
+
+    event SampledPoolBehavior(
+        address caller,
+        address coinbaseAddress,
+        address recipientAddress,
+        uint blockEglDelta,
+        uint minerSampleCount,
+        uint minerTotalDelta,
+        uint date
     );
 
     /**
@@ -583,14 +601,14 @@ contract EglContractV2 is Initializable, OwnableUpgradeable, PausableUpgradeable
      *
      * @param _expectedCoinbase Expected coinbase for the the transaction
      */
-    function sweepPoolRewards(address _expectedCoinbase) external whenNotPaused {
+    /*function sweepPoolRewards(address _expectedCoinbase) external whenNotPaused {
         require(_expectedCoinbase == block.coinbase, "EGL:COINBASE_MISMATCH");
         require(block.number > latestRewardSwept, "EGL:ALREADY_SWEPT");
         latestRewardSwept = block.number;
         int blockGasLimit = int(block.gaslimit);
 
-        address recipient = minerAddresses[_expectedCoinbase] != address(0)
-            ? minerAddresses[_expectedCoinbase]
+        address recipient = minerDelegateAddress[_expectedCoinbase] != address(0)
+            ? minerDelegateAddress[_expectedCoinbase]
             : _expectedCoinbase;
         uint blockReward = _calculateBlockReward(blockGasLimit, desiredEgl);        
         if (blockReward > 0) {
@@ -609,21 +627,49 @@ contract EglContractV2 is Initializable, OwnableUpgradeable, PausableUpgradeable
             remainingPoolReward,
             block.timestamp
         );
-    }
+    }*/
 
-    function collectSweptEgls(address _designatedAddress) external {
-        uint balance = minerBalances[_designatedAddress];
-        require(balance > 0, "EGL:NO_REWARD_BALANCE");
+    function samplePoolBehavior(address _expectedCoinbase) external {
+        require(block.number % 100 == 0, "EGL:OUTSIDE_SAMPLE_WINDOW");
+        require(_expectedCoinbase == block.coinbase, "EGL:COINBASE_MISMATCH");
 
-        minerBalances[_designatedAddress] = 0;
-        bool success = eglToken.transfer(
-            _designatedAddress, 
-            Math.umin(eglToken.balanceOf(address(this)), balance)
+        uint delta = Math.udelta(block.gaslimit, uint(desiredEgl));
+        address recipient = minerDelegateAddress[_expectedCoinbase] != address(0)
+            ? minerDelegateAddress[_expectedCoinbase]
+            : _expectedCoinbase;
+
+        MinerSample storage _miner = minerSamples[recipient];
+        if (_miner.sampleCount == 0) {
+            minerAddressList.push(recipient);
+            _miner.totalDelta = 0;
+        }
+        _miner.sampleCount = _miner.sampleCount.add(1);
+        _miner.totalDelta = _miner.totalDelta.add(delta);
+
+        emit SampledPoolBehavior(
+            msg.sender,
+            _expectedCoinbase,
+            recipient,
+            delta,
+            _miner.sampleCount,
+            _miner.totalDelta,
+            block.timestamp
         );
-        require(success, "EGL:TOKEN_TRANSFER_FAILED");
-
-        emit CollectedSweptEgls(msg.sender, _designatedAddress, balance);
     }
+
+    // function collectSweptEgls(address _designatedAddress) external {
+    //     uint balance = minerBalances[_designatedAddress];
+    //     require(balance > 0, "EGL:NO_REWARD_BALANCE");
+
+    //     minerBalances[_designatedAddress] = 0;
+    //     bool success = eglToken.transfer(
+    //         _designatedAddress, 
+    //         Math.umin(eglToken.balanceOf(address(this)), balance)
+    //     );
+    //     require(success, "EGL:TOKEN_TRANSFER_FAILED");
+
+    //     emit CollectedSweptEgls(msg.sender, _designatedAddress, balance);
+    // }
 
     /**
      * @notice Allows for the withdrawal of liquidity pool tokens once they have matured
@@ -707,12 +753,12 @@ contract EglContractV2 is Initializable, OwnableUpgradeable, PausableUpgradeable
     /**
      * @notice Maps miner coinbase address to an address they wish to collect EGL's to
      * 
-     * @param _designatedAddress Address to accumulate EGLs to
+     * @param _delegateAddress Address to accumulate EGLs to
      */
-    function mapMinerAddress(address _designatedAddress) public {
-        require(_designatedAddress != address(0), "EGL:INVALID_DESIGNATED_ADDR");
-        minerAddresses[msg.sender] = _designatedAddress;
-        emit MinerAddressMapped(msg.sender, _designatedAddress, block.timestamp);
+    function mapMinerAddress(address _delegateAddress) public {
+        require(_delegateAddress != address(0), "EGL:INVALID_DESIGNATED_ADDR");
+        minerDelegateAddress[msg.sender] = _delegateAddress;
+        emit MinerAddressMapped(msg.sender, _delegateAddress, block.timestamp);
     }
 
     /* PUBLIC FUNCTIONS */
@@ -722,6 +768,7 @@ contract EglContractV2 is Initializable, OwnableUpgradeable, PausableUpgradeable
     function tallyVotes() public whenNotPaused {
         require(block.timestamp > currentEpochStartDate.add(epochLength), "EGL:VOTE_NOT_ENDED");
         tallyVotesGasLimit = int(block.gaslimit);
+        lastTallyVoteBlockNo = block.number;
 
         uint votingThreshold = currentEpoch <= voteThresholdGracePeriod
             ? DECIMAL_PRECISION.mul(10)
@@ -799,6 +846,8 @@ contract EglContractV2 is Initializable, OwnableUpgradeable, PausableUpgradeable
         if (currentEpoch >= creatorRewardFirstEpoch && remainingCreatorReward > 0)
             _issueCreatorRewards(currentEpoch);
 
+        _distributePoolRewards();
+        
         currentEpoch += 1;
         currentEpochStartDate = currentEpochStartDate.add(epochLength);
 
@@ -1194,5 +1243,37 @@ contract EglContractV2 is Initializable, OwnableUpgradeable, PausableUpgradeable
         votePercentage = tokensInCirculation > 0
             ? _total.mul(DECIMAL_PRECISION).mul(100).div(tokensInCirculation)
             : 0;
+    }
+
+    function _distributePoolRewards() internal {
+        if (lastTallyVoteBlockNo == 0) 
+            lastTallyVoteBlockNo = block.number.sub(42000);
+        uint weeklyReward = remainingPoolReward.mul(6660000000000000).div(DECIMAL_PRECISION);
+        uint totalSamples = block.number.div(100).sub(lastTallyVoteBlockNo.div(100));
+
+        for (uint16 i = 0; i < minerAddressList.length - 1; i++) {
+            uint totalRewardPercent;
+            MinerSample storage _miner = minerSamples[minerAddressList[i]];
+            uint avgDelta = _miner.totalDelta.div(_miner.sampleCount);
+            if (avgDelta <= 100000)
+                totalRewardPercent = DECIMAL_PRECISION.mul(100);
+            else if (avgDelta <= 500000)
+                totalRewardPercent = DECIMAL_PRECISION.mul(75);
+            else if (avgDelta <= 1000000)
+                totalRewardPercent = DECIMAL_PRECISION.mul(25);
+
+            uint reward = _miner.sampleCount.div(totalSamples)
+                .mul(weeklyReward)
+                .mul(totalRewardPercent)
+                .div(100);
+            _miner.sampleCount = 0;
+            _miner.totalDelta = 0;
+            remainingPoolReward = remainingPoolReward.sub(reward);
+            tokensInCirculation = tokensInCirculation.add(reward);
+            bool success = eglToken.transfer(minerAddressList[i], Math.umin(eglToken.balanceOf(address(this)), reward));
+            require(success, "EGL:TOKEN_TRANSFER_FAILED");
+        }
+
+        delete minerAddressList;
     }
 }
