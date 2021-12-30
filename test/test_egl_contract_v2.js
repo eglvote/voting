@@ -620,7 +620,7 @@ contract("EglVotingV2Tests", (accounts) => {
             );
         });
     });
-    describe.only("Sample Pool Behavior", function() {
+    describe("Sample Pool Behavior", function() {
         it("should not allow samples outside of the sample window", async () => {
             let currentBlock = await web3.eth.getBlockNumber();
             if (currentBlock % 100 === 99)
