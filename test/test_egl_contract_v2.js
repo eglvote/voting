@@ -569,7 +569,7 @@ contract("EglVotingV2Tests", (accounts) => {
             )
         });
     });
-    describe.only("Map Pool Reward Receivable Address", function () {
+    describe("Map Pool Reward Receivable Address", function () {
         it("should not be able to map 0 address", async () => {
             await expectRevert(
                 eglContractInstance.mapMinerAddress(ZERO_ADDRESS, { from: _voter1 }),
@@ -620,148 +620,109 @@ contract("EglVotingV2Tests", (accounts) => {
             );
         });
     });
-    describe.only("Sweep Pool Rewards", function () {
-        it("should send block reward to coinbase account if no mapping exists", async () => {
-            assert.equal(
-                await eglContractInstance.minerAddresses(_coinbase),
-                ZERO_ADDRESS,
-                "Coinbase should not have any mapped addresses"
-            )
-            let initialCoinbaseBalance = web3.utils.fromWei((await eglTokenInstance.balanceOf(_coinbase)).toString());
-            let txReceipt = await eglContractInstance.sweepPoolRewards(_coinbase);            
-            let events = populateAllEventDataFromLogs(txReceipt, EventType.POOL_REWARDS_SWEPT_V2);
-            let expectedCoinbaseBalance = parseFloat(initialCoinbaseBalance) + parseFloat(web3.utils.fromWei(events[0].blockReward.toString()))
-            let actualBalance = await eglContractInstance.minerBalances(_coinbase);
-            assert.equal(
-                web3.utils.fromWei(actualBalance),
-                expectedCoinbaseBalance.toString(),
-                "Incorrect reward amount sent to mapped miner address"
-            )
-        });
-        it("should add miner reward to tokens in circulation once claimed", async () => {
-            let tokensInCirculationPre = await eglContractInstance.tokensInCirculation();
-
-            let txReceipt = await eglContractInstance.sweepPoolRewards(_coinbase);
-                        
-            let events = populateAllEventDataFromLogs(txReceipt, EventType.POOL_REWARDS_SWEPT_V2);
-            let tokensInCirculationPost = await eglContractInstance.tokensInCirculation();
-            let blockReward = parseFloat(web3.utils.fromWei(events[0].blockReward.toString()))
-            let expectedTic = blockReward + parseFloat(web3.utils.fromWei(tokensInCirculationPre.toString()))
-            assert.equal(
-                web3.utils.fromWei(tokensInCirculationPost.toString()), 
-                expectedTic.toString(), 
-                "Incorrect tokens in circulation after pool sweep"
-            ); 
-        });
-        it("should decrease remaining pool reward balance after pool sweep", async () => {
-            let initialPoolBalance = 1250000000;
-
-            let txReceipt = await eglContractInstance.sweepPoolRewards(_coinbase);
-            
-            let events = populateAllEventDataFromLogs(txReceipt, EventType.POOL_REWARDS_SWEPT_V2);            
-            let blockReward = parseFloat(web3.utils.fromWei(events[0].blockReward.toString()))
-
-            assert.equal(
-                web3.utils.fromWei(events[0].remainingPoolReward.toString()), 
-                initialPoolBalance - blockReward, 
-                "Incorrect remaining pool reward balance"
-            );
-        });
-        it("should sweep EGL's to mapped miner address if one has been defined", async () => {
-            assert.equal(
-                await eglContractInstance.minerBalances(_coinbase), 
-                "0", 
-                "Coinbase address should have a 0 balance"
-            );
-            assert.equal(
-                await eglContractInstance.minerBalances(_proxyAdmin), 
-                "0", 
-                "Mapped address should have a 0 balance"
-            );
-
-            await eglContractInstance.mapMinerAddress(_proxyAdmin, { from: _coinbase });
-            let txReceipt = await eglContractInstance.sweepPoolRewards(_coinbase);
-
-            let events = populateAllEventDataFromLogs(txReceipt, EventType.POOL_REWARDS_SWEPT_V2);            
-            let blockReward = parseFloat(web3.utils.fromWei(events[0].blockReward.toString()))
-            assert.equal(
-                await eglContractInstance.minerBalances(_coinbase), 
-                "0", 
-                "Coinbase address should not have a balance"
-            );
-            assert.equal(
-                web3.utils.fromWei(await eglContractInstance.minerBalances(_proxyAdmin)), 
-                blockReward, 
-                "Incorrect mapped address balance"
-            );
-        });
-        it("should not be able to sweep pool rewards if contract paused", async () => {
-            await eglContractInstance.pauseEgl({ from: _deployer });
+    describe.only("Sample Pool Behavior", function() {
+        it("should not allow samples outside of the sample window", async () => {
+            let currentBlock = await web3.eth.getBlockNumber();
+            if (currentBlock % 100 === 99)
+                await time.advanceBlockTo(currentBlock + 1);
 
             await expectRevert(
-                eglContractInstance.sweepPoolRewards(_coinbase),
-                "Pausable: paused"
-            );
+                eglContractInstance.samplePoolBehavior(accounts[10]),
+                "EGL:OUTSIDE_SAMPLE_WINDOW"
+            )    
         });
-        it("should not execute tx if expected coinbase not the actual coinbase", async () => {
+        it("should only allow samples if the expected coinbase input matches the actual block coinbase address", async () => {
+            let currentBlock = await web3.eth.getBlockNumber();
+            const blockBeforeNextSample = 99 - (currentBlock % 100);
+            await time.advanceBlockTo(currentBlock + blockBeforeNextSample);
+
             await expectRevert(
-                eglContractInstance.sweepPoolRewards(_voter1),
+                eglContractInstance.samplePoolBehavior(accounts[1]),
                 "EGL:COINBASE_MISMATCH"
-            );
+            )    
         });
-    });
-    describe.only("Collect Swept Pool Rewards", function () {
-        it("should set balance of designated address to 0 after collection", async () => {
-            await eglContractInstance.sweepPoolRewards(_coinbase);
-            assert.equal(
-                web3.utils.fromWei(await eglContractInstance.minerBalances(_coinbase)),
-                "500",
-                "Incorrect miner balance"
-            );
+        it("should use the delegate address if one has been set for the block coin address", async () => {
+            await eglContractInstance.mapMinerAddress(accounts[5], { from: accounts[10] });
 
-            await eglContractInstance.collectSweptEgls(_coinbase, { from: _voter1 });
-            assert.equal(
-                await eglContractInstance.minerBalances(_coinbase),
-                "0",
-                "Miner balance should be 0"
-            );
-
-        });
-        it("should only allow withdraw if designated address has a balance > 0", async () => {
-            await expectRevert(
-                eglContractInstance.collectSweptEgls(_voter1),
-                "EGL:NO_REWARD_BALANCE"
-            );
-        });
-        it("should have tokens successfully transferred to designated address after collection", async () => {
-            await eglContractInstance.mapMinerAddress(_proxyAdmin, { from: _coinbase });
-            await eglContractInstance.sweepPoolRewards(_coinbase);
-            await eglContractInstance.collectSweptEgls(_proxyAdmin, { from: _voter1 });
-            assert.equal(
-                web3.utils.fromWei(await eglTokenInstance.balanceOf(_proxyAdmin)),
-                "500",
-                "Incorrect EGL balance for designated address"
-            );
-        });
-        it("should allow any address to call collect on behalf of the designated address", async () => {
-            await eglContractInstance.sweepPoolRewards(_coinbase);
-            await eglContractInstance.collectSweptEgls(_coinbase, { from: _voter1 });
-            assert.equal(
-                web3.utils.fromWei(await eglTokenInstance.balanceOf(_coinbase)),
-                "500",
-                "Incorrect miner balance"
-            );
+            let currentBlock = await web3.eth.getBlockNumber();
+            const blockBeforeNextSample = 99 - (currentBlock % 100);
+            await time.advanceBlockTo(currentBlock + blockBeforeNextSample);
             
-            await eglContractInstance.sweepPoolRewards(_coinbase);
-            await eglContractInstance.collectSweptEgls(_coinbase, { from: _genesisSupporter1 });
-            assert.approximately(
-                parseFloat(web3.utils.fromWei(await eglTokenInstance.balanceOf(_coinbase))),
-                1000,
-                0.1,
-                "Incorrect vote threshold calculated for epoch"
-            )
+            let txReceipt = await eglContractInstance.samplePoolBehavior(accounts[10])
+
+            let events = populateAllEventDataFromLogs(txReceipt, EventType.SAMPLE_POOL_BEHAVIOR)
+            assert.equal(events[0].coinbaseAddress, accounts[10], "Incorrect coinbase address");
+            assert.equal(events[0].recipientAddress, accounts[5], "Incorrect recipient address");
+
         });
-    });
+        it("should use the coinbase address if no delegate address has been set", async () => {
+            let currentBlock = await web3.eth.getBlockNumber();
+            const blockBeforeNextSample = 99 - (currentBlock % 100);
+            await time.advanceBlockTo(currentBlock + blockBeforeNextSample);
+            
+            let txReceipt = await eglContractInstance.samplePoolBehavior(accounts[10])
+
+            let events = populateAllEventDataFromLogs(txReceipt, EventType.SAMPLE_POOL_BEHAVIOR)
+            assert.equal(events[0].coinbaseAddress, accounts[10], "Incorrect coinbase address");
+            assert.equal(events[0].recipientAddress, accounts[10], "Incorrect recipient address");
+
+        });
+        it("should add miner address to list if not already present", async () => {
+            const currentBlock = await web3.eth.getBlockNumber();
+            const blockBeforeNextSample = 99 - (currentBlock % 100);
+            await time.advanceBlockTo(currentBlock + blockBeforeNextSample);
+            let minerAddressCount = await eglContractInstance.getMinerAddressCount();
+            assert.equal(minerAddressCount.toString(), "0", "Miner address list should be empty");
+
+            await eglContractInstance.samplePoolBehavior(accounts[10])
+            minerAddressCount = await eglContractInstance.getMinerAddressCount();
+            assert.equal(minerAddressCount.toString(), "1", "Miner address list should not be empty");
+        });
+        it("should not re-add miner address to list if it already exists", async () => {
+            let currentBlock = await web3.eth.getBlockNumber();
+            let blockBeforeNextSample = 99 - (currentBlock % 100);
+            await time.advanceBlockTo(currentBlock + blockBeforeNextSample);
+            
+            let txReceipt = await eglContractInstance.samplePoolBehavior(accounts[10])
+            let minerAddressCount = await eglContractInstance.getMinerAddressCount();
+            assert.equal(minerAddressCount.toString(), "1", "Miner address list should not be empty");
+
+            currentBlock = await web3.eth.getBlockNumber();
+            blockBeforeNextSample = 99 - (currentBlock % 100);
+            await time.advanceBlockTo(currentBlock + blockBeforeNextSample);
+            txReceipt = await eglContractInstance.samplePoolBehavior(accounts[10])
+
+            minerAddressCount = await eglContractInstance.getMinerAddressCount();
+            assert.equal(minerAddressCount.toString(), "1", "Miner address list should still only have 1 entry");
+        });
+        it("should increment sample count and total delta for every sample call", async () => {
+            let currentBlock = await web3.eth.getBlockNumber();
+            let blockBeforeNextSample = 99 - (currentBlock % 100);
+            await time.advanceBlockTo(currentBlock + blockBeforeNextSample);
+            
+            let txReceipt = await eglContractInstance.samplePoolBehavior(accounts[10]);
+
+            let events = populateAllEventDataFromLogs(txReceipt, EventType.SAMPLE_POOL_BEHAVIOR);
+            assert.equal(events[0].minerSampleCount, 1, "Incorrect miner sample count");
+            assert.equal(events[0].minerTotalDelta, 0, "Incorrect total delta");
+
+            let minerAddressCount = await eglContractInstance.getMinerAddressCount();
+            assert.equal(minerAddressCount.toString(), "1", "Miner address list should not be empty");
+
+            currentBlock = await web3.eth.getBlockNumber();
+            blockBeforeNextSample = 99 - (currentBlock % 100);
+            await time.advanceBlockTo(currentBlock + blockBeforeNextSample);
+
+            txReceipt = await eglContractInstance.samplePoolBehavior(accounts[10]);
+            
+            events = populateAllEventDataFromLogs(txReceipt, EventType.SAMPLE_POOL_BEHAVIOR);
+            assert.equal(events[0].minerSampleCount, 2, "Incorrect miner sample count");
+            assert.equal(events[0].minerTotalDelta, 0, "Incorrect total delta");
+
+            minerAddressCount = await eglContractInstance.getMinerAddressCount();
+            assert.equal(minerAddressCount.toString(), "1", "Miner address list should still only have 1 entry");
+        });
+    })
     describe("Withdraw Pool Tokens", function () {      
         it("should not allow withdraw if not participated in Genesis or has not pool tokens due", async () => {
             await expectRevert(

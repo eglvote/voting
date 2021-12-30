@@ -10,7 +10,7 @@ install:
   - yarn install
 
 script:
-  - ganache -e 1000 -a 11 -p 7545 -i 5777 --miner.coinbase 10 > /dev/null &
+  - ganache -e 1000 -a 11 -p 7545 -i 5777 --miner.coinbase 10 --miner.legacyInstamine --miner.blockGasLimit 0x7a1200 > /dev/null &
   - sleep 5
   - yarn compile 
   - yarn mig-ganache

@@ -1,5 +1,6 @@
 const expectRevert = require("@openzeppelin/test-helpers/src/expectRevert");
 const { time } = require("@openzeppelin/test-helpers");
+const { BN } = require("bn.js");
 
 const EglToken = artifacts.require("./EglToken.sol");
 const TestableEglContractV2 = artifacts.require("./helpers/TestableEglContractV2.sol");
@@ -571,142 +572,6 @@ contract("EglInternalFunctionsTestsV2", (accounts) => {
             assert.equal(tokensInCirculationPost.toString(), web3.utils.toWei("1500000000"), "Incorrect number of tokens in circulation");
         });
     });
-    describe("Calculate Block Reward", function () {
-        it("should calculate 100% reward if block gas limit is less than 100,000 of the desired EGL", async () => {
-            let desiredEgl = 15000000;            
-            let blockGasLimit = 15100000;
-
-            let txReceipt = await eglContractInstance.calculateBlockReward(blockGasLimit, desiredEgl);
-            let blockRewardEvent = populateEventDataFromLogs(txReceipt, EventType.BLOCK_REWARD_CALCULATED);
-            assert.equal(
-                web3.utils.fromWei(blockRewardEvent.totalRewardPercent.toString()), 
-                "100", 
-                "Block reward percentage should be 100%"
-            );
-            
-            blockGasLimit = 15050000;
-            txReceipt = await eglContractInstance.calculateBlockReward(blockGasLimit, desiredEgl);
-            blockRewardEvent = populateEventDataFromLogs(txReceipt, EventType.BLOCK_REWARD_CALCULATED);
-            assert.equal(
-                web3.utils.fromWei(blockRewardEvent.totalRewardPercent.toString()), 
-                "100", 
-                "Block reward percentage should be 100%"
-            );
-
-            blockGasLimit = 14900000;
-            txReceipt = await eglContractInstance.calculateBlockReward(blockGasLimit, desiredEgl);
-            blockRewardEvent = populateEventDataFromLogs(txReceipt, EventType.BLOCK_REWARD_CALCULATED);
-            assert.equal(
-                web3.utils.fromWei(blockRewardEvent.totalRewardPercent.toString()), 
-                "100", 
-                "Block reward percentage should be 100%"
-            );
-
-            blockGasLimit = 14950000;
-            txReceipt = await eglContractInstance.calculateBlockReward(blockGasLimit, desiredEgl);
-            blockRewardEvent = populateEventDataFromLogs(txReceipt, EventType.BLOCK_REWARD_CALCULATED);
-            assert.equal(
-                web3.utils.fromWei(blockRewardEvent.totalRewardPercent.toString()), 
-                "100", 
-                "Block reward percentage should be 100%"
-            );
-        });
-        it("should give 75% reward block gas limit less than 500,000 of the desired EGL value", async () => {
-            let desiredEgl = 32000000;   
-
-            let blockGasLimit = 31500000;
-            let txReceipt = await eglContractInstance.calculateBlockReward(blockGasLimit, desiredEgl);
-            let blockRewardEvent = populateEventDataFromLogs(txReceipt, EventType.BLOCK_REWARD_CALCULATED);
-            assert.equal(
-                web3.utils.fromWei(blockRewardEvent.totalRewardPercent.toString()), 
-                "75", 
-                "Block reward percentage should be 75%"
-            );
-            blockGasLimit = 31899999;
-            txReceipt = await eglContractInstance.calculateBlockReward(blockGasLimit, desiredEgl);
-            blockRewardEvent = populateEventDataFromLogs(txReceipt, EventType.BLOCK_REWARD_CALCULATED);
-            assert.equal(
-                web3.utils.fromWei(blockRewardEvent.totalRewardPercent.toString()), 
-                "75", 
-                "Block reward percentage should be 75%"
-            );
-
-            blockGasLimit = 32500000;
-            txReceipt = await eglContractInstance.calculateBlockReward(blockGasLimit, desiredEgl);
-            blockRewardEvent = populateEventDataFromLogs(txReceipt, EventType.BLOCK_REWARD_CALCULATED);
-            assert.equal(
-                web3.utils.fromWei(blockRewardEvent.totalRewardPercent.toString()), 
-                "75", 
-                "Block reward percentage should be 75%"
-            );
-            blockGasLimit = 32100001;
-            txReceipt = await eglContractInstance.calculateBlockReward(blockGasLimit, desiredEgl);
-            blockRewardEvent = populateEventDataFromLogs(txReceipt, EventType.BLOCK_REWARD_CALCULATED);
-            assert.equal(
-                web3.utils.fromWei(blockRewardEvent.totalRewardPercent.toString()), 
-                "75", 
-                "Block reward percentage should be 75%"
-            );
-        });
-        it("should give 25% reward block gas limit less than 1,000,000 of the desired EGL value", async () => {
-            let desiredEgl = 8000000;   
-
-            let blockGasLimit = 8500001;
-            let txReceipt = await eglContractInstance.calculateBlockReward(blockGasLimit, desiredEgl);
-            let blockRewardEvent = populateEventDataFromLogs(txReceipt, EventType.BLOCK_REWARD_CALCULATED);
-            assert.equal(
-                web3.utils.fromWei(blockRewardEvent.totalRewardPercent.toString()), 
-                "25", 
-                "Block reward percentage should be 75%"
-            );
-            blockGasLimit = 7499999;
-            txReceipt = await eglContractInstance.calculateBlockReward(blockGasLimit, desiredEgl);
-            blockRewardEvent = populateEventDataFromLogs(txReceipt, EventType.BLOCK_REWARD_CALCULATED);
-            assert.equal(
-                web3.utils.fromWei(blockRewardEvent.totalRewardPercent.toString()), 
-                "25", 
-                "Block reward percentage should be 75%"
-            );
-
-            blockGasLimit = 9000000;
-            txReceipt = await eglContractInstance.calculateBlockReward(blockGasLimit, desiredEgl);
-            blockRewardEvent = populateEventDataFromLogs(txReceipt, EventType.BLOCK_REWARD_CALCULATED);
-            assert.equal(
-                web3.utils.fromWei(blockRewardEvent.totalRewardPercent.toString()), 
-                "25", 
-                "Block reward percentage should be 75%"
-            );
-            blockGasLimit = 7000000;
-            txReceipt = await eglContractInstance.calculateBlockReward(blockGasLimit, desiredEgl);
-            blockRewardEvent = populateEventDataFromLogs(txReceipt, EventType.BLOCK_REWARD_CALCULATED);
-            assert.equal(
-                web3.utils.fromWei(blockRewardEvent.totalRewardPercent.toString()), 
-                "25", 
-                "Block reward percentage should be 75%"
-            );
-        });
-        it("should give 0% reward block gas limit over 1,000,000 of the desired EGL value", async () => {
-            let desiredEgl = 15000000;   
-
-            let blockGasLimit = 16000001;
-            let txReceipt = await eglContractInstance.calculateBlockReward(blockGasLimit, desiredEgl);
-            let blockRewardEvent = populateEventDataFromLogs(txReceipt, EventType.BLOCK_REWARD_CALCULATED);
-            assert.equal(
-                web3.utils.fromWei(blockRewardEvent.totalRewardPercent.toString()), 
-                "0", 
-                "Block reward percentage should be 0%"
-            );
-
-            blockGasLimit = 13999999;
-            txReceipt = await eglContractInstance.calculateBlockReward(blockGasLimit, desiredEgl);
-            blockRewardEvent = populateEventDataFromLogs(txReceipt, EventType.BLOCK_REWARD_CALCULATED);
-            assert.equal(
-                web3.utils.fromWei(blockRewardEvent.totalRewardPercent.toString()), 
-                "0", 
-                "Block reward percentage should be 0%"
-            );
-        });
-    });
     describe("Calculate Serialized EGL", function () {
         it("should calculate serialized EGL after 1 hour passed lockup end date", async () => {                        
             // See RELEASE EGL in 'files/calculations.txt' for formulas to calculate expected values
@@ -1190,5 +1055,94 @@ contract("EglInternalFunctionsTestsV2", (accounts) => {
             let event = populateAllEventDataFromLogs(txReceipt, "PercentageCalculated");
             assert.equal(web3.utils.fromWei(event[0].percentage.toString()), "0", "Incorrect percentage calculated");
         });
+    });
+    describe("Distribute Pool Rewards", function() {
+        it("should distribute entire weekly reward if all blocks sampled and all gas limits within 100000 of EGL", async () => {
+            await eglContractInstance.mockMinerData(
+                [accounts[20], accounts[21], accounts[22], accounts[23], accounts[24], accounts[25]],
+                [0, 0, 0, 0, 0, 0, 0],
+                [70, 70, 70, 70, 70, 70],
+            );
+
+            let txReceipt = await eglContractInstance.distributePoolRewards(13902550);
+
+            let totalReward = new BN(0);
+            let weeklyReward;
+            for (let i = 0; i < txReceipt.logs.length; i++) {
+                totalReward = totalReward.add(txReceipt.logs[i].args.reward);
+                weeklyReward = txReceipt.logs[i].args.weeklyReward;
+            }
+
+            assert.approximately(
+                parseFloat(web3.utils.fromWei(totalReward.toString())), 
+                parseFloat(web3.utils.fromWei(weeklyReward.toString())), 
+                0.00000000000000001, 
+                "Incorrect weekly reward distributed"
+            );                
+        })
+        it("should calculate 75% of reward for miner if average gas limit for sampled blocks is between 100000 and 500000", async () => {
+            await eglContractInstance.mockMinerData(
+                [accounts[20]],
+                [210000000],
+                [420],
+            );
+
+            let txReceipt = await eglContractInstance.distributePoolRewards(13902550);
+
+            let totalReward = txReceipt.logs[0].args.reward;
+            let weeklyReward = txReceipt.logs[0].args.weeklyReward
+
+            const percentageOfWeekly = weeklyReward.mul(new BN(75)).div(new BN(100));
+            assert.approximately(
+                parseFloat(web3.utils.fromWei(totalReward.toString())), 
+                parseFloat(web3.utils.fromWei(percentageOfWeekly.toString())), 
+                0.00000000000000001, 
+                "Incorrect weekly reward distributed"
+            );                
+        })
+        it("should calculate 25% of reward for miner if average gas limit for sampled blocks is between 500000 and 1000000", async () => {
+            await eglContractInstance.mockMinerData(
+                [accounts[20], accounts[21], accounts[22], accounts[23], accounts[24], accounts[25]],
+                [1000000, 1000000, 50000000, 100000000, 75000000, 193000000],
+                [1, 1, 50, 100, 75, 193],
+            );
+
+            let txReceipt = await eglContractInstance.distributePoolRewards(13902550);
+
+            let totalReward = new BN(0);
+            let weeklyReward;
+            for (let i = 0; i < txReceipt.logs.length; i++) {
+                totalReward = totalReward.add(txReceipt.logs[i].args.reward);
+                weeklyReward = txReceipt.logs[i].args.weeklyReward;
+            }
+
+            const percentageOfWeekly = weeklyReward.mul(new BN(25)).div(new BN(100));
+            assert.approximately(
+                parseFloat(web3.utils.fromWei(totalReward.toString())), 
+                parseFloat(web3.utils.fromWei(percentageOfWeekly.toString())), 
+                0.00000000000000001, 
+                "Incorrect weekly reward distributed"
+            );                
+        })
+        it("should calculate 0 reward for miner if average gas limit for sampled blocks is greater than 1000000", async () => {
+            await eglContractInstance.mockMinerData(
+                [accounts[20], accounts[21], accounts[22], accounts[23], accounts[24], accounts[25]],
+                [1000001, 1000001, 50000050, 100000100, 750000075, 193000193],
+                [1, 1, 50, 100, 75, 193],
+            );
+
+            let txReceipt = await eglContractInstance.distributePoolRewards(13902550);
+
+            let totalReward = new BN(0);
+            let weeklyReward;
+            for (let i = 0; i < txReceipt.logs.length; i++) {
+                totalReward = totalReward.add(txReceipt.logs[i].args.reward);
+                weeklyReward = txReceipt.logs[i].args.weeklyReward;
+            }
+
+            assert.equal(
+                parseFloat(web3.utils.fromWei(totalReward.toString())), 0, "Incorrect weekly reward distributed"
+            );                
+        })
     });
 });

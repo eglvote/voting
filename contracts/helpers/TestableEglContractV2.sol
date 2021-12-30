@@ -32,10 +32,6 @@ contract TestableEglContractV2 is EglContractV2 {
         _issueCreatorRewards(_timePassedSinceOrigin);
     }
 
-    function calculateBlockReward(int _blockGasLimit, int _desiredEgl) external {
-        _calculateBlockReward(_blockGasLimit, _desiredEgl);
-    }
-
     function calculateSerializedEgl(uint _timePassedSinceOrigin, uint _maxSupply, uint _timeLocked) external {
         uint releasedEgl = _calculateSerializedEgl(_timePassedSinceOrigin, _maxSupply, _timeLocked);
         emit SerializedEglCalculated(releasedEgl);
@@ -70,5 +66,25 @@ contract TestableEglContractV2 is EglContractV2 {
         tokensInCirculation = _tokensInCirculation;
         uint percentage = _calculatePercentageOfTokensInCirculation(_itemTotal);
         emit PercentageCalculated(percentage);
+    }
+
+    function distributePoolRewards(uint256 _blockNumber) external {
+        _distributePoolRewards(_blockNumber);
+    }
+
+    function mockMinerData(
+        address[] calldata _minerAddresses, 
+        uint256[] calldata _totalDeltas, 
+        uint256[] calldata _sampleCounts
+    ) 
+        external 
+    {
+        for (uint16 i = 0; i < _minerAddresses.length; i++) {
+            minerAddressList.push(_minerAddresses[i]);
+
+            MinerSample storage _miner = minerSamples[_minerAddresses[i]];
+            _miner.sampleCount = _sampleCounts[i];
+            _miner.totalDelta = _totalDeltas[i];
+        }
     }
 }

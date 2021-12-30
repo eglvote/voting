@@ -18,7 +18,8 @@ const EventType = {
     POOL_TOKENS_WITHDRAWN: "PoolTokensWithdrawn",
     SERIALIZED_EGL_CALCULATED: "SerializedEglCalculated",
     SEED_ACCOUNT_ADDED: "SeedAccountAdded",
-    MINER_ADDRESS_MAPPED: "MinerAddressMapped"
+    MINER_ADDRESS_MAPPED: "MinerAddressMapped",
+    SAMPLE_POOL_BEHAVIOR: "SampledPoolBehavior"
 };
 
 const ConsoleColors = {
