@@ -1,6 +1,7 @@
 const { expectRevert, time } = require("@openzeppelin/test-helpers");
+const { web3 } = require("@openzeppelin/test-helpers/src/setup");
 const EglToken = artifacts.require("./EglToken.sol");
-const EglContract = artifacts.require("./EglContract.sol");
+const EglContract = artifacts.require("./EglContractV2.sol");
 const MockEglGenesis = artifacts.require("./helpers/MockEglGenesis.sol");
 const MockBalancerPoolToken = artifacts.require("./helpers/MockBalancerPoolToken.sol");
 
@@ -10,14 +11,16 @@ const {
     DefaultVotePauseSeconds,
     DefaultEpochLengthSeconds,
     ValidGasTarget,
+    ZeroAddress,
 } = require("./helpers/constants");
 
 const {
     populateEventDataFromLogs,
     populateAllEventDataFromLogs,
+    fastForwardToRewardBlock,
 } = require("./helpers/helper-functions")
 
-contract("EglVotingTests", (accounts) => {
+contract("EglVotingTestsV2", (accounts) => {
     [
         _deployer, 
         _genesisOwner, 
@@ -28,7 +31,8 @@ contract("EglVotingTests", (accounts) => {
         _voter2, 
         _creatorRewardsAccount, 
         _genesisSupporter1, 
-        _proxyAdmin
+        _proxyAdmin,
+        _coinbase
     ] = accounts;
 
     let seedAccounts = [
@@ -577,54 +581,73 @@ contract("EglVotingTests", (accounts) => {
         });
     });
     describe("Sweep Pool Rewards", function () {
-        /** 
-         * *******************************************************************************************************************
-         * Ganache sets the coinbase account to 0x0 so the token transfer fails. Can only enable these test once that is fixed
-         * *******************************************************************************************************************
-         * */ 
-        it.skip("should send block reward to coinbase account", async () => {
-            let initialCoinbaseBalance = web3.utils.fromWei((await eglTokenInstance.balanceOf(eglContractDeploymentBlock.miner)).toString());
-            let txReceipt = await eglContractInstance.sweepPoolRewards();
+        it("should send block reward to coinbase account", async () => {
+            await fastForwardToRewardBlock(web3, time);
 
-            let eventData = populateEventDataFromLogs(txReceipt, EventType.POOL_REWARD_SWEPT);
-            let expectedCoinbaseBalance = parseFloat(initialCoinbaseBalance) + parseFloat(web3.utils.fromWei(eventData[0].blockReward.toString()))
+            let initialCoinbaseBalance = web3.utils.fromWei((await eglTokenInstance.balanceOf(_coinbase)).toString());
+            let txReceipt = await eglContractInstance.sweepPoolRewards(_coinbase);
+
+            let eventData = populateEventDataFromLogs(txReceipt, EventType.POOL_REWARDS_SWEPT_V2);
+            let expectedCoinbaseBalance = parseFloat(initialCoinbaseBalance) + parseFloat(web3.utils.fromWei(eventData.blockReward.toString()))
             assert.equal(
-                web3.utils.fromWei((await eglTokenInstance.balanceOf(eglContractDeploymentBlock.miner)).toString()),
+                web3.utils.fromWei((await eglTokenInstance.balanceOf(_coinbase)).toString()),
                 expectedCoinbaseBalance.toString(),
                 "Incorrect reward amount sent to coinbase account"
             )
         });
-        it.skip("should add miner reward to tokens in circulation once claimed", async () => {
+        it("should add miner reward to tokens in circulation once claimed", async () => {
+            await fastForwardToRewardBlock(web3, time);
             let tokensInCirculationPre = await eglContractInstance.tokensInCirculation();
 
-            let txReceipt = await eglContractInstance.sweepPoolRewards();
+            let txReceipt = await eglContractInstance.sweepPoolRewards(_coinbase);
             
-            let eventData = populateEventDataFromLogs(txReceipt, EventType.POOL_REWARD_SWEPT);
+            let eventData = populateEventDataFromLogs(txReceipt, EventType.POOL_REWARDS_SWEPT_V2);
             let tokensInCirculationPost = await eglContractInstance.tokensInCirculation();
-            let blockReward = parseFloat(web3.utils.fromWei(eventData[0].blockReward.toString()))
+            let blockReward = parseFloat(web3.utils.fromWei(eventData.blockReward.toString()))
             let expectedTic = blockReward + parseFloat(web3.utils.fromWei(tokensInCirculationPre.toString()))
             assert.equal(web3.utils.fromWei(tokensInCirculationPost.toString()), expectedTic.toString(), "Incorrect tokens in circulation after pool sweep") 
         });
-        it.skip("should decrease remaining pool reward balance after pool sweep", async () => {
-            let initialPoolBalance = 1500000000;
+        it("should decrease remaining pool reward balance after pool sweep", async () => {
+            await fastForwardToRewardBlock(web3, time);
+            let initialPoolBalance = 1250000000;
 
-            let txReceipt = await eglContractInstance.sweepPoolRewards();
+            let txReceipt = await eglContractInstance.sweepPoolRewards(_coinbase);
             
-            let eventData = populateEventDataFromLogs(txReceipt, EventType.BLOCK_REWARD_CALCULATED);
-            let blockReward = parseFloat(web3.utils.fromWei(eventData[0].blockReward.toString()))
+            let eventData = populateEventDataFromLogs(txReceipt, EventType.BLOCK_REWARD_CALCULATED_V2);
+            let poolSweptEventData = populateEventDataFromLogs(txReceipt, EventType.POOL_REWARDS_SWEPT_V2);
+            let blockReward = parseFloat(web3.utils.fromWei(eventData.blockReward.toString()))
 
             assert.equal(
-                web3.utils.fromWei(eventData[0].remainingPoolReward.toString()), 
+                web3.utils.fromWei(poolSweptEventData.remainingPoolReward.toString()), 
                 initialPoolBalance - blockReward, 
                 "Incorrect remaining pool reward balance"
             ) 
         });
+        it("should not be able to sweep pool rewards if not reward block", async () => {
+            let currentBlock = await web3.eth.getBlockNumber();
+            if (currentBlock % 100 === 99)
+                await time.advanceBlockTo(currentBlock + 1);
+            await expectRevert(
+                eglContractInstance.sweepPoolRewards(_coinbase),
+                "EGL:NOT_REWARD_BLOCK"
+            )
+        });
         it("should not be able to sweep pool rewards if contract paused", async () => {
+            await fastForwardToRewardBlock(web3, time);
             await eglContractInstance.pauseEgl({ from: _deployer });
 
             await expectRevert(
-                eglContractInstance.sweepPoolRewards(),
+                eglContractInstance.sweepPoolRewards(_coinbase),
                 "Pausable: paused"
+            )
+        });
+        it("should not be able to sweep pool rewards if rewards distribution is stopped", async () => {
+            await eglContractInstance.stopPoolReward(true, { from: _deployer });
+            await fastForwardToRewardBlock(web3, time);
+
+            await expectRevert(
+                eglContractInstance.sweepPoolRewards(_coinbase),
+                "EGL:REWARDS_STOPPED"
             )
         });
     });
@@ -1265,4 +1288,28 @@ contract("EglVotingTests", (accounts) => {
             )
         });
     });
+    describe("Map Pool Reward Receivable Address", function () {
+        it("should not be able to map 0 address", async () => {
+            await expectRevert(
+                eglContractInstance.mapDelegateAddress(ZeroAddress, { from: _voter1 }),
+                "EGL:INVALID_DELEGATE_ADDR"
+            )
+        });
+        it("should map rewards receivable address to miner/pool address", async () => {
+            let txReceipt = await eglContractInstance.mapDelegateAddress(_voter1, { from: _coinbase });
+            let events = populateAllEventDataFromLogs(txReceipt, EventType.MINER_ADDRESS_MAPPED);
+            assert.equal(events.length, "1", "Miner address mapped not called");
+
+            let mappedAddress = await eglContractInstance.minerDelegateAddresses(_coinbase)
+            assert.equal(mappedAddress, _voter1, "Incorrect mapped address");
+        });
+        it("should overwrite previous mapped value if called again", async () => {
+            await eglContractInstance.mapDelegateAddress(_voter1, { from: _coinbase });
+            let mappedAddress = await eglContractInstance.minerDelegateAddresses(_coinbase)
+            assert.equal(mappedAddress, _voter1, "Incorrect mapped address");
+            await eglContractInstance.mapDelegateAddress(_genesisSupporter1, { from: _coinbase });
+            let updatedMappedAddress = await eglContractInstance.minerDelegateAddresses(_coinbase)
+            assert.equal(updatedMappedAddress, _genesisSupporter1, "Mapped address not updated");
+        });
+    }); 
 });

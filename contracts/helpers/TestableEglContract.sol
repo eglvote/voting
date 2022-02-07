@@ -1,8 +1,8 @@
 pragma solidity 0.6.6;
 
-import "../EglContract.sol";
+import "../EglContractV2.sol";
 
-contract TestableEglContract is EglContract {
+contract TestableEglContract is EglContractV2 {
     event PercentageCalculated(uint percentage);
     event SerializedEglCalculated(uint serializedEgl);
     event PoolTokensDueCalculated(uint poolTokensDue);
@@ -32,8 +32,8 @@ contract TestableEglContract is EglContract {
         _issueCreatorRewards(_timePassedSinceOrigin);
     }
 
-    function calculateBlockReward(int _blockGasLimit, int _desiredEgl, int _tallyVoteGasLimit) external {
-        _calculateBlockReward(_blockGasLimit, _desiredEgl, _tallyVoteGasLimit);
+    function calculateBlockReward(int _blockGasLimit, int _desiredEgl) external {
+        _calculateBlockReward(_blockGasLimit, _desiredEgl);
     }
 
     function calculateSerializedEgl(uint _timePassedSinceOrigin, uint _maxSupply, uint _timeLocked) external {

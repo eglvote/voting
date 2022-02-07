@@ -10,13 +10,17 @@ const EventType = {
     VOTE_THRESHOLD_MET: "VoteThresholdMet",
     VOTE_THRESHOLD_FAILED: "VoteThresholdFailed",
     POOL_REWARDS_SWEPT: "PoolRewardsSwept",
+    POOL_REWARDS_SWEPT_V2: "PoolRewardsSweptV2",
     BLOCK_REWARD_CALCULATED: "BlockRewardCalculated",
+    BLOCK_REWARD_CALCULATED_V2: "BlockRewardCalculatedV2",
     SEED_ACCOUNT_CLAIMED: "SeedAccountClaimed",
     VOTER_REWARD_CALCULATED: "VoterRewardCalculated",
     SUPPORTER_TOKENS_CLAIMED: "SupporterTokensClaimed",
     POOL_TOKENS_WITHDRAWN: "PoolTokensWithdrawn",
     SERIALIZED_EGL_CALCULATED: "SerializedEglCalculated",
-    SEED_ACCOUNT_ADDED: "SeedAccountAdded"
+    SEED_ACCOUNT_ADDED: "SeedAccountAdded",
+    MINER_ADDRESS_MAPPED: "MinerAddressMapped",
+    POOL_REWARD_SWEPT: "PoolRewardsSwept",
 };
 
 const ConsoleColors = {

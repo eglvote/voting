@@ -4,6 +4,12 @@ async function sleep(seconds) {
     });
 }
 
+async function fastForwardToRewardBlock(web3, time) {
+    let currentBlock = await web3.eth.getBlockNumber();
+    const blockBeforeNextSample = 99 - (currentBlock % 100);
+    await time.advanceBlockTo(currentBlock + blockBeforeNextSample);
+}
+
 function populateEventDataFromLogs(txReceipt, eventName) {
     let contractEvents = {};
     txReceipt.logs.map((event) => {
@@ -57,5 +63,6 @@ module.exports = {
     getBlockTimestamp,    
     getAllEventsForType,
     getBlockGasLimit,
-    getNewWalletAddress
+    getNewWalletAddress,
+    fastForwardToRewardBlock,
 }

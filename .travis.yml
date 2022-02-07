@@ -6,11 +6,11 @@ cache: yarn
 
 install:
   - yarn global add truffle
-  - yarn global add ganache-cli
+  - yarn global add ganache
   - yarn install
 
 script:
-  - ganache-cli -e 1000 -p 7545 -i 5777 > /dev/null &
+  - ganache --wallet.defaultBalance 1000 --server.port 7545 --chain.networkId 5777 --miner.blockGasLimit 8000000 --wallet.totalAccounts 11 --miner.coinbase 10 > /dev/null &
   - sleep 5
   - yarn compile 
   - yarn mig-ganache
