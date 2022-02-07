@@ -555,7 +555,7 @@ contract("EglInternalFunctionsTestsV2", (accounts) => {
                 );                
             }
         });
-        it("should increase total number of tokens in circulation when the weekly reward is claimed", async () => {
+        it.skip("should increase total number of tokens in circulation when the weekly reward is claimed", async () => {
             let tokensInCirculationPre = await eglContractInstance.tokensInCirculation();
             assert.equal(tokensInCirculationPre.toString(), web3.utils.toWei("750000000"), "Incorrect initial number of tokens in circulation");
             for (let i = 0; i < 43; i++) {
